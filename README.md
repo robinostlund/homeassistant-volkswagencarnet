@@ -49,5 +49,5 @@ switch.vw_vehicle01_charge:
 switch.vw_vehicle01_climat:
     friendly_name: VW Car Climatisation
 switch.vw_vehicle01_melt:
-    friendly_name: VW Car Windows Heating
+    friendly_name: VW Car Window Heating
 ```

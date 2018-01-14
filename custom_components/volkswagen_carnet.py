@@ -57,7 +57,7 @@ def setup(hass, config):
 
     vw._carnet_update_status()
 
-    for component in ['switch']:
+    for component in ['switch', 'device_tracker']:
         discovery.load_platform(hass, component, DOMAIN, {}, config)
 
     return vw.carnet_logged_in
@@ -78,6 +78,8 @@ class VWCarnet(object):
             'state_charge': False,
             'state_climat': False,
             'state_melt': False,
+            'latitude': False,
+            'longitude': False,
         }
         self.vehicles['vehicle01'] = self.vehicle_data
         self.vehicle_current = 'vehicle01'
@@ -289,6 +291,21 @@ class VWCarnet(object):
             'triggerAction': False
         }
         return json.loads(self._carnet_post_action('/-/emanager/trigger-windowheating', post_data))
+
+    @Throttle(timedelta(seconds=1))
+    def _carnet_update_location(self, vehicle):
+        _LOGGER.debug("Trying to update location status from Volkswagen Carnet")
+        try:
+            location = json.loads(self._carnet_post('/-/cf/get-location'))
+            latitude = location['position']['lat']
+            longitude = location['position']['lng']
+            self.vehicles[vehicle]['latitude'] = latitude
+            self.vehicles[vehicle]['longitude'] = longitude
+            return True
+
+        except:
+            _LOGGER.error("Failed to update location status from Volkswagen Carnet")
+            return False
 
     @Throttle(timedelta(seconds=1))
     def _carnet_update_status(self):
