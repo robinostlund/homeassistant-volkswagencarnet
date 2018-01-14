@@ -38,11 +38,8 @@ def setup_platform(hass, config, add_devices, discovery_info = None):
 
     functions = []
     for vehicle in vehicles:
-        print('vehicle %s' % vehicle)
-        _LOGGER.debug("ROBIN1    %s", vehicle)
         for switch in SWITCHES:
             print(switch)
-            _LOGGER.debug("ROBIN %s", switch)
             functions.append(VolkswagenCarnetSwitch(hass, vehicle, switch))
 
     _LOGGER.debug("Adding switches %s", functions)
