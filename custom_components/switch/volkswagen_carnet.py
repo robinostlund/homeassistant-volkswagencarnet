@@ -39,7 +39,6 @@ def setup_platform(hass, config, add_devices, discovery_info = None):
     functions = []
     for vehicle in vehicles:
         for switch in SWITCHES:
-            print(switch)
             functions.append(VolkswagenCarnetSwitch(hass, vehicle, switch))
 
     _LOGGER.debug("Adding switches %s", functions)
@@ -77,17 +76,17 @@ class VolkswagenCarnetSwitch(ToggleEntity):
     @property
     def is_on(self):
         """Return true if switch is on."""
-        return self.vw._get_state(self.vehicle, self.switch_name)
+        return self.vw._switch_get_state(self.vehicle, self.switch_name)
 
 
     def turn_on(self, **kwargs):
         """Turn the switch on."""
-        self.vw._set_state(self.vehicle, self.switch_name, True)
+        self.vw._switch_set_state(self.vehicle, self.switch_name, True)
 
 
     def turn_off(self, **kwargs):
         """Turn the switch off."""
-        self.vw._set_state(self.vehicle, self.switch_name, False)
+        self.vw._switch_set_state(self.vehicle, self.switch_name, False)
 
     @property
     def icon(self):

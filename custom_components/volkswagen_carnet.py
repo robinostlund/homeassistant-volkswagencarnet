@@ -345,7 +345,7 @@ class VWCarnet(object):
     def _set_state_climat(self, vehicle, state = False):
         self.vehicles[vehicle]['state_climat'] = state
 
-    def _set_state(self, vehicle, switch, state = False):
+    def _switch_set_state(self, vehicle, switch, state = False):
         if switch == 'climat':
             if state:
                 self._carnet_start_climat(vehicle)
@@ -362,7 +362,7 @@ class VWCarnet(object):
             else:
                 self._carnet_stop_window_melt(vehicle)
 
-    def _get_state(self, vehicle, switch):
+    def _switch_get_state(self, vehicle, switch):
         if switch == 'climat':
             return self.vehicles[vehicle]['state_climat']
         elif switch == 'charge':
