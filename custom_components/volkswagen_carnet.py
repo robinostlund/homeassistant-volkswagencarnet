@@ -80,14 +80,15 @@ class VWCarnet(object):
             'state_melt': False,
             'latitude': False,
             'longitude': False,
+            'sensor_battery_left': False,
+            'sensor_charge_max_ampere': False,
+            'sensor_external_power_connected': False,
+            'sensor_charging_time_left': False,
+            'sensor_climat_target_temperature': False,
+            'sensor_electric_range_left': False,
         }
         self.vehicles['vehicle01'] = self.vehicle_data
         self.vehicle_current = 'vehicle01'
-
-
-        self.carnet_state_charge = False
-        self.carnet_state_climat = False
-        self.carnet_state_melt = False
 
         # Fake the VW CarNet mobile app headers
         self.headers = { 'Accept': 'application/json, text/plain, */*', 'Content-Type': 'application/json;charset=UTF-8', 'User-Agent': 'Mozilla/5.0 (Linux; Android 6.0.1; D5803 Build/23.5.A.1.291; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/63.0.3239.111 Mobile Safari/537.36' }
@@ -292,22 +293,7 @@ class VWCarnet(object):
         }
         return json.loads(self._carnet_post_action('/-/emanager/trigger-windowheating', post_data))
 
-    @Throttle(timedelta(seconds=1))
-    def _carnet_update_location(self, vehicle):
-        _LOGGER.debug("Trying to update location status from Volkswagen Carnet")
-        try:
-            location = json.loads(self._carnet_post('/-/cf/get-location'))
-            latitude = location['position']['lat']
-            longitude = location['position']['lng']
-            self.vehicles[vehicle]['latitude'] = latitude
-            self.vehicles[vehicle]['longitude'] = longitude
-            return True
-
-        except:
-            _LOGGER.error("Failed to update location status from Volkswagen Carnet")
-            return False
-
-    @Throttle(timedelta(seconds=1))
+    @Throttle(timedelta(seconds=10))
     def _carnet_update_status(self):
         if self.carnet_updates_in_progress:
             _LOGGER.debug("Volkswagen Carnet updates already in progress")
@@ -329,8 +315,30 @@ class VWCarnet(object):
                 if timeout_counter > 30:
                     raise ('Could not get status in time')
 
-            data_emanager = json.loads(self._carnet_post('/-/emanager/get-emanager'))
 
+            # parse data
+            data_emanager = json.loads(self._carnet_post('/-/emanager/get-emanager'))
+            data_location = json.loads(self._carnet_post('/-/cf/get-location'))
+
+            # set new location data
+            latitude = data_location['position']['lat']
+            longitude = data_location['position']['lng']
+            self.vehicles[self.vehicle_current]['latitude'] = latitude
+            self.vehicles[self.vehicle_current]['longitude'] = longitude
+
+            # set new values
+            self.vehicles[self.vehicle_current]['sensor_battery_left'] = int(data_emanager['EManager']['rbc']['status']['batteryPercentage'])
+            self.vehicles[self.vehicle_current]['sensor_charge_max_ampere'] = int(data_emanager['EManager']['rbc']['settings']['chargerMaxCurrent'])
+            self.vehicles[self.vehicle_current]['sensor_external_power_connected'] = int(data_emanager['EManager']['rbc']['status']['extPowerSupplyState'])
+            self.vehicles[self.vehicle_current]['sensor_climat_target_temperature'] = int(data_emanager['EManager']['rpc']['settings']['targetTemperature'])
+            self.vehicles[self.vehicle_current]['sensor_electric_range_left'] = int(data_emanager['EManager']['rbc']['status']['electricRange']) * 10
+
+            # calculate charging time left
+            charging_time_left = int(data_emanager['EManager']['rbc']['status']['chargingRemaningHour']) * 60 * 60
+            charging_time_left += int(data_emanager['EManager']['rbc']['status']['chargingRemaningMinute']) * 60
+            self.vehicles[self.vehicle_current]['sensor_charging_time_left'] = charging_time_left
+
+            # update states
             if data_emanager['EManager']['rpc']['status']['climatisationState'] == 'OFF':
                 self._set_state_climat(self.vehicle_current, False)
             else:

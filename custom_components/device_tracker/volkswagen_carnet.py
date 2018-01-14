@@ -35,7 +35,6 @@ class VolkswagenDeviceTracker(object):
         """Update the device info."""
         for device in self.devices:
             device_data = self.devices[device]
-            self.vw._carnet_update_location(device_data.get('name'))
             name = "vw_%s" % (device_data.get('name'))
             _LOGGER.debug("Updating device position: %s", name)
             dev_id = slugify(name)
