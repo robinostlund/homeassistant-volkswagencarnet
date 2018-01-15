@@ -35,19 +35,22 @@ volkswagen:
  name: Volkswagen Switches
  control: hidden
  entities:
-  - switch.vw_vehicle01_charge
-  - switch.vw_vehicle01_climat
-  - switch.vw_vehicle01_melt
+  - switch.vw_carid_charge
+  - switch.vw_carid_climat
+  - switch.vw_carid_melt
+  - device_tracker.vw_carid
 ```
 
 Customize example
 ------------
 `<config dir>/customize.yaml`
 ```yaml
-switch.vw_vehicle01_charge:
+switch.vw_carid_charge:
     friendly_name: VW Car Charging
-switch.vw_vehicle01_climat:
+switch.vw_carid_climat:
     friendly_name: VW Car Climatisation
-switch.vw_vehicle01_melt:
+switch.vw_carid_melt:
     friendly_name: VW Car Window Heating
+device_tracker.vw_carid:
+    friendly_name: VW Car Location
 ```
