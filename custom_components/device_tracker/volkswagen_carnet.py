@@ -45,6 +45,7 @@ class VolkswagenDeviceTracker(object):
                     'trackr_id': dev_id,
                     'id': dev_id,
                     'name': name,
+                    'picture': 'https://robinostlund.name/pics/vw-car.png'
                 }
                 self.see(
                     dev_id=dev_id, host_name=name,

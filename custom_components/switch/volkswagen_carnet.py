@@ -61,7 +61,7 @@ class VolkswagenCarnetSwitch(ToggleEntity):
     def update(self):
         """Update the states of Volkswagen Carnet switches."""
         _LOGGER.debug("Running switch update")
-        self.vw._carnet_update_status()
+        self.vw._carnet_update_status(force_update=True)
 
     @property
     def name(self):

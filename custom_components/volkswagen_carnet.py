@@ -216,6 +216,7 @@ class VWCarnet(object):
             self.headers["X-CSRF-Token"] = csrf
             self.url = ref_url3
             self.carnet_logged_in = True
+            _LOGGER.debug("Login to Volkswagen Carnet was successfull")
             return True
 
         except HTTPError:
@@ -293,8 +294,8 @@ class VWCarnet(object):
         }
         return json.loads(self._carnet_post_action('/-/emanager/trigger-windowheating', post_data))
 
-    @Throttle(timedelta(seconds=10))
-    def _carnet_update_status(self):
+    @Throttle(timedelta(seconds=1))
+    def _carnet_update_status(self, force_update = False):
         if self.carnet_updates_in_progress:
             _LOGGER.debug("Volkswagen Carnet updates already in progress")
             return
@@ -305,21 +306,29 @@ class VWCarnet(object):
             # request car data
             self._carnet_post('/-/vsr/request-vsr')
 
-            # wait for update to be completed:
+
             request_status = json.loads(self._carnet_post('/-/vsr/get-vsr'))
+            # wait for update to be completed:
             timeout_counter = 0
-            while request_status['vehicleStatusData']['requestStatus'] == 'REQUEST_IN_PROGRESS':
-                request_status = json.loads(self._carnet_post('/-/vsr/get-vsr'))
-                timeout_counter += 1
-                time.sleep(1)
-                if timeout_counter > 30:
-                    raise ('Could not get status in time')
+            if force_update:
+                while request_status['vehicleStatusData']['requestStatus'] == 'REQUEST_IN_PROGRESS':
+                    request_status = json.loads(self._carnet_post('/-/vsr/get-vsr'))
+                    timeout_counter += 1
+                    time.sleep(1)
+                    if timeout_counter > 40:
+                        raise HTTPError(code = '408', msg = 'Request to Volkswagen Carnet timeout.', hdrs = '', fp = None, url = None)
 
-
-            # parse data
+            # get data from carnet
             data_emanager = json.loads(self._carnet_post('/-/emanager/get-emanager'))
             data_location = json.loads(self._carnet_post('/-/cf/get-location'))
+            self.carnet_updates_in_progress = False
+        except HTTPError as e:
+            _LOGGER.error("Failed to update status from Volkswagen Carnet")
+            _LOGGER.debug("Error msg: %s" % (e))
+            self.carnet_updates_in_progress = False
+            return False
 
+        else:
             # set new location data
             latitude = data_location['position']['lat']
             longitude = data_location['position']['lng']
@@ -327,11 +336,19 @@ class VWCarnet(object):
             self.vehicles[self.vehicle_current]['longitude'] = longitude
 
             # set new values
-            self.vehicles[self.vehicle_current]['sensor_battery_left'] = int(data_emanager['EManager']['rbc']['status']['batteryPercentage'])
-            self.vehicles[self.vehicle_current]['sensor_charge_max_ampere'] = int(data_emanager['EManager']['rbc']['settings']['chargerMaxCurrent'])
-            self.vehicles[self.vehicle_current]['sensor_external_power_connected'] = int(data_emanager['EManager']['rbc']['status']['extPowerSupplyState'])
-            self.vehicles[self.vehicle_current]['sensor_climat_target_temperature'] = int(data_emanager['EManager']['rpc']['settings']['targetTemperature'])
-            self.vehicles[self.vehicle_current]['sensor_electric_range_left'] = int(data_emanager['EManager']['rbc']['status']['electricRange']) * 10
+            if data_emanager['EManager']['rbc']['status']['extPowerSupplyState'] == 'UNAVAILABLE':
+                self.vehicles[self.vehicle_current]['sensor_external_power_connected'] = False
+            else:
+                self.vehicles[self.vehicle_current]['sensor_external_power_connected'] = True
+
+            if isinstance(data_emanager['EManager']['rbc']['status']['batteryPercentage'], int):
+                self.vehicles[self.vehicle_current]['sensor_battery_left'] = int(data_emanager['EManager']['rbc']['status']['batteryPercentage'])
+            if isinstance(data_emanager['EManager']['rbc']['settings']['chargerMaxCurrent'], int):
+                self.vehicles[self.vehicle_current]['sensor_charge_max_ampere'] = int(data_emanager['EManager']['rbc']['settings']['chargerMaxCurrent'])
+            if isinstance(data_emanager['EManager']['rpc']['settings']['targetTemperature'], int):
+                self.vehicles[self.vehicle_current]['sensor_climat_target_temperature'] = int(data_emanager['EManager']['rpc']['settings']['targetTemperature'])
+            if isinstance(data_emanager['EManager']['rbc']['status']['electricRange'], int):
+                self.vehicles[self.vehicle_current]['sensor_electric_range_left'] = int(data_emanager['EManager']['rbc']['status']['electricRange']) * 10
 
             # calculate charging time left
             charging_time_left = int(data_emanager['EManager']['rbc']['status']['chargingRemaningHour']) * 60 * 60
@@ -356,10 +373,9 @@ class VWCarnet(object):
             _LOGGER.debug("Status updated from Volkswagen Carnet")
             self.carnet_updates_in_progress = False
             return True
-        except:
-            _LOGGER.error("Failed to update status from Volkswagen Carnet")
+        finally:
             self.carnet_updates_in_progress = False
-            return False
+
 
     def _set_state_charge(self, vehicle, state = False):
         self.vehicles[vehicle]['state_charge'] = state
