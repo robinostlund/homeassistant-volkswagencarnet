@@ -38,7 +38,7 @@ class VolkswagenDeviceTracker(object):
             name = vehicle_data.get('name')
             car_id = 'vw_%s' % vehicle_data.get('vin')
 
-            _LOGGER.debug("Updating device position: %s", name)
+            _LOGGER.debug("Updating device position for vehicle: %s", vehicle_data.get('vin'))
 
             dev_id = slugify(car_id)
             lat = vehicle_data.get('location_latitude')

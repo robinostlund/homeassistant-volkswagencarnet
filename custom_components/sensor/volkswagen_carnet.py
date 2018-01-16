@@ -123,6 +123,8 @@ class VolkswagenCarnet(Entity):
         self.sensor_unit_of_measurement = self.sensor.get('unit_of_measurement')
         self.vehicle = vehicle
 
+
+
     @property
     def name(self):
         """Return the name of the sensor."""
@@ -143,7 +145,7 @@ class VolkswagenCarnet(Entity):
 
         This is the only method that should fetch new data for Home Assistant.
         """
-        _LOGGER.debug("Updating sensor: %s", self.sensor_name)
+        _LOGGER.debug("Updating %s sensor for vehicle: %s", self.sensor_name, self.vehicle)
         self._state = self.vw._sensor_get_state(self.vehicle, self.sensor_name)
 
     @property

@@ -105,3 +105,15 @@ sensor.vw_carid_parking_lights:
 sensor.vw_carid_next_service_inspection:
     friendly_name: VW Car Next Service
 ```
+
+Enable debug logging
+------------
+```yaml
+logger:
+    default: info
+    logs:
+        custom_components.volkswagen_carnet: debug
+        custom_components.sensor.volkswagen_carnet: debug
+        custom_components.switch.volkswagen_carnet: debug
+        custom_components.device_tracker.volkswagen_carnet: debug
+ ```
