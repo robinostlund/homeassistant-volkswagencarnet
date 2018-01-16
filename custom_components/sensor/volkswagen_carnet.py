@@ -91,6 +91,7 @@ SENSORS = [
 
 _LOGGER = logging.getLogger(__name__)
 
+SCAN_INTERVAL = timedelta(minutes=1)
 
 def setup_platform(hass, config, add_devices, discovery_info=None):
     """Setup the sensor platform."""
@@ -142,6 +143,7 @@ class VolkswagenCarnet(Entity):
 
         This is the only method that should fetch new data for Home Assistant.
         """
+        _LOGGER.debug("Updating sensor: %s", self.sensor_name)
         self._state = self.vw._sensor_get_state(self.vehicle, self.sensor_name)
 
     @property

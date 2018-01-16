@@ -15,7 +15,6 @@ from urllib.parse import urlsplit,urlsplit
 from urllib.error import HTTPError
 
 from homeassistant.const import (CONF_USERNAME, CONF_PASSWORD)
-from homeassistant.util import Throttle
 from homeassistant.helpers import discovery
 from homeassistant.helpers.event import track_point_in_utc_time
 from homeassistant.util.dt import utcnow
@@ -30,7 +29,7 @@ CONF_UPDATE_INTERVAL = 'update_interval'
 
 MIN_UPDATE_INTERVAL = timedelta(minutes=1)
 DEFAULT_UPDATE_INTERVAL = timedelta(minutes=1)
-SIGNAL_VEHICLE_SEEN = '{}.vehicle_seen'.format(DOMAIN)
+#SIGNAL_VEHICLE_SEEN = '{}.vehicle_seen'.format(DOMAIN)
 
 CONFIG_SCHEMA = vol.Schema({
     DOMAIN: vol.Schema({
@@ -62,10 +61,10 @@ def setup(hass, config):
     for component in ['switch', 'device_tracker', 'sensor']:
         discovery.load_platform(hass, component, DOMAIN, {}, config)
 
-    def update_vehicle(vehicle):
-        """Revieve updated information on vehicle."""
-
-        dispatcher_send(hass, SIGNAL_VEHICLE_SEEN, vehicle)
+    #def update_vehicle(vehicle):
+    #    """Revieve updated information on vehicle."""
+    #
+    #    dispatcher_send(hass, SIGNAL_VEHICLE_SEEN, vehicle)
 
     def update(now):
         """Update status from the online service."""
@@ -75,7 +74,7 @@ def setup(hass, config):
                     _LOGGER.warning("Could not update vehicle %s" % (vehicle))
                     return False
 
-                update_vehicle(vehicle)
+                #update_vehicle(vehicle)
 
             return True
         finally:
@@ -364,7 +363,6 @@ class VWCarnet(object):
         }
         return json.loads(self._carnet_post_action_vehicle(vehicle, '/-/emanager/trigger-windowheating', post_data))
 
-    @Throttle(timedelta(seconds=1))
     def _carnet_get_vehicles(self):
         _LOGGER.debug('Fetching vehicles from Volkswagen Carnet')
         # get vehicles
@@ -401,7 +399,6 @@ class VWCarnet(object):
             self.carnet_logged_in = False
             return False
 
-    @Throttle(timedelta(seconds=1))
     def _carnet_update_vehicle_status(self, vehicle, force_update = False):
         _LOGGER.debug("Trying to update status for vehicle %s" % (self.vehicles[vehicle].get('vin')))
 
