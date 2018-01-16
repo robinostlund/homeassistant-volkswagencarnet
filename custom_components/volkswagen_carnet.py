@@ -19,6 +19,7 @@ from homeassistant.util import Throttle
 from homeassistant.helpers import discovery
 from homeassistant.helpers.event import track_point_in_utc_time
 from homeassistant.util.dt import utcnow
+from homeassistant.helpers.dispatcher import dispatcher_send
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -41,25 +42,6 @@ CONFIG_SCHEMA = vol.Schema({
 }, extra = vol.ALLOW_EXTRA)
 
 
-SWITCHES = [
-    {
-        'name': 'climat',
-        'friendly_name': 'Climat',
-        'icon': 'mdi:car'
-    },
-    {
-        'name': 'charge',
-        'friendly_name': 'Charge',
-        'icon': 'mdi:car'
-    },
-    {
-        'name': 'melt',
-        'friendly_name': 'Window melt',
-        'icon': 'mdi:car-wash'
-    }
-]
-
-
 def setup(hass, config):
     """Setup Volkswagen Carnet component"""
 
@@ -77,19 +59,25 @@ def setup(hass, config):
         _LOGGER.error("Failed to login to Volkswagen Carnet")
         return False
 
-    for component in ['switch', 'device_tracker']:
+    for component in ['switch', 'device_tracker', 'sensor']:
         discovery.load_platform(hass, component, DOMAIN, {}, config)
 
+    def update_vehicle(vehicle):
+        """Revieve updated information on vehicle."""
+
+        dispatcher_send(hass, SIGNAL_VEHICLE_SEEN, vehicle)
 
     def update(now):
         """Update status from the online service."""
         try:
             for vehicle in vw.vehicles:
                 if not vw._carnet_update_vehicle_status(vehicle, force_update=True):
-                    _LOGGER.warning("Could not query server")
+                    _LOGGER.warning("Could not update vehicle %s" % (vehicle))
                     return False
-                else:
-                    return True
+
+                update_vehicle(vehicle)
+
+            return True
         finally:
             track_point_in_utc_time(hass, update, utcnow() + interval)
 
@@ -119,21 +107,27 @@ class VWCarnet(object):
     def _vehicle_template(self, vin):
         vehicle_template = {
             'vin': vin.get('vin'),
-            'pin': vin.get('pin'),
+            'pin': vin.get('enrollmentPin'),
             'name': vin.get('vehicleName'),
+            'model_year': False,
+            'model_code': False,
+            'model_image_url': False,
             'dashboard_url': False,
             'profile_id': False,
             'state_charge': False,
             'state_climat': False,
             'state_melt': False,
-            'latitude': False,
-            'longitude': False,
+            'location_latitude': False,
+            'location_longitude': False,
             'sensor_battery_left': False,
             'sensor_charge_max_ampere': False,
             'sensor_external_power_connected': False,
             'sensor_charging_time_left': False,
             'sensor_climat_target_temperature': False,
             'sensor_electric_range_left': False,
+            'sensor_next_service_inspection': False,
+            'sensor_distance': False,
+            'sensor_last_connected': False,
         }
         return vehicle_template
 
@@ -384,18 +378,25 @@ class VWCarnet(object):
                 if vehicle.get('vin') in self.vehicles:
                     self.vehicles[vehicle.get('vin')]['dashboard_url'] = vehicle.get('dashboardUrl')
                     self.vehicles[vehicle.get('vin')]['profile_id'] = vehicle.get('xprofileId')
+                    self.vehicles[vehicle.get('vin')]['model_year'] = vehicle.get('modelYear')
+                    self.vehicles[vehicle.get('vin')]['model_code'] = vehicle.get('modelCode')
+                    self.vehicles[vehicle.get('vin')]['model_image_url'] = vehicle.get('imageUrl')
                     _LOGGER.debug('Adding extra information for vehicle: %s' % (vehicle.get('vin')))
 
             for vehicle in non_loaded_cars['fullyLoadedVehiclesResponse']['vehiclesNotFullyLoaded']:
                 if vehicle.get('vin') in self.vehicles:
                     self.vehicles[vehicle.get('vin')]['dashboard_url'] = vehicle.get('dashboardUrl')
                     self.vehicles[vehicle.get('vin')]['profile_id'] = vehicle.get('xprofileId')
+                    self.vehicles[vehicle.get('vin')]['model_year'] = vehicle.get('modelYear')
+                    self.vehicles[vehicle.get('vin')]['model_code'] = vehicle.get('modelCode')
+                    self.vehicles[vehicle.get('vin')]['model_image_url'] = vehicle.get('imageUrl')
                     _LOGGER.debug('Adding extra information for vehicle: %s' % (vehicle.get('vin')))
 
         except HTTPError as e:
             _LOGGER.error("Failed to fetch vehicles from Volkswagen Carnet")
             _LOGGER.debug("Error msg: %s" % (e))
             self.carnet_updates_in_progress = False
+            self.carnet_logged_in = False
             return False
 
     @Throttle(timedelta(seconds=1))
@@ -409,7 +410,7 @@ class VWCarnet(object):
             request_status = json.loads(self._carnet_post_vehicle(vehicle, '/-/vsr/get-vsr'))
             # wait for update to be completed:
             #timeout_counter = 0
-            #if force_update and self.first_init:
+            #if force_update:
             #    while request_status['vehicleStatusData']['requestStatus'] == 'REQUEST_IN_PROGRESS':
             #        request_status = json.loads(self._carnet_post_vehicle(vehicle, '/-/vsr/get-vsr'))
             #        timeout_counter += 1
@@ -420,56 +421,113 @@ class VWCarnet(object):
             # get data from carnet
             data_emanager = json.loads(self._carnet_post_vehicle(vehicle, '/-/emanager/get-emanager'))
             data_location = json.loads(self._carnet_post_vehicle(vehicle, '/-/cf/get-location'))
+            data_details = json.loads(self._carnet_post_vehicle(vehicle,'/-/vehicle-info/get-vehicle-details'))
+            _LOGGER.debug("Status updated for vehicle %s" % (self.vehicles[vehicle].get('vin')))
 
         except HTTPError as e:
-            _LOGGER.error("Failed to update status for vehicle %s" % (self.vehicles[vehicle].get('vin')))
+            _LOGGER.error("Failed to fetch status for vehicle %s" % (self.vehicles[vehicle].get('vin')))
             _LOGGER.debug("Error msg: %s" % (e))
+            self.carnet_logged_in = False
             return False
 
-        else:
-            # set new location data
-            latitude = data_location['position']['lat']
-            longitude = data_location['position']['lng']
-            self.vehicles[vehicle]['latitude'] = latitude
-            self.vehicles[vehicle]['longitude'] = longitude
 
-            # set new values
+        # set new location data
+        try:
+            self.vehicles[vehicle]['location_latitude'] = data_location['position']['lat']
+            self.vehicles[vehicle]['location_longitude'] = data_location['position']['lng']
+        except:
+            _LOGGER.error("Failed to set location status for vehicle %s" % (self.vehicles[vehicle].get('vin')))
+
+        # set powersupply sensor
+        try:
             if data_emanager['EManager']['rbc']['status']['extPowerSupplyState'] == 'UNAVAILABLE':
-                self.vehicles[vehicle]['sensor_external_power_connected'] = False
+                self.vehicles[vehicle]['sensor_external_power_connected'] = 'no'
             else:
-                self.vehicles[vehicle]['sensor_external_power_connected'] = True
+                self.vehicles[vehicle]['sensor_external_power_connected'] = 'yes'
+        except:
+            _LOGGER.error("Failed to set powersupply status for vehicle %s" % (self.vehicles[vehicle].get('vin')))
 
-            if isinstance(data_emanager['EManager']['rbc']['status']['batteryPercentage'], int):
-                self.vehicles[vehicle]['sensor_battery_left'] = int(data_emanager['EManager']['rbc']['status']['batteryPercentage'])
-            if isinstance(data_emanager['EManager']['rbc']['settings']['chargerMaxCurrent'], int):
-                self.vehicles[vehicle]['sensor_charge_max_ampere'] = int(data_emanager['EManager']['rbc']['settings']['chargerMaxCurrent'])
-            if isinstance(data_emanager['EManager']['rpc']['settings']['targetTemperature'], int):
-                self.vehicles[vehicle]['sensor_climat_target_temperature'] = int(data_emanager['EManager']['rpc']['settings']['targetTemperature'])
-            if isinstance(data_emanager['EManager']['rbc']['status']['electricRange'], int):
-                self.vehicles[vehicle]['sensor_electric_range_left'] = int(data_emanager['EManager']['rbc']['status']['electricRange']) * 10
+        # set battery sensor
+        try:
+            self.vehicles[vehicle]['sensor_battery_left'] = int(data_emanager['EManager']['rbc']['status']['batteryPercentage'])
+        except:
+            _LOGGER.error("Failed to set battery sensor for vehicle %s" % (self.vehicles[vehicle].get('vin')))
 
-            # calculate charging time left
+        # set charger max ampere sensor
+        try:
+            self.vehicles[vehicle]['sensor_charge_max_ampere'] = int(data_emanager['EManager']['rbc']['settings']['chargerMaxCurrent'])
+        except:
+            _LOGGER.error("Failed to set charger max ampere sensor for vehicle %s" % (self.vehicles[vehicle].get('vin')))
+
+        # set target temperatrue sensor
+        try:
+            self.vehicles[vehicle]['sensor_climat_target_temperature'] = int(data_emanager['EManager']['rpc']['settings']['targetTemperature'])
+        except:
+            _LOGGER.error("Failed to set target temperature sensor for vehicle %s" % (self.vehicles[vehicle].get('vin')))
+
+        # set electric range sensor
+        try:
+            self.vehicles[vehicle]['sensor_electric_range_left'] = int(data_emanager['EManager']['rbc']['status']['electricRange']) * 10
+        except:
+            _LOGGER.error("Failed to set target electric range sensor for vehicle %s" % (self.vehicles[vehicle].get('vin')))
+
+        # set charging time left sensor
+        try:
             charging_time_left = int(data_emanager['EManager']['rbc']['status']['chargingRemaningHour']) * 60 * 60
             charging_time_left += int(data_emanager['EManager']['rbc']['status']['chargingRemaningMinute']) * 60
             self.vehicles[vehicle]['sensor_charging_time_left'] = charging_time_left
+        except:
+            _LOGGER.error("Failed to set charging time sensor for vehicle %s" % (self.vehicles[vehicle].get('vin')))
 
-            # update states
+        # set next service inspection sensor
+        try:
+            self.vehicles[vehicle]['sensor_next_service_inspection'] = data_details['vehicleDetails']['serviceInspectionData']
+        except:
+            _LOGGER.error("Failed to set next service inspection sensor for vehicle %s" % (self.vehicles[vehicle].get('vin')))
+
+        # set distance sensor
+        try:
+            self.vehicles[vehicle]['sensor_distance'] = int(data_details['vehicleDetails']['distanceCovered'].replace('.', ''))
+        except:
+            _LOGGER.error("Failed to set distance sensor for vehicle %s" % (self.vehicles[vehicle].get('vin')))
+
+        # set last connected sensor
+        try:
+            last_connected = data_details['vehicleDetails']['lastConnectionTimeStamp'][0] + ' ' + data_details['vehicleDetails']['lastConnectionTimeStamp'][1]
+            self.vehicles[vehicle]['sensor_last_connected'] = last_connected
+        except:
+            _LOGGER.error("Failed to set distance sensor for vehicle %s" % (self.vehicles[vehicle].get('vin')))
+
+        # set climate state
+        try:
             if data_emanager['EManager']['rpc']['status']['climatisationState'] == 'OFF':
                 self._set_state('climat', vehicle, False)
             else:
                 self._set_state('climat', vehicle, True)
+        except:
+            _LOGGER.error("Failed to set climat state for vehicle %s" % (self.vehicles[vehicle].get('vin')))
 
+        # set window heating state
+        try:
             if data_emanager['EManager']['rpc']['status']['windowHeatingStateRear'] == 'OFF':
                 self._set_state('melt', vehicle, False)
             else:
                 self._set_state('melt', vehicle, True)
+        except:
+            _LOGGER.error("Failed to set window heating state for vehicle %s" % (self.vehicles[vehicle].get('vin')))
 
+        # set charging state
+        try:
             if data_emanager['EManager']['rbc']['status']['chargingState'] == 'OFF':
                 self._set_state('charge', vehicle, False)
             else:
                 self._set_state('charge', vehicle, True)
-            _LOGGER.debug("Status updated for vehicle %s" % (self.vehicles[vehicle].get('vin')))
-            return True
+        except:
+            _LOGGER.error("Failed to set charging state for vehicle %s" % (self.vehicles[vehicle].get('vin')))
+
+        _LOGGER.debug("Status updated for vehicle %s" % (self.vehicles[vehicle].get('vin')))
+        _LOGGER.debug("Vehicle data: %s" % (self.vehicles[vehicle]))
+        return True
 
 
     def _set_state(self, switch, vehicle, state = False):
@@ -507,7 +565,25 @@ class VWCarnet(object):
         elif switch == 'melt':
             return self.vehicles[vehicle]['state_melt']
 
+    def _sensor_get_state(self, vehicle, sensor):
+        if sensor == 'battery':
+            return self.vehicles[vehicle]['sensor_battery_left']
 
+        elif sensor == 'charge_max_ampere':
+            return self.vehicles[vehicle]['sensor_charge_max_ampere']
 
+        elif sensor == 'external_power_connected':
+            return self.vehicles[vehicle]['sensor_external_power_connected']
 
+        elif sensor == 'charging_time_left':
+            return self.vehicles[vehicle]['sensor_charging_time_left']
+
+        elif sensor == 'climat_target_temperature':
+            return self.vehicles[vehicle]['sensor_climat_target_temperature']
+
+        elif sensor == 'electric_range_left':
+            return self.vehicles[vehicle]['sensor_electric_range_left']
+
+        elif sensor == 'distance':
+            return self.vehicles[vehicle]['sensor_distance']
 

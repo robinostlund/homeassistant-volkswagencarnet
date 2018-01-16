@@ -3,7 +3,26 @@ Support for Volkswagen Carnet.
 """
 from homeassistant.const import (STATE_OFF, STATE_ON)
 from homeassistant.helpers.entity import ToggleEntity
-from custom_components.volkswagen_carnet import CARNET_DATA, SWITCHES
+from custom_components.volkswagen_carnet import CARNET_DATA
+
+
+SWITCHES = [
+    {
+        'name': 'climat',
+        'friendly_name': 'Climat',
+        'icon': 'mdi:radiator'
+    },
+    {
+        'name': 'charge',
+        'friendly_name': 'Charge',
+        'icon': 'mdi:battery-charging'
+    },
+    {
+        'name': 'melt',
+        'friendly_name': 'Window melt',
+        'icon': 'mdi:car-wash'
+    }
+]
 
 
 def setup_platform(hass, config, add_devices, discovery_info = None):

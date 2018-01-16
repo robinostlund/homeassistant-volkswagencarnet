@@ -25,20 +25,33 @@ Group example
 `<config dir>/groups.yaml`
 ```yaml
 volkswagendashboard:
- name: Volkswagen
- view: yes
- icon: mdi:car
- entities:
-  - group.volkswagen
+    name: Volkswagen
+    view: yes
+    icon: mdi:car
+    entities:
+        - group.volkswagenswitches
+        - group.volkswagensensors
 
-volkswagen:
- name: Volkswagen Switches
- control: hidden
- entities:
-  - switch.vw_carid_charge
-  - switch.vw_carid_climat
-  - switch.vw_carid_melt
-  - device_tracker.vw_carid
+volkswagenswitches:
+    name: Volkswagen Switches
+    control: hidden
+    entities:
+        - switch.vw_carid_charge
+        - switch.vw_carid_climat
+        - switch.vw_carid_melt
+        - device_tracker.vw_carid
+  
+volkswagensensors:
+    name: Volkswagen Sensors
+    control: hidden
+    entities:
+        - sensor.vw_carid_battery
+        - sensor.vw_carid_charge_max_ampere
+        - sensor.vw_carid_charging_time_left
+        - sensor.vw_carid_climat_target_temperature
+        - sensor.vw_carid_distance
+        - sensor.vw_carid_electric_range_left
+        - sensor.vw_carid_external_power_connected
 ```
 
 Customize example
@@ -53,4 +66,18 @@ switch.vw_carid_melt:
     friendly_name: VW Car Window Heating
 device_tracker.vw_carid:
     friendly_name: VW Car Location
+sensor.vw_carid_battery:
+    friendly_name: VW Car Battery
+sensor.vw_carid_charge_max_ampere:
+    friendly_name: VW Car Max Ampere
+sensor.vw_carid_charging_time_left:
+    friendly_name: VW Car Charging time left
+sensor.vw_carid_climat_target_temperature:
+    friendly_name: VW Car Climatisation Target Temperature
+sensor.vw_carid_distance:
+    friendly_name: VW Car Odometer
+sensor.vw_carid_electric_range_left:
+    friendly_name: VW Car Electric Range Left
+sensor.vw_carid_external_power_connected:
+    friendly_name: VW Car External Power Connected
 ```

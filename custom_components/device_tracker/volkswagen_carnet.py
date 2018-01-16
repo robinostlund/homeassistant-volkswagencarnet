@@ -6,9 +6,8 @@ import logging
 
 from homeassistant.helpers.event import track_utc_time_change
 from homeassistant.util import slugify
-from homeassistant.helpers.dispatcher import (
-    dispatcher_connect, dispatcher_send)
-from custom_components.volkswagen_carnet import CARNET_DATA, SIGNAL_VEHICLE_SEEN
+
+from custom_components.volkswagen_carnet import CARNET_DATA
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -42,16 +41,17 @@ class VolkswagenDeviceTracker(object):
             _LOGGER.debug("Updating device position: %s", name)
 
             dev_id = slugify(car_id)
-            lat = vehicle_data.get('latitude')
-            lon = vehicle_data.get('longitude')
+            lat = vehicle_data.get('location_latitude')
+            lon = vehicle_data.get('location_longitude')
             if lat and lon:
                 attrs = {
                     'trackr_id': dev_id,
                     'id': dev_id,
                     'name': dev_id,
-                    'icon': 'mdi:car'
+                    'entity_picture': vehicle_data.get('model_image_url')
                 }
                 self.see(
                     dev_id=dev_id, host_name=name,
-                    gps=(lat, lon), attributes=attrs, icon='mdi:car'
+                    gps=(lat, lon), attributes=attrs,
+                    icon='mdi:car'
                 )
