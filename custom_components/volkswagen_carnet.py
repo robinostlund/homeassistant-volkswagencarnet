@@ -4,7 +4,7 @@ import json
 import time
 import logging
 
-from datetime import timedelta
+from datetime import timedelta, datetime
 
 
 import voluptuous as vol
@@ -114,6 +114,7 @@ class VWCarnet(object):
             'model_image_url': False,
             'dashboard_url': False,
             'profile_id': False,
+            'last_connected': False,
             'state_charge': False,
             'state_climat': False,
             'state_melt': False,
@@ -127,7 +128,6 @@ class VWCarnet(object):
             'sensor_electric_range_left': False,
             'sensor_next_service_inspection': False,
             'sensor_distance': False,
-            'sensor_last_connected': False,
         }
         return vehicle_template
 
@@ -494,7 +494,8 @@ class VWCarnet(object):
         # set last connected sensor
         try:
             last_connected = data_details['vehicleDetails']['lastConnectionTimeStamp'][0] + ' ' + data_details['vehicleDetails']['lastConnectionTimeStamp'][1]
-            self.vehicles[vehicle]['sensor_last_connected'] = last_connected
+            datetime_object = datetime.strptime(last_connected, '%d.%m.%Y %H:%M')
+            self.vehicles[vehicle]['last_connected'] = datetime_object
         except:
             _LOGGER.error("Failed to set distance sensor for vehicle %s" % (self.vehicles[vehicle].get('vin')))
 

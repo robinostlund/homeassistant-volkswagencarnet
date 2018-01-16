@@ -3,6 +3,7 @@ Support for Volkswagen Carnet.
 """
 from homeassistant.helpers.entity import Entity
 from custom_components.volkswagen_carnet import CARNET_DATA
+from datetime import datetime
 
 import logging
 from datetime import timedelta
@@ -111,3 +112,20 @@ class VolkswagenCarnet(Entity):
     def icon(self):
         """Return the icon."""
         return self.sensor_icon
+
+    @property
+    def device_state_attributes(self):
+        """Return the state attributes."""
+        attrs = {}
+        if self._last_updated:
+            attrs['time_last_updated'] = self._last_updated
+        return attrs
+
+    @property
+    def _last_updated(self):
+        """Return the last update of a device."""
+        datetime_object = self.vw.vehicles[self.vehicle].get('last_connected')
+        if datetime_object:
+            return datetime_object.strftime("%Y-%m-%d %H:%M:%S")
+        else:
+            return None
