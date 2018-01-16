@@ -32,7 +32,7 @@ SENSORS = [
         'name': 'charging_time_left',
         'friendly_name': 'Charging time left',
         'icon': 'mdi:battery-charging-100',
-        'unit_of_measurement': 'seconds'
+        'unit_of_measurement': 'minutes'
     },
     {
         'name': 'climat_target_temperature',

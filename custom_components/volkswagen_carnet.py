@@ -578,7 +578,8 @@ class VWCarnet(object):
             state = self.vehicles[vehicle]['sensor_external_power_connected']
 
         elif sensor == 'charging_time_left':
-            state = self.vehicles[vehicle]['sensor_charging_time_left']
+            # return minutes left instead of seconds
+            state = self.vehicles[vehicle]['sensor_charging_time_left'] / 60
 
         elif sensor == 'climat_target_temperature':
             state = self.vehicles[vehicle]['sensor_climat_target_temperature']
