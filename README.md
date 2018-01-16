@@ -60,6 +60,7 @@ volkswagensensors:
         - sensor.vw_carid_last_update
         - sensor.vw_carid_locked
         - sensor.vw_carid_parking_lights
+        - sensor.vw_carid_next_service_inspection
 ```
 
 Customize example
@@ -94,4 +95,6 @@ sensor.vw_carid_locked:
     friendly_name: VW Car Locked
 sensor.vw_carid_parking_lights:
     friendly_name: VW Car Parking Lights
+sensor.vw_carid_next_service_inspection:
+    friendly_name: VW Car Next Service
 ```

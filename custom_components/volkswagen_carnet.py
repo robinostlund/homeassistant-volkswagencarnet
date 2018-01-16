@@ -629,6 +629,8 @@ class VWCarnet(object):
 
         elif sensor == 'parking_lights':
             state = self.vehicles[vehicle]['sensor_parking_lights']
+        elif sensor == 'next_service_inspection':
+            state = self.vehicles[vehicle]['sensor_next_service_inspection']
 
         if state:
             return state

@@ -80,6 +80,13 @@ SENSORS = [
         'unit_of_measurement': '',
         'hidden': False
     },
+    {
+        'name': 'next_service_inspection',
+        'friendly_name': 'Next service inspection',
+        'icon': 'mdi:garage',
+        'unit_of_measurement': '',
+        'hidden': False
+    }
 ]
 
 _LOGGER = logging.getLogger(__name__)
