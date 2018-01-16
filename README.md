@@ -4,11 +4,6 @@ Information
 ------------
 This plugin is still in developing state.
 
-Example from Home Assistant
-------------
-![alt text](https://robinostlund.name/pics/vw-switches.png)
-![alt text](https://robinostlund.name/pics/vw-sensors.png)
-
 Installation
 ------------
 
@@ -27,7 +22,7 @@ Start the Home Assistant service with the configuration below, check "states" in
 volkswagen_carnet:
     username: <username to volkswagen carnet>
     password: <password to volkswagen carnet>
-    update_interval: 1 # specify in minutes how often to fetch status data from carnet (optional, default 5 min)
+    update_interval: 1 # specify in minutes how often to fetch status data from carnet (optional, default 1 min)
 
 ```
 
@@ -42,6 +37,7 @@ volkswagendashboard:
     entities:
         - group.volkswagenswitches
         - group.volkswagensensors
+        - group.volkswagenlocation
 
 volkswagenswitches:
     name: Volkswagen Switches
@@ -55,7 +51,6 @@ volkswagensensors:
     name: Volkswagen Information
     control: hidden
     entities:
-        - device_tracker.vw_carid
         - sensor.vw_carid_battery
         - sensor.vw_carid_charge_max_ampere
         - sensor.vw_carid_charging_time_left
@@ -67,6 +62,12 @@ volkswagensensors:
         - sensor.vw_carid_locked
         - sensor.vw_carid_parking_lights
         - sensor.vw_carid_next_service_inspection
+        
+volkswagenlocation:
+    name: Volkswagen Location
+    control: hidden
+    entities:
+        - device_tracker.vw_carid
 ```
 
 Customize example

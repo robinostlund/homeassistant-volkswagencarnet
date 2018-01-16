@@ -29,7 +29,7 @@ REQUIREMENTS = ['requests']
 CONF_UPDATE_INTERVAL = 'update_interval'
 
 MIN_UPDATE_INTERVAL = timedelta(minutes=1)
-DEFAULT_UPDATE_INTERVAL = timedelta(minutes=5)
+DEFAULT_UPDATE_INTERVAL = timedelta(minutes=1)
 SIGNAL_VEHICLE_SEEN = '{}.vehicle_seen'.format(DOMAIN)
 
 CONFIG_SCHEMA = vol.Schema({
