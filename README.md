@@ -59,6 +59,7 @@ volkswagensensors:
         - sensor.vw_carid_external_power_connected
         - sensor.vw_carid_last_update
         - sensor.vw_carid_locked
+        - sensor.vw_carid_parking_lights
 ```
 
 Customize example
@@ -91,4 +92,6 @@ sensor.vw_carid_last_update:
     friendly_name: VW Car Last Updated
 sensor.vw_carid_locked:
     friendly_name: VW Car Locked
+sensor.vw_carid_parking_lights:
+    friendly_name: VW Car Parking Lights
 ```

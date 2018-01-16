@@ -129,6 +129,7 @@ class VWCarnet(object):
             'sensor_next_service_inspection': False,
             'sensor_distance': False,
             'sensor_door_locked': False,
+            'sensor_parking_lights': False,
         }
         return vehicle_template
 
@@ -516,6 +517,15 @@ class VWCarnet(object):
         except:
             _LOGGER.debug("Failed to set door locked sensor for vehicle %s" % (self.vehicles[vehicle].get('vin')))
 
+        # set parking lights sensor
+        try:
+            if data_car['vehicleStatusData']['carRenderData']['parkingLights'] == 2:
+                self.vehicles[vehicle]['sensor_parking_lights'] = 'off'
+            else:
+                self.vehicles[vehicle]['sensor_parking_lights'] = 'on'
+        except:
+            _LOGGER.debug("Failed to set parking lights sensor for vehicle %s" % (self.vehicles[vehicle].get('vin')))
+
         # set climate state
         try:
             if data_emanager['EManager']['rpc']['status']['climatisationState'] == 'OFF':
@@ -616,6 +626,9 @@ class VWCarnet(object):
 
         elif sensor == 'locked':
             state = self.vehicles[vehicle]['sensor_door_locked']
+
+        elif sensor == 'parking_lights':
+            state = self.vehicles[vehicle]['sensor_parking_lights']
 
         if state:
             return state

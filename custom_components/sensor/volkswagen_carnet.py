@@ -73,6 +73,13 @@ SENSORS = [
         'unit_of_measurement': '',
         'hidden': False
     },
+    {
+        'name': 'parking_lights',
+        'friendly_name': 'Parking Lights',
+        'icon': 'mdi:lightbulb',
+        'unit_of_measurement': '',
+        'hidden': False
+    },
 ]
 
 _LOGGER = logging.getLogger(__name__)
