@@ -436,7 +436,7 @@ class VWCarnet(object):
             self.vehicles[vehicle]['location_latitude'] = data_location['position']['lat']
             self.vehicles[vehicle]['location_longitude'] = data_location['position']['lng']
         except:
-            _LOGGER.error("Failed to set location status for vehicle %s" % (self.vehicles[vehicle].get('vin')))
+            _LOGGER.debug("Failed to set location status for vehicle %s" % (self.vehicles[vehicle].get('vin')))
 
         # set powersupply sensor
         try:
@@ -445,31 +445,31 @@ class VWCarnet(object):
             else:
                 self.vehicles[vehicle]['sensor_external_power_connected'] = 'yes'
         except:
-            _LOGGER.error("Failed to set powersupply status for vehicle %s" % (self.vehicles[vehicle].get('vin')))
+            _LOGGER.debug("Failed to set powersupply status for vehicle %s" % (self.vehicles[vehicle].get('vin')))
 
         # set battery sensor
         try:
             self.vehicles[vehicle]['sensor_battery_left'] = int(data_emanager['EManager']['rbc']['status']['batteryPercentage'])
         except:
-            _LOGGER.error("Failed to set battery sensor for vehicle %s" % (self.vehicles[vehicle].get('vin')))
+            _LOGGER.debug("Failed to set battery sensor for vehicle %s" % (self.vehicles[vehicle].get('vin')))
 
         # set charger max ampere sensor
         try:
             self.vehicles[vehicle]['sensor_charge_max_ampere'] = int(data_emanager['EManager']['rbc']['settings']['chargerMaxCurrent'])
         except:
-            _LOGGER.error("Failed to set charger max ampere sensor for vehicle %s" % (self.vehicles[vehicle].get('vin')))
+            _LOGGER.debug("Failed to set charger max ampere sensor for vehicle %s" % (self.vehicles[vehicle].get('vin')))
 
         # set target temperatrue sensor
         try:
             self.vehicles[vehicle]['sensor_climat_target_temperature'] = int(data_emanager['EManager']['rpc']['settings']['targetTemperature'])
         except:
-            _LOGGER.error("Failed to set target temperature sensor for vehicle %s" % (self.vehicles[vehicle].get('vin')))
+            _LOGGER.debug("Failed to set target temperature sensor for vehicle %s" % (self.vehicles[vehicle].get('vin')))
 
         # set electric range sensor
         try:
             self.vehicles[vehicle]['sensor_electric_range_left'] = int(data_emanager['EManager']['rbc']['status']['electricRange'])
         except:
-            _LOGGER.error("Failed to set target electric range sensor for vehicle %s" % (self.vehicles[vehicle].get('vin')))
+            _LOGGER.debug("Failed to set target electric range sensor for vehicle %s" % (self.vehicles[vehicle].get('vin')))
 
         # set charging time left sensor
         try:
@@ -477,19 +477,19 @@ class VWCarnet(object):
             charging_time_left += int(data_emanager['EManager']['rbc']['status']['chargingRemaningMinute']) * 60
             self.vehicles[vehicle]['sensor_charging_time_left'] = charging_time_left
         except:
-            _LOGGER.error("Failed to set charging time sensor for vehicle %s" % (self.vehicles[vehicle].get('vin')))
+            _LOGGER.debug("Failed to set charging time sensor for vehicle %s" % (self.vehicles[vehicle].get('vin')))
 
         # set next service inspection sensor
         try:
             self.vehicles[vehicle]['sensor_next_service_inspection'] = data_details['vehicleDetails']['serviceInspectionData']
         except:
-            _LOGGER.error("Failed to set next service inspection sensor for vehicle %s" % (self.vehicles[vehicle].get('vin')))
+            _LOGGER.debug("Failed to set next service inspection sensor for vehicle %s" % (self.vehicles[vehicle].get('vin')))
 
         # set distance sensor
         try:
             self.vehicles[vehicle]['sensor_distance'] = int(data_details['vehicleDetails']['distanceCovered'].replace('.', ''))
         except:
-            _LOGGER.error("Failed to set distance sensor for vehicle %s" % (self.vehicles[vehicle].get('vin')))
+            _LOGGER.debug("Failed to set distance sensor for vehicle %s" % (self.vehicles[vehicle].get('vin')))
 
         # set last connected sensor
         try:
@@ -497,7 +497,7 @@ class VWCarnet(object):
             datetime_object = datetime.strptime(last_connected, '%d.%m.%Y %H:%M')
             self.vehicles[vehicle]['last_connected'] = datetime_object
         except:
-            _LOGGER.error("Failed to set distance sensor for vehicle %s" % (self.vehicles[vehicle].get('vin')))
+            _LOGGER.debug("Failed to set distance sensor for vehicle %s" % (self.vehicles[vehicle].get('vin')))
 
         # set climate state
         try:
@@ -506,7 +506,7 @@ class VWCarnet(object):
             else:
                 self._set_state('climat', vehicle, True)
         except:
-            _LOGGER.error("Failed to set climat state for vehicle %s" % (self.vehicles[vehicle].get('vin')))
+            _LOGGER.debug("Failed to set climat state for vehicle %s" % (self.vehicles[vehicle].get('vin')))
 
         # set window heating state
         try:
@@ -515,7 +515,7 @@ class VWCarnet(object):
             else:
                 self._set_state('melt', vehicle, True)
         except:
-            _LOGGER.error("Failed to set window heating state for vehicle %s" % (self.vehicles[vehicle].get('vin')))
+            _LOGGER.debug("Failed to set window heating state for vehicle %s" % (self.vehicles[vehicle].get('vin')))
 
         # set charging state
         try:
@@ -524,7 +524,7 @@ class VWCarnet(object):
             else:
                 self._set_state('charge', vehicle, True)
         except:
-            _LOGGER.error("Failed to set charging state for vehicle %s" % (self.vehicles[vehicle].get('vin')))
+            _LOGGER.debug("Failed to set charging state for vehicle %s" % (self.vehicles[vehicle].get('vin')))
 
         _LOGGER.debug("Status updated for vehicle %s" % (self.vehicles[vehicle].get('vin')))
         _LOGGER.debug("Vehicle data: %s" % (self.vehicles[vehicle]))
