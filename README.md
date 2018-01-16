@@ -13,6 +13,11 @@ Clone or copy the root of the repository into `<config dir>/custom_components`
 
 Add a volkswagen_carnet configuration block to your `<config dir>/configuration.yaml`
 
+Start the Home Assistant service with the configuration below, check "states" in Home Assistant to find out your CarNet ID, replace vw_carid with your ID throughout the example configuration below, save the config files and restart Home Assistant.
+
+```switch.vw_carid_charge ---> switch.vw_wvwzzzXczheXXXXXXX_charge```
+
+
 ```yaml
 volkswagen_carnet:
     username: <username to volkswagen carnet>

@@ -20,7 +20,7 @@ SENSORS = [
         'name': 'charge_max_ampere',
         'friendly_name': 'Charge max ampere',
         'icon': 'mdi:flash',
-        'unit_of_measurement': 'a'
+        'unit_of_measurement': 'A'
     },
     {
         'name': 'external_power_connected',
@@ -38,7 +38,7 @@ SENSORS = [
         'name': 'climat_target_temperature',
         'friendly_name': 'Climatisation target temperature',
         'icon': 'mdi:thermometer',
-        'unit_of_measurement': 'c'
+        'unit_of_measurement': '°C'
     },
     {
         'name': 'electric_range_left',
