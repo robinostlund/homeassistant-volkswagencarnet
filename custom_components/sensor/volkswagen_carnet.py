@@ -14,49 +14,57 @@ SENSORS = [
         'name': 'battery',
         'friendly_name': 'Battery left',
         'icon': 'mdi:battery',
-        'unit_of_measurement': '%'
+        'unit_of_measurement': '%',
+        'hidden': False
     },
     {
         'name': 'charge_max_ampere',
         'friendly_name': 'Charge max ampere',
         'icon': 'mdi:flash',
-        'unit_of_measurement': 'A'
+        'unit_of_measurement': 'A',
+        'hidden': False
     },
     {
         'name': 'external_power_connected',
         'friendly_name': 'External power connected',
         'icon': 'mdi:power-plug',
-        'unit_of_measurement': ''
+        'unit_of_measurement': '',
+        'hidden': False
     },
     {
         'name': 'charging_time_left',
         'friendly_name': 'Charging time left',
         'icon': 'mdi:battery-charging-100',
-        'unit_of_measurement': 'min'
+        'unit_of_measurement': 'min',
+        'hidden': False
     },
     {
         'name': 'climat_target_temperature',
         'friendly_name': 'Climatisation target temperature',
         'icon': 'mdi:thermometer',
-        'unit_of_measurement': '°C'
+        'unit_of_measurement': '°C',
+        'hidden': False
     },
     {
         'name': 'electric_range_left',
         'friendly_name': 'Electric range left',
         'icon': 'mdi:car',
-        'unit_of_measurement': 'km'
+        'unit_of_measurement': 'km',
+        'hidden': False
     },
     {
         'name': 'distance',
         'friendly_name': 'Distance',
         'icon': 'mdi:speedometer',
-        'unit_of_measurement': 'km'
+        'unit_of_measurement': 'km',
+        'hidden': False
     },
     {
         'name': 'last_update',
         'friendly_name': 'Updated',
         'icon': 'mdi:clock',
-        'unit_of_measurement': ''
+        'unit_of_measurement': '',
+        'hidden': False
     }
 ]
 
@@ -89,6 +97,7 @@ class VolkswagenCarnet(Entity):
         self.sensor = sensor
         self.sensor_name = self.sensor.get('name')
         self.sensor_icon = self.sensor.get('icon')
+        self.sensor_hidden = self.sensor.get('hidden')
         self.sensor_unit_of_measurement = self.sensor.get('unit_of_measurement')
         self.vehicle = vehicle
 
@@ -118,6 +127,19 @@ class VolkswagenCarnet(Entity):
     def icon(self):
         """Return the icon."""
         return self.sensor_icon
+
+    @property
+    def hidden(self):
+        """Return True if the entity should be hidden from UIs."""
+        return self.sensor_hidden
+
+    @property
+    def available(self):
+        """Return True if entity is available."""
+        if self._state:
+            return True
+        else:
+            return False
 
     @property
     def device_state_attributes(self):
