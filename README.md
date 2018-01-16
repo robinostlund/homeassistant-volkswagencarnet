@@ -2,12 +2,11 @@ Volkswagen Carnet - An home assistant plugin to add integration with your car
 ============================================================
 Information
 ------------
-**This plugin is still in developing state.**
+This plugin is still in developing state.
 
 Example from Home Assistant
 ------------
-![alt text](https://robinostlund.name/pics/vw-switches.png)
-![alt text](https://robinostlund.name/pics/vw-sensors.png)
+
 
 Installation
 ------------
