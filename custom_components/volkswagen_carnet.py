@@ -566,24 +566,30 @@ class VWCarnet(object):
             return self.vehicles[vehicle]['state_melt']
 
     def _sensor_get_state(self, vehicle, sensor):
+        state = None
         if sensor == 'battery':
-            return self.vehicles[vehicle]['sensor_battery_left']
+            state = self.vehicles[vehicle]['sensor_battery_left']
 
         elif sensor == 'charge_max_ampere':
-            return self.vehicles[vehicle]['sensor_charge_max_ampere']
+            state = self.vehicles[vehicle]['sensor_charge_max_ampere']
 
         elif sensor == 'external_power_connected':
-            return self.vehicles[vehicle]['sensor_external_power_connected']
+            state = self.vehicles[vehicle]['sensor_external_power_connected']
 
         elif sensor == 'charging_time_left':
-            return self.vehicles[vehicle]['sensor_charging_time_left']
+            state = self.vehicles[vehicle]['sensor_charging_time_left']
 
         elif sensor == 'climat_target_temperature':
-            return self.vehicles[vehicle]['sensor_climat_target_temperature']
+            state = self.vehicles[vehicle]['sensor_climat_target_temperature']
 
         elif sensor == 'electric_range_left':
-            return self.vehicles[vehicle]['sensor_electric_range_left']
+            state = self.vehicles[vehicle]['sensor_electric_range_left']
 
         elif sensor == 'distance':
-            return self.vehicles[vehicle]['sensor_distance']
+            state = self.vehicles[vehicle]['sensor_distance']
+
+        if state:
+            return state
+        else:
+            return None
 
