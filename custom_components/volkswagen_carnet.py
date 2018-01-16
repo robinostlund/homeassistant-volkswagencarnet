@@ -467,7 +467,7 @@ class VWCarnet(object):
 
         # set electric range sensor
         try:
-            self.vehicles[vehicle]['sensor_electric_range_left'] = int(data_emanager['EManager']['rbc']['status']['electricRange']) * 10
+            self.vehicles[vehicle]['sensor_electric_range_left'] = int(data_emanager['EManager']['rbc']['status']['electricRange'])
         except:
             _LOGGER.error("Failed to set target electric range sensor for vehicle %s" % (self.vehicles[vehicle].get('vin')))
 
@@ -588,6 +588,11 @@ class VWCarnet(object):
 
         elif sensor == 'distance':
             state = self.vehicles[vehicle]['sensor_distance']
+
+        elif sensor == 'last_update':
+            datetime_object = self.vehicles[vehicle]['last_connected']
+            if datetime_object:
+                state = datetime_object.strftime("%Y-%m-%d %H:%M:%S")
 
         if state:
             return state

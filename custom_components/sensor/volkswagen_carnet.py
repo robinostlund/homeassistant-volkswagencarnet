@@ -19,25 +19,25 @@ SENSORS = [
     {
         'name': 'charge_max_ampere',
         'friendly_name': 'Charge max ampere',
-        'icon': 'mdi:car',
+        'icon': 'mdi:flash',
         'unit_of_measurement': 'a'
     },
     {
         'name': 'external_power_connected',
-        'friendly_name': 'Excternal power connected',
-        'icon': 'mdi:car',
+        'friendly_name': 'External power connected',
+        'icon': 'mdi:power-plug',
         'unit_of_measurement': ''
     },
     {
         'name': 'charging_time_left',
         'friendly_name': 'Charging time left',
-        'icon': 'mdi:car',
-        'unit_of_measurement': 's'
+        'icon': 'mdi:battery-charging-100',
+        'unit_of_measurement': 'seconds'
     },
     {
         'name': 'climat_target_temperature',
         'friendly_name': 'Climatisation target temperature',
-        'icon': 'mdi:car',
+        'icon': 'mdi:thermometer',
         'unit_of_measurement': 'c'
     },
     {
@@ -51,6 +51,12 @@ SENSORS = [
         'friendly_name': 'Distance',
         'icon': 'mdi:speedometer',
         'unit_of_measurement': 'km'
+    },
+    {
+        'name': 'last_update',
+        'friendly_name': 'Updated',
+        'icon': 'mdi:clock',
+        'unit_of_measurement': ''
     }
 ]
 
