@@ -6,7 +6,8 @@ This plugin is still in developing state.
 
 Example from Home Assistant
 ------------
-
+![alt text](https://robinostlund.name/pics/vw-switches.png)
+![alt text](https://robinostlund.name/pics/vw-sensors.png)
 
 Installation
 ------------
