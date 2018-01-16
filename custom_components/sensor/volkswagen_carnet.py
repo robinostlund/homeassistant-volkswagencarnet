@@ -65,7 +65,14 @@ SENSORS = [
         'icon': 'mdi:clock',
         'unit_of_measurement': '',
         'hidden': False
-    }
+    },
+    {
+        'name': 'locked',
+        'friendly_name': 'Locked',
+        'icon': 'mdi:lock',
+        'unit_of_measurement': '',
+        'hidden': False
+    },
 ]
 
 _LOGGER = logging.getLogger(__name__)

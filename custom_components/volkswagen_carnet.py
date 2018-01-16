@@ -128,6 +128,7 @@ class VWCarnet(object):
             'sensor_electric_range_left': False,
             'sensor_next_service_inspection': False,
             'sensor_distance': False,
+            'sensor_door_locked': False,
         }
         return vehicle_template
 
@@ -422,6 +423,7 @@ class VWCarnet(object):
             data_emanager = json.loads(self._carnet_post_vehicle(vehicle, '/-/emanager/get-emanager'))
             data_location = json.loads(self._carnet_post_vehicle(vehicle, '/-/cf/get-location'))
             data_details = json.loads(self._carnet_post_vehicle(vehicle,'/-/vehicle-info/get-vehicle-details'))
+            data_car = json.loads(self._carnet_post_vehicle(vehicle, '/-/vsr/get-vsr'))
             _LOGGER.debug("Status updated for vehicle %s" % (self.vehicles[vehicle].get('vin')))
 
         except HTTPError as e:
@@ -499,6 +501,21 @@ class VWCarnet(object):
         except:
             _LOGGER.debug("Failed to set distance sensor for vehicle %s" % (self.vehicles[vehicle].get('vin')))
 
+        # set door locked sensor
+        try:
+            vehicle_locked = True
+            lock_data = data_car['vehicleStatusData']['lockData']
+            for lock in lock_data:
+                if lock_data[lock] != 2:
+                    vehicle_locked = False
+
+            if vehicle_locked:
+                self.vehicles[vehicle]['sensor_door_locked'] = 'yes'
+            else:
+                self.vehicles[vehicle]['sensor_door_locked'] = 'no'
+        except:
+            _LOGGER.debug("Failed to set door locked sensor for vehicle %s" % (self.vehicles[vehicle].get('vin')))
+
         # set climate state
         try:
             if data_emanager['EManager']['rpc']['status']['climatisationState'] == 'OFF':
@@ -525,6 +542,8 @@ class VWCarnet(object):
                 self._set_state('charge', vehicle, True)
         except:
             _LOGGER.debug("Failed to set charging state for vehicle %s" % (self.vehicles[vehicle].get('vin')))
+
+
 
         _LOGGER.debug("Status updated for vehicle %s" % (self.vehicles[vehicle].get('vin')))
         _LOGGER.debug("Vehicle data: %s" % (self.vehicles[vehicle]))
@@ -594,6 +613,9 @@ class VWCarnet(object):
             datetime_object = self.vehicles[vehicle]['last_connected']
             if datetime_object:
                 state = datetime_object.strftime("%Y-%m-%d %H:%M:%S")
+
+        elif sensor == 'locked':
+            state = self.vehicles[vehicle]['sensor_door_locked']
 
         if state:
             return state
