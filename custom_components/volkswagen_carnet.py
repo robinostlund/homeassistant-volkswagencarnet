@@ -29,7 +29,7 @@ REQUIREMENTS = ['requests']
 CONF_UPDATE_INTERVAL = 'update_interval'
 
 MIN_UPDATE_INTERVAL = timedelta(minutes=1)
-DEFAULT_UPDATE_INTERVAL = timedelta(minutes=1)
+DEFAULT_UPDATE_INTERVAL = timedelta(minutes=5)
 SIGNAL_VEHICLE_SEEN = '{}.vehicle_seen'.format(DOMAIN)
 
 CONFIG_SCHEMA = vol.Schema({
@@ -561,8 +561,7 @@ class VWCarnet(object):
 
 
 
-        _LOGGER.debug("Status updated for vehicle %s" % (self.vehicles[vehicle].get('vin')))
-        _LOGGER.debug("Vehicle data: %s" % (self.vehicles[vehicle]))
+        _LOGGER.debug("New vehicle data: %s" % (self.vehicles[vehicle]))
         return True
 
 

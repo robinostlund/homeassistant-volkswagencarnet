@@ -27,6 +27,7 @@ Start the Home Assistant service with the configuration below, check "states" in
 volkswagen_carnet:
     username: <username to volkswagen carnet>
     password: <password to volkswagen carnet>
+    update_interval: 1 # specify in minutes how often to fetch status data from carnet (optional, default 5 min)
 
 ```
 
@@ -49,12 +50,12 @@ volkswagenswitches:
         - switch.vw_carid_charge
         - switch.vw_carid_climat
         - switch.vw_carid_melt
-        - device_tracker.vw_carid
   
 volkswagensensors:
-    name: Volkswagen Sensors
+    name: Volkswagen Information
     control: hidden
     entities:
+        - device_tracker.vw_carid
         - sensor.vw_carid_battery
         - sensor.vw_carid_charge_max_ampere
         - sensor.vw_carid_charging_time_left
