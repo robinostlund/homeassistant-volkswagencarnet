@@ -448,12 +448,14 @@ class VWCarnet(object):
             else:
                 self.vehicles[vehicle]['sensor_external_power_connected'] = 'yes'
         except:
+            self.vehicles[vehicle]['sensor_external_power_connected'] = False
             _LOGGER.debug("Failed to set powersupply status for vehicle %s" % (self.vehicles[vehicle].get('vin')))
 
         # set battery sensor
         try:
             self.vehicles[vehicle]['sensor_battery_left'] = int(data_emanager['EManager']['rbc']['status']['batteryPercentage'])
         except:
+            self.vehicles[vehicle]['sensor_battery_left'] = False
             _LOGGER.debug("Failed to set battery sensor for vehicle %s" % (self.vehicles[vehicle].get('vin')))
 
         # set charger max ampere sensor
@@ -472,6 +474,7 @@ class VWCarnet(object):
         try:
             self.vehicles[vehicle]['sensor_electric_range_left'] = int(data_emanager['EManager']['rbc']['status']['electricRange'])
         except:
+            self.vehicles[vehicle]['sensor_electric_range_left'] = False
             _LOGGER.debug("Failed to set target electric range sensor for vehicle %s" % (self.vehicles[vehicle].get('vin')))
 
         # set charging time left sensor
@@ -480,6 +483,7 @@ class VWCarnet(object):
             charging_time_left += int(data_emanager['EManager']['rbc']['status']['chargingRemaningMinute']) * 60
             self.vehicles[vehicle]['sensor_charging_time_left'] = charging_time_left
         except:
+            self.vehicles[vehicle]['sensor_charging_time_left'] = False
             _LOGGER.debug("Failed to set charging time sensor for vehicle %s" % (self.vehicles[vehicle].get('vin')))
 
         # set next service inspection sensor
@@ -515,6 +519,7 @@ class VWCarnet(object):
             else:
                 self.vehicles[vehicle]['sensor_door_locked'] = 'no'
         except:
+            self.vehicles[vehicle]['sensor_door_locked'] = False
             _LOGGER.debug("Failed to set door locked sensor for vehicle %s" % (self.vehicles[vehicle].get('vin')))
 
         # set parking lights sensor
@@ -524,6 +529,7 @@ class VWCarnet(object):
             else:
                 self.vehicles[vehicle]['sensor_parking_lights'] = 'on'
         except:
+            self.vehicles[vehicle]['sensor_parking_lights'] = False
             _LOGGER.debug("Failed to set parking lights sensor for vehicle %s" % (self.vehicles[vehicle].get('vin')))
 
         # set climate state
