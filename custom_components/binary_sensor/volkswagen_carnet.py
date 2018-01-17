@@ -67,7 +67,11 @@ class VolkswagenCarnetSensor(VolkswagenCarnetEntity, BinarySensorDevice):
         if self._sensor_name == 'external_power_connected':
             return self._get_vehicle_data['sensor_external_power_connected']
         elif self._sensor_name == 'door_locked':
-            return self._get_vehicle_data['sensor_door_locked']
+            # class door sees true as open
+            if self._get_vehicle_data['sensor_door_locked']:
+                return False
+            else:
+                return True
         elif self._sensor_name == 'parking_lights':
             return self._get_vehicle_data['sensor_parking_lights']
         else:
