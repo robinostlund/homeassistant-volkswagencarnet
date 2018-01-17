@@ -60,7 +60,7 @@ SENSORS = [
         'hidden': False
     },
     {
-        'name': 'last_update',
+        'name': 'last_connected',
         'friendly_name': 'Last connected',
         'icon': 'mdi:clock',
         'unit_of_measurement': '',
@@ -177,8 +177,10 @@ class VolkswagenCarnet(Entity):
     @property
     def _last_updated(self):
         """Return the last update of a device."""
-        datetime_object = self.vw.vehicles[self.vehicle].get('last_connected')
-        if datetime_object:
-            return datetime_object.strftime("%Y-%m-%d %H:%M:%S")
+        #datetime_object = self.vw.vehicles[self.vehicle].get('last_updated')
+        last_updated = self.vw.vehicles[self.vehicle].get('last_updated')
+        if last_updated:
+            #return datetime_object.strftime("%Y-%m-%d %H:%M:%S")
+            return last_updated
         else:
             return None

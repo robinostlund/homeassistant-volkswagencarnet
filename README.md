@@ -58,7 +58,7 @@ volkswagensensors:
         - sensor.vw_carid_distance
         - sensor.vw_carid_electric_range_left
         - sensor.vw_carid_external_power_connected
-        - sensor.vw_carid_last_update
+        - sensor.vw_carid_last_connected
         - sensor.vw_carid_locked
         - sensor.vw_carid_parking_lights
         - sensor.vw_carid_next_service_inspection
@@ -96,8 +96,8 @@ sensor.vw_carid_electric_range_left:
     friendly_name: VW Car Electric Range Left
 sensor.vw_carid_external_power_connected:
     friendly_name: VW Car External Power Connected
-sensor.vw_carid_last_update:
-    friendly_name: VW Car Last Updated
+sensor.vw_carid_last_connected:
+    friendly_name: VW Car Last Connected
 sensor.vw_carid_locked:
     friendly_name: VW Car Locked
 sensor.vw_carid_parking_lights:
