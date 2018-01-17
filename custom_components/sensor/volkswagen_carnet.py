@@ -61,7 +61,7 @@ SENSORS = [
     },
     {
         'name': 'last_update',
-        'friendly_name': 'Updated',
+        'friendly_name': 'Last connected',
         'icon': 'mdi:clock',
         'unit_of_measurement': '',
         'hidden': False

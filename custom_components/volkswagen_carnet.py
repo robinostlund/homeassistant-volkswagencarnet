@@ -61,22 +61,20 @@ def setup(hass, config):
     for component in ['switch', 'device_tracker', 'sensor']:
         discovery.load_platform(hass, component, DOMAIN, {}, config)
 
-    #def update_vehicle(vehicle):
-    #    """Revieve updated information on vehicle."""
-    #
-    #    dispatcher_send(hass, SIGNAL_VEHICLE_SEEN, vehicle)
-
     def update(now):
         """Update status from the online service."""
         try:
-            for vehicle in vw.vehicles:
-                if not vw._carnet_update_vehicle_status(vehicle, force_update=True):
-                    _LOGGER.warning("Could not update vehicle %s" % (vehicle))
-                    return False
+            if vw._carnet_login():
+                for vehicle in vw.vehicles:
+                    if not vw._carnet_update_vehicle_status(vehicle, force_update=True):
+                        _LOGGER.warning("Could not update vehicle %s" % (vehicle))
+                        return False
 
-                #update_vehicle(vehicle)
-
-            return True
+                vw._carnet_logout()
+                return True
+            else:
+                _LOGGER.error("Failed to login to Volkswagen Carnet")
+                return False
         finally:
             track_point_in_utc_time(hass, update, utcnow() + interval)
 
@@ -94,6 +92,7 @@ class VWCarnet(object):
         # Fake the VW CarNet mobile app headers
         self.headers = { 'Accept': 'application/json, text/plain, */*', 'Content-Type': 'application/json;charset=UTF-8', 'User-Agent': 'Mozilla/5.0 (Linux; Android 6.0.1; D5803 Build/23.5.A.1.291; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/63.0.3239.111 Mobile Safari/537.36' }
         self.base = "https://www.volkswagen-car-net.com"
+        #self.session = None
         self.session = requests.Session()
         self.update_timeout_counter = 80 # seconds
 
@@ -129,12 +128,18 @@ class VWCarnet(object):
             'sensor_distance': False,
             'sensor_door_locked': False,
             'sensor_parking_lights': False,
+            'sensor_climat_without_hw_power': False,
+            'sensor_climat_time_left': False,
         }
         return vehicle_template
 
-    def _carnet_login(self):
+    def _carnet_login(self, force_new_login = False):
         # login to carnet
         try:
+            #if self.carnet_logged_in == False:
+            # create new session
+            self.session = requests.Session()
+
             _LOGGER.debug("Trying to login to Volkswagen Carnet")
             AUTHHEADERS = {
                 'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8',
@@ -259,6 +264,12 @@ class VWCarnet(object):
             _LOGGER.error("Unable to login to Volkswagen CarNet")
             _LOGGER.debug("Error msg: %s" % (e))
             return False
+
+    def _carnet_logout(self):
+        self._carnet_post('/-/logout/revoke')
+        self.session = None
+        self.carnet_logged_in = False
+        _LOGGER.debug("Logging out from Volkswagen Carnet")
 
     def _carnet_get_owners_verification(self):
         if not self.carnet_logged_in:
@@ -404,18 +415,31 @@ class VWCarnet(object):
 
         try:
             # request car update
-            self._carnet_post_vehicle(vehicle, '/-/vsr/request-vsr')
+            request_update = self._carnet_post_vehicle(vehicle, '/-/vsr/request-vsr')
 
-            request_status = json.loads(self._carnet_post_vehicle(vehicle, '/-/vsr/get-vsr'))
             # wait for update to be completed:
             #timeout_counter = 0
             #if force_update:
-            #    while request_status['vehicleStatusData']['requestStatus'] == 'REQUEST_IN_PROGRESS':
-            #        request_status = json.loads(self._carnet_post_vehicle(vehicle, '/-/vsr/get-vsr'))
+            #    while True:
             #        timeout_counter += 1
             #        time.sleep(1)
+
             #        if timeout_counter > self.update_timeout_counter:
-            #            raise HTTPError(code = '408', msg = 'Request to Volkswagen Carnet timeout.', hdrs = '', fp = None, url = None)
+            #            _LOGGER.debug("Failed to fetch latest status for vehicle %s, request timed out." % (self.vehicles[vehicle].get('vin')))
+            #            break
+
+            #        #datetime_object = datetime.strptime(last_connected, '%d.%m.%Y %H:%M')
+            #        self.vehicles[vehicle]['last_updated'] = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+            #        request_status = json.loads(self._carnet_post_vehicle(vehicle, '/-/vsr/get-vsr'))['vehicleStatusData']['requestStatus']
+            #        messages = json.loads(self._carnet_post_vehicle(vehicle, '/-/msgc/get-new-messages'))
+            #        if request_status == 'REQUEST_IN_PROGRESS':
+            #            continue
+            #        elif request_status == 'ERROR':
+            #            _LOGGER.debug("Failed to fetch latest status for vehicle %s" % (self.vehicles[vehicle].get('vin')))
+            #            break
+
+                        #raise HTTPError(code = '408', msg = 'Request to Volkswagen Carnet timeout.', hdrs = '', fp = None, url = None)
+
 
             # get data from carnet
             data_emanager = json.loads(self._carnet_post_vehicle(vehicle, '/-/emanager/get-emanager'))
@@ -466,6 +490,22 @@ class VWCarnet(object):
             self.vehicles[vehicle]['sensor_climat_target_temperature'] = int(data_emanager['EManager']['rpc']['settings']['targetTemperature'])
         except:
             _LOGGER.debug("Failed to set target temperature sensor for vehicle %s" % (self.vehicles[vehicle].get('vin')))
+
+        # set climat without external power sensor
+        try:
+            if data_emanager['EManager']['rpc']['settings']['climatisationWithoutHVPower']:
+                self.vehicles[vehicle]['sensor_climat_without_hw_power'] = 'yes'
+            else:
+                self.vehicles[vehicle]['sensor_climat_without_hw_power'] = 'no'
+        except:
+            _LOGGER.debug("Failed to set climat without hw power sensor for vehicle %s" % (self.vehicles[vehicle].get('vin')))
+
+        # set climat time left sensor
+        try:
+            self.vehicles[vehicle]['sensor_climat_time_left'] = int(data_emanager['EManager']['rpc']['status']['climatisationRemaningTime'])
+        except:
+            self.vehicles[vehicle]['sensor_climat_time_left'] = False
+            _LOGGER.debug("Failed to set climat time left sensor for vehicle %s" % (self.vehicles[vehicle].get('vin')))
 
         # set electric range sensor
         try:
