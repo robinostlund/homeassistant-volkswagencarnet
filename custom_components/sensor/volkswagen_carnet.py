@@ -115,7 +115,6 @@ class VolkswagenCarnet(Entity):
         """Initialize the sensor."""
         self.vw = hass.data[CARNET_DATA]
         self.hass = hass
-        self._state = None
         self.sensor = sensor
         self.sensor_name = self.sensor.get('name')
         self.sensor_icon = self.sensor.get('icon')
@@ -123,6 +122,8 @@ class VolkswagenCarnet(Entity):
         self.sensor_unit_of_measurement = self.sensor.get('unit_of_measurement')
         self.vehicle = vehicle
 
+        # self._state = None
+        self._state = self.vw._sensor_get_state(self.vehicle, self.sensor_name)
 
 
     @property
@@ -141,10 +142,7 @@ class VolkswagenCarnet(Entity):
         return self.sensor_unit_of_measurement
 
     def update(self):
-        """Fetch new state data for the sensor.
-
-        This is the only method that should fetch new data for Home Assistant.
-        """
+        """Fetch new state data for the sensor."""
         _LOGGER.debug("Updating %s sensor for vehicle: %s", self.sensor_name, self.vehicle)
         self._state = self.vw._sensor_get_state(self.vehicle, self.sensor_name)
 

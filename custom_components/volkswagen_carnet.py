@@ -18,7 +18,6 @@ from homeassistant.const import (CONF_USERNAME, CONF_PASSWORD)
 from homeassistant.helpers import discovery
 from homeassistant.helpers.event import track_point_in_utc_time
 from homeassistant.util.dt import utcnow
-from homeassistant.helpers.dispatcher import dispatcher_send
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -28,7 +27,7 @@ REQUIREMENTS = ['requests']
 CONF_UPDATE_INTERVAL = 'update_interval'
 
 MIN_UPDATE_INTERVAL = timedelta(minutes=1)
-DEFAULT_UPDATE_INTERVAL = timedelta(minutes=1)
+DEFAULT_UPDATE_INTERVAL = timedelta(minutes=5)
 #SIGNAL_VEHICLE_SEEN = '{}.vehicle_seen'.format(DOMAIN)
 
 CONFIG_SCHEMA = vol.Schema({
@@ -53,31 +52,38 @@ def setup(hass, config):
     hass.data[CARNET_DATA] = VWCarnet(hass, username, password)
     vw = hass.data[CARNET_DATA]
 
+    def update_vehicle(login_session, vehicle):
+        """Update vehicle status from Volkswagen Carnet"""
+        if not vw._carnet_update_vehicle_status(login_session, vehicle):
+            _LOGGER.warning("Could not update vehicle %s" % (vehicle))
+            return False
+        else:
+            return True
 
-    # Try to login to carnet to verify if credentials works
-    login_session = vw._carnet_get_login_session()
-    if not login_session:
-        _LOGGER.error("Failed to login to Volkswagen Carnet")
-        return False
-    else:
+    def fetch_vehicles(login_session):
+        """Fetch vehicles from Volkswagen Carnet"""
         vw._carnet_get_vehicles(login_session)
-        vw._carnet_logout_session(login_session)
-        del(login_session)
 
-
-    for component in ['switch', 'device_tracker', 'sensor']:
-        discovery.load_platform(hass, component, DOMAIN, {}, config)
+        if vw.vehicles:
+            for component in ['switch', 'device_tracker', 'sensor']:
+                discovery.load_platform(hass, component, DOMAIN, vw.vehicles, config)
 
     def update(now):
-        """Update status from the online service."""
+        """Update status from Volkswagen Carnet"""
         try:
-            for vehicle in vw.vehicles:
-                login_session = vw._carnet_get_login_session()
-                if not vw._carnet_update_vehicle_status(login_session, vehicle):
-                    _LOGGER.warning("Could not update vehicle %s" % (vehicle))
-                    return False
-                vw._carnet_logout_session(login_session)
-                del(login_session)
+            login_session = vw._carnet_get_login_session()
+            if not login_session:
+                _LOGGER.error("Failed to login to Volkswagen Carnet")
+                return False
+
+            if not vw.vehicles:
+                fetch_vehicles(login_session)
+            else:
+                for vehicle in vw.vehicles:
+                    update_vehicle(login_session, vehicle)
+
+            vw._carnet_logout_session(login_session)
+            del(login_session)
             return True
 
         finally:
@@ -380,6 +386,10 @@ class VWCarnet(object):
             self.carnet_updates_in_progress = False
             self.carnet_logged_in = False
             return False
+
+        # fetch vehicle status
+        for vehicle in self.vehicles:
+            self._carnet_update_vehicle_status(session, vehicle)
 
     def _carnet_update_vehicle_status(self, session, vehicle):
         _LOGGER.debug("Trying to update status for vehicle %s" % (self.vehicles[vehicle].get('vin')))
