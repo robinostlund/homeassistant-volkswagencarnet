@@ -1,19 +1,15 @@
 import re
 import requests
-import json
 import time
 import logging
-
-from datetime import timedelta, datetime
 
 
 import voluptuous as vol
 import homeassistant.helpers.config_validation as cv
 
-
-from urllib.parse import urlsplit,urlsplit
+from datetime import timedelta, datetime
+from urllib.parse import urlsplit
 from urllib.error import HTTPError
-
 from homeassistant.const import (CONF_USERNAME, CONF_PASSWORD)
 from homeassistant.helpers import discovery
 from homeassistant.helpers.event import track_point_in_utc_time
@@ -27,8 +23,7 @@ REQUIREMENTS = ['requests']
 CONF_UPDATE_INTERVAL = 'update_interval'
 
 MIN_UPDATE_INTERVAL = timedelta(minutes=1)
-DEFAULT_UPDATE_INTERVAL = timedelta(minutes=5)
-#SIGNAL_VEHICLE_SEEN = '{}.vehicle_seen'.format(DOMAIN)
+DEFAULT_UPDATE_INTERVAL = timedelta(minutes=3)
 
 CONFIG_SCHEMA = vol.Schema({
     DOMAIN: vol.Schema({
@@ -80,7 +75,8 @@ def setup(hass, config):
                 fetch_vehicles(login_session)
             else:
                 for vehicle in vw.vehicles:
-                    update_vehicle(login_session, vehicle)
+                    if not update_vehicle(login_session, vehicle):
+                        return False
 
             vw._carnet_logout_session(login_session)
             del(login_session)
@@ -182,7 +178,7 @@ class VWCarnet(object):
             r = login_session['session'].post(login_session['base'] + '/portal/web/guest/home/-/csrftokenhandling/get-login-url', headers = login_session['auth_headers'])
             if r.status_code != 200:
                 return ""
-            responseData = json.loads(r.content)
+            responseData = r.json()
             lg_url = responseData.get("loginURL").get("path")
 
             # no redirect so we can get values we look for
@@ -270,21 +266,22 @@ class VWCarnet(object):
 
     def _carnet_post_session(self, session, command):
         req = session['session'].post(session['url'] + command, headers = session['headers'])
-        return req.content
+        return req.json()
+        #return req.content
 
     def _carnet_post_action_session(self, session, command, data):
         req = session['session'].post(session['url'] + command, json = data, headers = session['headers'])
-        return req.content
+        return req.json()
+        #return req.content
 
     def _carnet_get_owners_verification(self, session):
         url = session['base'] + '/portal/group/se/edit-profile/-/profile/get-vehicles-owners-verification'
         req = session['session'].post(url, headers = session['headers'])
-        return json.loads(req.content)
-
+        return req.json()
 
     def _carnet_post_vehicle(self, session, vehicle, command):
         req = session['session'].post(session['base'] + self.vehicles[vehicle].get('dashboard_url') + command, headers = session['headers'])
-        return req.content
+        return req.json()
 
     def _carnet_post_action_vehicle(self, vehicle, command, data):
         # create login session for each action
@@ -295,7 +292,7 @@ class VWCarnet(object):
         req = login_session['session'].post(login_session['base'] + self.vehicles[vehicle].get('dashboard_url') + command, json=data, headers = login_session['headers'])
         self._carnet_logout_session(login_session)
         del(login_session)
-        return req.content
+        return req.json()
 
     def _carnet_start_charge(self, vehicle):
         _LOGGER.debug("Trying to start charging")
@@ -304,7 +301,7 @@ class VWCarnet(object):
             'triggerAction': True,
             'batteryPercent': '100'
         }
-        return json.loads(self._carnet_post_action_vehicle(vehicle, '/-/emanager/charge-battery', post_data))
+        return self._carnet_post_action_vehicle(vehicle, '/-/emanager/charge-battery', post_data)
 
     def _carnet_stop_charge(self, vehicle):
         _LOGGER.debug("Trying to stop charging")
@@ -313,7 +310,7 @@ class VWCarnet(object):
             'triggerAction': False,
             'batteryPercent': '99'
         }
-        return json.loads(self._carnet_post_action_vehicle(vehicle, '/-/emanager/charge-battery', post_data))
+        return self._carnet_post_action_vehicle(vehicle, '/-/emanager/charge-battery', post_data)
 
 
     def _carnet_start_climat(self, vehicle):
@@ -323,7 +320,7 @@ class VWCarnet(object):
             'triggerAction': True,
             'electricClima': True
         }
-        return json.loads(self._carnet_post_action_vehicle(vehicle, '/-/emanager/trigger-climatisation', post_data))
+        return self._carnet_post_action_vehicle(vehicle, '/-/emanager/trigger-climatisation', post_data)
 
 
     def _carnet_stop_climat(self, vehicle):
@@ -333,7 +330,7 @@ class VWCarnet(object):
             'triggerAction': False,
             'electricClima': True
         }
-        return json.loads(self._carnet_post_action_vehicle(vehicle, '/-/emanager/trigger-climatisation', post_data))
+        return self._carnet_post_action_vehicle(vehicle, '/-/emanager/trigger-climatisation', post_data)
 
     def _carnet_start_window_melt(self, vehicle):
         _LOGGER.debug("Trying to start window melt")
@@ -341,7 +338,7 @@ class VWCarnet(object):
         post_data = {
             'triggerAction': True
         }
-        return json.loads(self._carnet_post_action_vehicle(vehicle, '/-/emanager/trigger-windowheating', post_data))
+        return self._carnet_post_action_vehicle(vehicle, '/-/emanager/trigger-windowheating', post_data)
 
     def _carnet_stop_window_melt(self, vehicle):
         _LOGGER.debug("Trying to stop window melt")
@@ -349,7 +346,7 @@ class VWCarnet(object):
         post_data = {
             'triggerAction': False
         }
-        return json.loads(self._carnet_post_action_vehicle(vehicle, '/-/emanager/trigger-windowheating', post_data))
+        return self._carnet_post_action_vehicle(vehicle, '/-/emanager/trigger-windowheating', post_data)
 
     def _carnet_get_vehicles(self, session):
         _LOGGER.debug('Fetching vehicles from Volkswagen Carnet')
@@ -361,7 +358,7 @@ class VWCarnet(object):
                 _LOGGER.debug('Adding vehicle: %s' % (vehicle.get('vin')))
 
             # add extra information
-            non_loaded_cars = json.loads(self._carnet_post_session(session, '/-/mainnavigation/get-fully-loaded-cars'))
+            non_loaded_cars = self._carnet_post_session(session, '/-/mainnavigation/get-fully-loaded-cars')
             for vehicle in non_loaded_cars['fullyLoadedVehiclesResponse']['completeVehicles']:
                 if vehicle.get('vin') in self.vehicles:
                     self.vehicles[vehicle.get('vin')]['dashboard_url'] = vehicle.get('dashboardUrl')
@@ -411,7 +408,7 @@ class VWCarnet(object):
                         _LOGGER.debug("Failed to fetch latest status from vehicle %s, request timed out." % (self.vehicles[vehicle].get('vin')))
                         break
 
-                    request_status = json.loads(self._carnet_post_vehicle(session,vehicle, '/-/vsr/get-vsr'))['vehicleStatusData']['requestStatus']
+                    request_status = self._carnet_post_vehicle(session,vehicle, '/-/vsr/get-vsr')['vehicleStatusData']['requestStatus']
                     if request_status == 'REQUEST_IN_PROGRESS':
                         if not msg_waiting_request:
                             _LOGGER.debug("Waiting for update request from vehicle %s" % (self.vehicles[vehicle].get('vin')))
@@ -426,10 +423,10 @@ class VWCarnet(object):
                 self.vehicles[vehicle]['initialized'] = True
 
             # get data from carnet
-            data_emanager = json.loads(self._carnet_post_vehicle(session, vehicle, '/-/emanager/get-emanager'))
-            data_location = json.loads(self._carnet_post_vehicle(session, vehicle, '/-/cf/get-location'))
-            data_details = json.loads(self._carnet_post_vehicle(session, vehicle,'/-/vehicle-info/get-vehicle-details'))
-            data_car = json.loads(self._carnet_post_vehicle(session, vehicle, '/-/vsr/get-vsr'))
+            data_emanager = self._carnet_post_vehicle(session, vehicle, '/-/emanager/get-emanager')
+            data_location = self._carnet_post_vehicle(session, vehicle, '/-/cf/get-location')
+            data_details = self._carnet_post_vehicle(session, vehicle,'/-/vehicle-info/get-vehicle-details')
+            data_car = self._carnet_post_vehicle(session, vehicle, '/-/vsr/get-vsr')
             _LOGGER.debug("Status updated for vehicle %s" % (self.vehicles[vehicle].get('vin')))
 
         except HTTPError as e:

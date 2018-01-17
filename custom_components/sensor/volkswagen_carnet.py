@@ -3,11 +3,9 @@ Support for Volkswagen Carnet.
 """
 from homeassistant.helpers.entity import Entity
 from custom_components.volkswagen_carnet import CARNET_DATA
-from datetime import datetime
 
 import logging
 from datetime import timedelta
-from math import floor
 
 SENSORS = [
     {
