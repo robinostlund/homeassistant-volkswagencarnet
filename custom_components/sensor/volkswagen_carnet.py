@@ -121,3 +121,4 @@ class VolkswagenCarnetSensor(VolkswagenCarnetEntity):
         _LOGGER.debug("Updating %s sensor for vehicle: %s", self._sensor_name, self.vehicle)
         return self._state
 
+

@@ -53,5 +53,5 @@ class VolkswagenDeviceTracker(object):
                 self.see(
                     dev_id=dev_id, host_name=name,
                     gps=(lat, lon), attributes=attrs,
-                    icon='mdi:car'
+                    icon='mdi:car', battery=vehicle_data['sensor_battery_left']
                 )

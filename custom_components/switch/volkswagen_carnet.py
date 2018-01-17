@@ -9,18 +9,16 @@ from custom_components.volkswagen_carnet import CARNET_DATA
 SWITCHES = [
     {
         'name': 'climat',
-        'friendly_name': 'Climat',
-        'icon': 'mdi:radiator'
+        'icon': 'mdi:radiator',
     },
     {
         'name': 'charge',
-        'friendly_name': 'Charge',
-        'icon': 'mdi:battery-charging'
+        'icon': 'mdi:battery-charging',
     },
     {
         'name': 'melt',
-        'friendly_name': 'Window melt',
-        'icon': 'mdi:car-wash'
+        'icon': 'mdi:car-wash',
+
     }
 ]
 
@@ -47,10 +45,23 @@ class VolkswagenCarnetSwitch(ToggleEntity):
         self.hass = hass
         self.vehicle = vehicle
         self.switch = switch
-        self.switch_name = self.switch.get('name')
-        self.switch_friendly_name = self.switch.get('friendly_name')
-        self.switch_icon = self.switch.get('icon')
         self._state = STATE_OFF
+
+    @property
+    def _attr(self):
+        return self.switch.get('attr')
+
+    @property
+    def _vehicle_name(self):
+        return self.vehicle
+
+    @property
+    def _switch_name(self):
+        return self.switch.get('name')
+
+    @property
+    def _name(self):
+        return 'vw_%s_%s' % (self._vehicle_name, self._switch_name)
 
     @property
     def should_poll(self):
@@ -60,7 +71,7 @@ class VolkswagenCarnetSwitch(ToggleEntity):
     @property
     def name(self):
         """Return the name of the switch."""
-        return 'vw_%s_%s' % (self.vehicle, self.switch_name)
+        return self._name
 
     @property
     def available(self):
@@ -70,22 +81,23 @@ class VolkswagenCarnetSwitch(ToggleEntity):
     @property
     def icon(self):
         """Return the icon."""
-        return self.switch_icon
+        return self.switch.get('icon')
 
     @property
     def is_on(self):
         """Return true if switch is on."""
         return self._state == STATE_ON
 
+
     def turn_on(self, **kwargs):
         """Turn the switch on."""
-        self.vw._switch_update_state(self.vehicle, self.switch_name, True)
+        self.vw._switch_update_state(self._vehicle_name, self._switch_name, True)
 
 
     def turn_off(self, **kwargs):
         """Turn the switch off."""
-        self.vw._switch_update_state(self.vehicle, self.switch_name, False)
+        self.vw._switch_update_state(self._vehicle_name, self._switch_name, False)
 
     def update(self):
         """Update the states of Volkswagen Carnet switches."""
-        self._state = STATE_ON if self.vw._switch_get_state(self.vehicle, self.switch_name) else STATE_OFF
+        self._state = STATE_ON if self.vw._switch_get_state(self._vehicle_name, self._switch_name) else STATE_OFF

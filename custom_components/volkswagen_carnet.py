@@ -721,14 +721,4 @@ class VolkswagenCarnetEntity(Entity):
             attrs['battery_icon'] = 'mdi:battery'
         return attrs
 
-    @property
-    def should_poll(self):
-        """Return the polling state."""
-        return False
-
-    @property
-    def assumed_state(self):
-        """Return true if unable to access real state of entity."""
-        return True
-
 
