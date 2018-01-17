@@ -295,7 +295,6 @@ class VWCarnet(object):
         return req.json()
 
     def _carnet_start_charge(self, vehicle):
-        _LOGGER.debug("Trying to start charging")
         self._set_state('charge', vehicle, True)
         post_data = {
             'triggerAction': True,
@@ -304,7 +303,6 @@ class VWCarnet(object):
         return self._carnet_post_action_vehicle(vehicle, '/-/emanager/charge-battery', post_data)
 
     def _carnet_stop_charge(self, vehicle):
-        _LOGGER.debug("Trying to stop charging")
         self._set_state('charge', vehicle, False)
         post_data = {
             'triggerAction': False,
@@ -314,7 +312,6 @@ class VWCarnet(object):
 
 
     def _carnet_start_climat(self, vehicle):
-        _LOGGER.debug("Trying to start climat")
         self._set_state('climat', vehicle, True)
         post_data = {
             'triggerAction': True,
@@ -324,7 +321,6 @@ class VWCarnet(object):
 
 
     def _carnet_stop_climat(self, vehicle):
-        _LOGGER.debug("Trying to stop climat")
         self._set_state('climat', vehicle, False)
         post_data = {
             'triggerAction': False,
@@ -333,7 +329,6 @@ class VWCarnet(object):
         return self._carnet_post_action_vehicle(vehicle, '/-/emanager/trigger-climatisation', post_data)
 
     def _carnet_start_window_melt(self, vehicle):
-        _LOGGER.debug("Trying to start window melt")
         self._set_state('melt', vehicle, True)
         post_data = {
             'triggerAction': True
@@ -341,7 +336,6 @@ class VWCarnet(object):
         return self._carnet_post_action_vehicle(vehicle, '/-/emanager/trigger-windowheating', post_data)
 
     def _carnet_stop_window_melt(self, vehicle):
-        _LOGGER.debug("Trying to stop window melt")
         self._set_state('melt', vehicle, False)
         post_data = {
             'triggerAction': False
@@ -596,18 +590,24 @@ class VWCarnet(object):
     def _switch_update_state(self, vehicle, switch, state = False):
         if switch == 'climat':
             if state:
+                _LOGGER.debug("Starting climatisation on vehicle %s" % (self.vehicles[vehicle].get('vin')))
                 self._carnet_start_climat(vehicle)
             else:
+                _LOGGER.debug("Stopping climatisation on vehicle %s" % (self.vehicles[vehicle].get('vin')))
                 self._carnet_stop_climat(vehicle)
         elif switch == 'charge':
             if state:
+                _LOGGER.debug("Starting charge on vehicle %s" % (self.vehicles[vehicle].get('vin')))
                 self._carnet_start_charge(vehicle)
             else:
+                _LOGGER.debug("Stopping charge on vehicle %s" % (self.vehicles[vehicle].get('vin')))
                 self._carnet_stop_charge(vehicle)
         elif switch == 'melt':
             if state:
+                _LOGGER.debug("Starting window heating on vehicle %s" % (self.vehicles[vehicle].get('vin')))
                 self._carnet_start_window_melt(vehicle)
             else:
+                _LOGGER.debug("Stopping window heating on vehicle %s" % (self.vehicles[vehicle].get('vin')))
                 self._carnet_stop_window_melt(vehicle)
 
     def _switch_get_state(self, vehicle, switch):
