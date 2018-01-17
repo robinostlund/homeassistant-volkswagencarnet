@@ -525,7 +525,7 @@ class VWCarnet(object):
         try:
             last_connected = data_details['vehicleDetails']['lastConnectionTimeStamp'][0] + ' ' + data_details['vehicleDetails']['lastConnectionTimeStamp'][1]
             datetime_object = datetime.strptime(last_connected, '%d.%m.%Y %H:%M')
-            self.vehicles[vehicle]['last_connected'] = datetime_object
+            self.vehicles[vehicle]['last_connected'] = datetime_object.strftime("%Y-%m-%d %H:%M:%S")
         except:
             _LOGGER.debug("Failed to set distance sensor for vehicle %s" % (self.vehicles[vehicle].get('vin')))
 
@@ -646,9 +646,7 @@ class VWCarnet(object):
             state = self.vehicles[vehicle]['sensor_distance']
 
         elif sensor == 'last_connected':
-            datetime_object = self.vehicles[vehicle]['last_connected']
-            if datetime_object:
-                state = datetime_object.strftime("%Y-%m-%d %H:%M:%S")
+            state = self.vehicles[vehicle]['last_connected']
 
         elif sensor == 'locked':
             state = self.vehicles[vehicle]['sensor_door_locked']
