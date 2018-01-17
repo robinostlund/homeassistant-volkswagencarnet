@@ -22,8 +22,8 @@ Start the Home Assistant service with the configuration below, check "states" in
 volkswagen_carnet:
     username: <username to volkswagen carnet>
     password: <password to volkswagen carnet>
-    update_interval: 3 # specify in minutes how often to fetch status data from carnet (optional, default 3 min)
-
+    update_interval: 
+        minutes: 3 # specify in minutes how often to fetch status data from carnet (optional, default 3 min, minimum 1 min)
 ```
 
 Group example
