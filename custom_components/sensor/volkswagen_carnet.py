@@ -1,8 +1,7 @@
 """
 Support for Volkswagen Carnet.
 """
-from homeassistant.helpers.entity import Entity
-from custom_components.volkswagen_carnet import CARNET_DATA
+from custom_components.volkswagen_carnet import CARNET_DATA, VolkswagenCarnetEntity
 
 import logging
 from datetime import timedelta
@@ -20,13 +19,6 @@ SENSORS = [
         'friendly_name': 'Charge max ampere',
         'icon': 'mdi:flash',
         'unit_of_measurement': 'A',
-        'hidden': False
-    },
-    {
-        'name': 'external_power_connected',
-        'friendly_name': 'External power connected',
-        'icon': 'mdi:power-plug',
-        'unit_of_measurement': '',
         'hidden': False
     },
     {
@@ -65,20 +57,6 @@ SENSORS = [
         'hidden': False
     },
     {
-        'name': 'locked',
-        'friendly_name': 'Locked',
-        'icon': 'mdi:lock',
-        'unit_of_measurement': '',
-        'hidden': False
-    },
-    {
-        'name': 'parking_lights',
-        'friendly_name': 'Parking Lights',
-        'icon': 'mdi:lightbulb',
-        'unit_of_measurement': '',
-        'hidden': False
-    },
-    {
         'name': 'next_service_inspection',
         'friendly_name': 'Next service inspection',
         'icon': 'mdi:garage',
@@ -102,81 +80,6 @@ def setup_platform(hass, config, add_devices, discovery_info=None):
     functions = []
     for vehicle in vehicles:
         for sensor in SENSORS:
-            functions.append(VolkswagenCarnet(hass, vehicle, sensor))
+            functions.append(VolkswagenCarnetEntity(hass, vehicle, sensor))
     add_devices(functions)
 
-
-class VolkswagenCarnet(Entity):
-    """Representation of a Sensor."""
-
-    def __init__(self, hass, vehicle, sensor):
-        """Initialize the sensor."""
-        self.vw = hass.data[CARNET_DATA]
-        self.hass = hass
-        self.sensor = sensor
-        self.sensor_name = self.sensor.get('name')
-        self.sensor_icon = self.sensor.get('icon')
-        self.sensor_hidden = self.sensor.get('hidden')
-        self.sensor_unit_of_measurement = self.sensor.get('unit_of_measurement')
-        self.vehicle = vehicle
-
-        # self._state = None
-        self._state = self.vw._sensor_get_state(self.vehicle, self.sensor_name)
-
-
-    @property
-    def name(self):
-        """Return the name of the sensor."""
-        return 'vw_%s_%s' % (self.vehicle, self.sensor_name)
-
-    @property
-    def state(self):
-        """Return the state of the sensor."""
-        return self._state
-
-    @property
-    def unit_of_measurement(self):
-        """Return the unit of measurement."""
-        return self.sensor_unit_of_measurement
-
-    def update(self):
-        """Fetch new state data for the sensor."""
-        _LOGGER.debug("Updating %s sensor for vehicle: %s", self.sensor_name, self.vehicle)
-        self._state = self.vw._sensor_get_state(self.vehicle, self.sensor_name)
-
-    @property
-    def icon(self):
-        """Return the icon."""
-        return self.sensor_icon
-
-    @property
-    def hidden(self):
-        """Return True if the entity should be hidden from UIs."""
-        return self.sensor_hidden
-
-    @property
-    def available(self):
-        """Return True if entity is available."""
-        if self._state:
-            return True
-        else:
-            return False
-
-    @property
-    def device_state_attributes(self):
-        """Return the state attributes."""
-        attrs = {}
-        if self._last_updated:
-            attrs['time_last_updated'] = self._last_updated
-        return attrs
-
-    @property
-    def _last_updated(self):
-        """Return the last update of a device."""
-        #datetime_object = self.vw.vehicles[self.vehicle].get('last_updated')
-        last_updated = self.vw.vehicles[self.vehicle].get('last_updated')
-        if last_updated:
-            #return datetime_object.strftime("%Y-%m-%d %H:%M:%S")
-            return last_updated
-        else:
-            return None

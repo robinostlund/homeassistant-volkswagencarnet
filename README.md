@@ -23,7 +23,7 @@ volkswagen_carnet:
     username: <username to volkswagen carnet>
     password: <password to volkswagen carnet>
     update_interval: 
-        minutes: 3 # specify in minutes how often to fetch status data from carnet (optional, default 3 min, minimum 1 min)
+        minutes: 3 # specify in minutes how often to fetch status data from carnet (optional, default 3 min, minimum 2 min)
 ```
 
 Group example
@@ -57,11 +57,11 @@ volkswagensensors:
         - sensor.vw_carid_climat_target_temperature
         - sensor.vw_carid_distance
         - sensor.vw_carid_electric_range_left
-        - sensor.vw_carid_external_power_connected
         - sensor.vw_carid_last_connected
-        - sensor.vw_carid_locked
-        - sensor.vw_carid_parking_lights
         - sensor.vw_carid_next_service_inspection
+        - binary_sensor.vw_carid_door_locked
+        - binary_sensor.vw_carid_parking_lights
+        - binary_sensor.vw_carid_external_power_connected
         
 volkswagenlocation:
     name: Volkswagen Location
@@ -94,16 +94,16 @@ sensor.vw_carid_distance:
     friendly_name: VW Car Odometer
 sensor.vw_carid_electric_range_left:
     friendly_name: VW Car Electric Range Left
-sensor.vw_carid_external_power_connected:
-    friendly_name: VW Car External Power Connected
 sensor.vw_carid_last_connected:
     friendly_name: VW Car Last Connected
-sensor.vw_carid_locked:
-    friendly_name: VW Car Locked
-sensor.vw_carid_parking_lights:
-    friendly_name: VW Car Parking Lights
 sensor.vw_carid_next_service_inspection:
     friendly_name: VW Car Next Service
+binary_sensor.vw_carid_door_locked:
+    friendly_name: VW Car Locked
+binary_sensor.vw_carid_parking_lights:
+    friendly_name: VW Car Parking Lights
+binary_sensor.vw_carid_external_power_connected:
+    friendly_name: VW Car External Power Connected
 ```
 
 Enable debug logging

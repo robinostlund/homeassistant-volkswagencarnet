@@ -14,6 +14,8 @@ from homeassistant.const import (CONF_USERNAME, CONF_PASSWORD)
 from homeassistant.helpers import discovery
 from homeassistant.helpers.event import track_point_in_utc_time
 from homeassistant.util.dt import utcnow
+from homeassistant.helpers.entity import Entity
+
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -22,7 +24,7 @@ CARNET_DATA = "volkswagen_carnet"
 REQUIREMENTS = ['requests']
 CONF_UPDATE_INTERVAL = 'update_interval'
 
-MIN_UPDATE_INTERVAL = timedelta(minutes=1)
+MIN_UPDATE_INTERVAL = timedelta(minutes=2)
 DEFAULT_UPDATE_INTERVAL = timedelta(minutes=3)
 
 CONFIG_SCHEMA = vol.Schema({
@@ -60,7 +62,7 @@ def setup(hass, config):
         vw._carnet_get_vehicles(login_session)
 
         if vw.vehicles:
-            for component in ['switch', 'device_tracker', 'sensor']:
+            for component in ['switch', 'device_tracker', 'sensor', 'binary_sensor']:
                 discovery.load_platform(hass, component, DOMAIN, vw.vehicles, config)
 
     def update(now):
@@ -442,9 +444,9 @@ class VWCarnet(object):
         # set powersupply sensor
         try:
             if data_emanager['EManager']['rbc']['status']['extPowerSupplyState'] == 'UNAVAILABLE':
-                self.vehicles[vehicle]['sensor_external_power_connected'] = 'no'
+                self.vehicles[vehicle]['sensor_external_power_connected'] = 'off'
             else:
-                self.vehicles[vehicle]['sensor_external_power_connected'] = 'yes'
+                self.vehicles[vehicle]['sensor_external_power_connected'] = 'on'
         except:
             self.vehicles[vehicle]['sensor_external_power_connected'] = False
             _LOGGER.debug("Failed to set powersupply status for vehicle %s" % (self.vehicles[vehicle].get('vin')))
@@ -471,9 +473,9 @@ class VWCarnet(object):
         # set climat without external power sensor
         try:
             if data_emanager['EManager']['rpc']['settings']['climatisationWithoutHVPower']:
-                self.vehicles[vehicle]['sensor_climat_without_hw_power'] = 'yes'
+                self.vehicles[vehicle]['sensor_climat_without_hw_power'] = 'on'
             else:
-                self.vehicles[vehicle]['sensor_climat_without_hw_power'] = 'no'
+                self.vehicles[vehicle]['sensor_climat_without_hw_power'] = 'off'
         except:
             _LOGGER.debug("Failed to set climat without hw power sensor for vehicle %s" % (self.vehicles[vehicle].get('vin')))
 
@@ -529,9 +531,9 @@ class VWCarnet(object):
                     vehicle_locked = False
 
             if vehicle_locked:
-                self.vehicles[vehicle]['sensor_door_locked'] = 'yes'
+                self.vehicles[vehicle]['sensor_door_locked'] = 'closed'
             else:
-                self.vehicles[vehicle]['sensor_door_locked'] = 'no'
+                self.vehicles[vehicle]['sensor_door_locked'] = 'open'
         except:
             self.vehicles[vehicle]['sensor_door_locked'] = False
             _LOGGER.debug("Failed to set door locked sensor for vehicle %s" % (self.vehicles[vehicle].get('vin')))
@@ -627,7 +629,10 @@ class VWCarnet(object):
             state = self.vehicles[vehicle]['sensor_charge_max_ampere']
 
         elif sensor == 'external_power_connected':
+            print('robin')
+
             state = self.vehicles[vehicle]['sensor_external_power_connected']
+            print(state)
 
         elif sensor == 'charging_time_left':
             # return minutes left instead of seconds
@@ -645,7 +650,7 @@ class VWCarnet(object):
         elif sensor == 'last_connected':
             state = self.vehicles[vehicle]['last_connected']
 
-        elif sensor == 'locked':
+        elif sensor == 'door_locked':
             state = self.vehicles[vehicle]['sensor_door_locked']
 
         elif sensor == 'parking_lights':
@@ -659,3 +664,78 @@ class VWCarnet(object):
         else:
             return None
 
+
+class VolkswagenCarnetEntity(Entity):
+    """Representation of a Sensor."""
+
+    def __init__(self, hass, vehicle, sensor):
+        """Initialize the sensor."""
+        self.vw = hass.data[CARNET_DATA]
+        self.hass = hass
+        self.sensor = sensor
+        self.sensor_name = self.sensor.get('name')
+        self.sensor_icon = self.sensor.get('icon')
+        self.sensor_hidden = self.sensor.get('hidden')
+        self.sensor_unit_of_measurement = self.sensor.get('unit_of_measurement')
+        self.vehicle = vehicle
+
+        # self._state = None
+        self._state = self.vw._sensor_get_state(self.vehicle, self.sensor_name)
+
+
+    @property
+    def name(self):
+        """Return the name of the sensor."""
+        return 'vw_%s_%s' % (self.vehicle, self.sensor_name)
+
+    @property
+    def state(self):
+        """Return the state of the sensor."""
+        return self._state
+
+    @property
+    def unit_of_measurement(self):
+        """Return the unit of measurement."""
+        return self.sensor_unit_of_measurement
+
+    def update(self):
+        """Fetch new state data for the sensor."""
+        _LOGGER.debug("Updating %s sensor for vehicle: %s", self.sensor_name, self.vehicle)
+        self._state = self.vw._sensor_get_state(self.vehicle, self.sensor_name)
+
+    @property
+    def icon(self):
+        """Return the icon."""
+        return self.sensor_icon
+
+    @property
+    def hidden(self):
+        """Return True if the entity should be hidden from UIs."""
+        return self.sensor_hidden
+
+    @property
+    def available(self):
+        """Return True if entity is available."""
+        if self._state:
+            return True
+        else:
+            return False
+
+    @property
+    def device_state_attributes(self):
+        """Return the state attributes."""
+        attrs = {}
+        if self._last_updated:
+            attrs['time_last_updated'] = self._last_updated
+        return attrs
+
+    @property
+    def _last_updated(self):
+        """Return the last update of a device."""
+        #datetime_object = self.vw.vehicles[self.vehicle].get('last_updated')
+        last_updated = self.vw.vehicles[self.vehicle].get('last_updated')
+        if last_updated:
+            #return datetime_object.strftime("%Y-%m-%d %H:%M:%S")
+            return last_updated
+        else:
+            return None
