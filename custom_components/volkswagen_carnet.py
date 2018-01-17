@@ -92,11 +92,12 @@ class VWCarnet(object):
         self.carnet_username = username
         self.carnet_password = password
         self.carnet_logged_in = False
-        self.update_timeout_counter = 40
+        self.update_timeout_counter = 60
         self.vehicles = {}
 
     def _vehicle_template(self, vin):
         vehicle_template = {
+            'initialized': False,
             'vin': vin.get('vin'),
             'pin': vin.get('enrollmentPin'),
             'name': vin.get('vehicleName'),
@@ -387,28 +388,32 @@ class VWCarnet(object):
             # request car update
             self._carnet_post_vehicle(session, vehicle, '/-/vsr/request-vsr')
 
-            # wait for update to be completed:
-            timeout_counter = 0
-            msg_waiting_request = False
-            while True:
-                timeout_counter += 1
-                time.sleep(1)
 
-                if timeout_counter > self.update_timeout_counter:
-                    _LOGGER.debug("Failed to fetch latest status from vehicle %s, request timed out." % (self.vehicles[vehicle].get('vin')))
-                    break
+            if self.vehicles[vehicle].get('initialized'):
+                # wait for update to be completed:
+                timeout_counter = 0
+                msg_waiting_request = False
+                while True:
+                    timeout_counter += 1
+                    time.sleep(1)
 
-                request_status = json.loads(self._carnet_post_vehicle(session,vehicle, '/-/vsr/get-vsr'))['vehicleStatusData']['requestStatus']
-                if request_status == 'REQUEST_IN_PROGRESS':
-                    if not msg_waiting_request:
-                        _LOGGER.debug("Waiting for update request from vehicle %s" % (self.vehicles[vehicle].get('vin')))
-                        msg_waiting_request = True
-                    continue
-                elif request_status == 'ERROR':
-                    _LOGGER.debug("Failed to fetch latest status from vehicle %s" % (self.vehicles[vehicle].get('vin')))
-                    break
-                else:
-                    continue
+                    if timeout_counter > self.update_timeout_counter:
+                        _LOGGER.debug("Failed to fetch latest status from vehicle %s, request timed out." % (self.vehicles[vehicle].get('vin')))
+                        break
+
+                    request_status = json.loads(self._carnet_post_vehicle(session,vehicle, '/-/vsr/get-vsr'))['vehicleStatusData']['requestStatus']
+                    if request_status == 'REQUEST_IN_PROGRESS':
+                        if not msg_waiting_request:
+                            _LOGGER.debug("Waiting for update request from vehicle %s" % (self.vehicles[vehicle].get('vin')))
+                            msg_waiting_request = True
+                        continue
+                    elif request_status == 'ERROR':
+                        _LOGGER.debug("Failed to fetch latest status from vehicle %s" % (self.vehicles[vehicle].get('vin')))
+                        break
+                    else:
+                        continue
+            else:
+                self.vehicles[vehicle]['initialized'] = True
 
             # get data from carnet
             data_emanager = json.loads(self._carnet_post_vehicle(session, vehicle, '/-/emanager/get-emanager'))
@@ -640,6 +645,7 @@ class VWCarnet(object):
 
         elif sensor == 'parking_lights':
             state = self.vehicles[vehicle]['sensor_parking_lights']
+
         elif sensor == 'next_service_inspection':
             state = self.vehicles[vehicle]['sensor_next_service_inspection']
 
