@@ -15,6 +15,7 @@ from homeassistant.helpers import discovery
 from homeassistant.helpers.event import track_point_in_utc_time
 from homeassistant.util.dt import utcnow
 from homeassistant.helpers.entity import Entity
+from homeassistant.helpers.icon import icon_for_battery_level
 
 
 _LOGGER = logging.getLogger(__name__)
@@ -444,9 +445,9 @@ class VWCarnet(object):
         # set powersupply sensor
         try:
             if data_emanager['EManager']['rbc']['status']['extPowerSupplyState'] == 'UNAVAILABLE':
-                self.vehicles[vehicle]['sensor_external_power_connected'] = 'off'
+                self.vehicles[vehicle]['sensor_external_power_connected'] = False
             else:
-                self.vehicles[vehicle]['sensor_external_power_connected'] = 'on'
+                self.vehicles[vehicle]['sensor_external_power_connected'] = True
         except:
             self.vehicles[vehicle]['sensor_external_power_connected'] = False
             _LOGGER.debug("Failed to set powersupply status for vehicle %s" % (self.vehicles[vehicle].get('vin')))
@@ -473,9 +474,9 @@ class VWCarnet(object):
         # set climat without external power sensor
         try:
             if data_emanager['EManager']['rpc']['settings']['climatisationWithoutHVPower']:
-                self.vehicles[vehicle]['sensor_climat_without_hw_power'] = 'on'
+                self.vehicles[vehicle]['sensor_climat_without_hw_power'] = True
             else:
-                self.vehicles[vehicle]['sensor_climat_without_hw_power'] = 'off'
+                self.vehicles[vehicle]['sensor_climat_without_hw_power'] = False
         except:
             _LOGGER.debug("Failed to set climat without hw power sensor for vehicle %s" % (self.vehicles[vehicle].get('vin')))
 
@@ -531,9 +532,9 @@ class VWCarnet(object):
                     vehicle_locked = False
 
             if vehicle_locked:
-                self.vehicles[vehicle]['sensor_door_locked'] = 'closed'
+                self.vehicles[vehicle]['sensor_door_locked'] = True
             else:
-                self.vehicles[vehicle]['sensor_door_locked'] = 'open'
+                self.vehicles[vehicle]['sensor_door_locked'] = False
         except:
             self.vehicles[vehicle]['sensor_door_locked'] = False
             _LOGGER.debug("Failed to set door locked sensor for vehicle %s" % (self.vehicles[vehicle].get('vin')))
@@ -541,9 +542,9 @@ class VWCarnet(object):
         # set parking lights sensor
         try:
             if data_car['vehicleStatusData']['carRenderData']['parkingLights'] == 2:
-                self.vehicles[vehicle]['sensor_parking_lights'] = 'off'
+                self.vehicles[vehicle]['sensor_parking_lights'] = False
             else:
-                self.vehicles[vehicle]['sensor_parking_lights'] = 'on'
+                self.vehicles[vehicle]['sensor_parking_lights'] = True
         except:
             self.vehicles[vehicle]['sensor_parking_lights'] = False
             _LOGGER.debug("Failed to set parking lights sensor for vehicle %s" % (self.vehicles[vehicle].get('vin')))
@@ -620,50 +621,6 @@ class VWCarnet(object):
         elif switch == 'melt':
             return self.vehicles[vehicle]['state_melt']
 
-    def _sensor_get_state(self, vehicle, sensor):
-        state = None
-        if sensor == 'battery':
-            state = self.vehicles[vehicle]['sensor_battery_left']
-
-        elif sensor == 'charge_max_ampere':
-            state = self.vehicles[vehicle]['sensor_charge_max_ampere']
-
-        elif sensor == 'external_power_connected':
-            print('robin')
-
-            state = self.vehicles[vehicle]['sensor_external_power_connected']
-            print(state)
-
-        elif sensor == 'charging_time_left':
-            # return minutes left instead of seconds
-            state = int(round(self.vehicles[vehicle]['sensor_charging_time_left'] / 60))
-
-        elif sensor == 'climat_target_temperature':
-            state = self.vehicles[vehicle]['sensor_climat_target_temperature']
-
-        elif sensor == 'electric_range_left':
-            state = self.vehicles[vehicle]['sensor_electric_range_left']
-
-        elif sensor == 'distance':
-            state = self.vehicles[vehicle]['sensor_distance']
-
-        elif sensor == 'last_connected':
-            state = self.vehicles[vehicle]['last_connected']
-
-        elif sensor == 'door_locked':
-            state = self.vehicles[vehicle]['sensor_door_locked']
-
-        elif sensor == 'parking_lights':
-            state = self.vehicles[vehicle]['sensor_parking_lights']
-
-        elif sensor == 'next_service_inspection':
-            state = self.vehicles[vehicle]['sensor_next_service_inspection']
-
-        if state:
-            return state
-        else:
-            return None
-
 
 class VolkswagenCarnetEntity(Entity):
     """Representation of a Sensor."""
@@ -673,53 +630,83 @@ class VolkswagenCarnetEntity(Entity):
         self.vw = hass.data[CARNET_DATA]
         self.hass = hass
         self.sensor = sensor
-        self.sensor_name = self.sensor.get('name')
-        self.sensor_icon = self.sensor.get('icon')
-        self.sensor_hidden = self.sensor.get('hidden')
-        self.sensor_unit_of_measurement = self.sensor.get('unit_of_measurement')
         self.vehicle = vehicle
 
-        # self._state = None
-        self._state = self.vw._sensor_get_state(self.vehicle, self.sensor_name)
+    @property
+    def _attr(self):
+        return self.sensor.get('attr')
 
+    @property
+    def _get_vehicle_name(self):
+        return self.vehicle
+
+    @property
+    def _get_vehicle_data(self):
+        return self.vw.vehicles[self.vehicle]
+
+    @property
+    def _state(self):
+        state = None
+        if self._sensor_name == 'battery':
+            state = self._get_vehicle_data['sensor_battery_left']
+
+        elif self._sensor_name == 'charge_max_ampere':
+            state = self._get_vehicle_data['sensor_charge_max_ampere']
+
+        elif self._sensor_name == 'charging_time_left':
+            # return minutes left instead of seconds
+            state = int(round(self._get_vehicle_data['sensor_charging_time_left'] / 60))
+
+        elif self._sensor_name == 'climat_target_temperature':
+            state = self._get_vehicle_data['sensor_climat_target_temperature']
+
+        elif self._sensor_name == 'electric_range_left':
+            state = self._get_vehicle_data['sensor_electric_range_left']
+
+        elif self._sensor_name == 'distance':
+            state = self._get_vehicle_data['sensor_distance']
+
+        elif self._sensor_name == 'last_connected':
+            state = self._get_vehicle_data['last_connected']
+
+        elif self._sensor_name == 'next_service_inspection':
+            state = self._get_vehicle_data['sensor_next_service_inspection']
+
+        if state:
+            return state
+        else:
+            return None
+
+    @property
+    def _sensor_name(self):
+        return self.sensor.get('name')
+
+    @property
+    def _last_updated(self):
+        """Return the last update of a device."""
+        last_updated = self.vw.vehicles[self.vehicle].get('last_updated')
+        if last_updated:
+            return last_updated
+        else:
+            return None
 
     @property
     def name(self):
         """Return the name of the sensor."""
-        return 'vw_%s_%s' % (self.vehicle, self.sensor_name)
-
-    @property
-    def state(self):
-        """Return the state of the sensor."""
-        return self._state
-
-    @property
-    def unit_of_measurement(self):
-        """Return the unit of measurement."""
-        return self.sensor_unit_of_measurement
-
-    def update(self):
-        """Fetch new state data for the sensor."""
-        _LOGGER.debug("Updating %s sensor for vehicle: %s", self.sensor_name, self.vehicle)
-        self._state = self.vw._sensor_get_state(self.vehicle, self.sensor_name)
+        return 'vw_%s_%s' % (self.vehicle, self._sensor_name)
 
     @property
     def icon(self):
         """Return the icon."""
-        return self.sensor_icon
+        if self._sensor_name == 'battery':
+            return icon_for_battery_level(battery_level=int(self._state), charging = self._get_vehicle_data['state_charge'])
+        else:
+            return self.sensor.get('icon')
 
     @property
     def hidden(self):
         """Return True if the entity should be hidden from UIs."""
-        return self.sensor_hidden
-
-    @property
-    def available(self):
-        """Return True if entity is available."""
-        if self._state:
-            return True
-        else:
-            return False
+        return self.sensor.get('hidden')
 
     @property
     def device_state_attributes(self):
@@ -727,15 +714,21 @@ class VolkswagenCarnetEntity(Entity):
         attrs = {}
         if self._last_updated:
             attrs['time_last_updated'] = self._last_updated
+        # add extra attributes
+        attrs.update(self._attr)
+        if self._sensor_name == 'battery' and self._get_vehicle_data['sensor_battery_left']:
+            attrs['battery_level'] = self._get_vehicle_data['sensor_battery_left']
+            attrs['battery_icon'] = 'mdi:battery'
         return attrs
 
     @property
-    def _last_updated(self):
-        """Return the last update of a device."""
-        #datetime_object = self.vw.vehicles[self.vehicle].get('last_updated')
-        last_updated = self.vw.vehicles[self.vehicle].get('last_updated')
-        if last_updated:
-            #return datetime_object.strftime("%Y-%m-%d %H:%M:%S")
-            return last_updated
-        else:
-            return None
+    def should_poll(self):
+        """Return the polling state."""
+        return False
+
+    @property
+    def assumed_state(self):
+        """Return true if unable to access real state of entity."""
+        return True
+
+

@@ -11,57 +11,73 @@ SENSORS = [
         'name': 'battery',
         'friendly_name': 'Battery left',
         'icon': 'mdi:battery',
-        'unit_of_measurement': '%',
-        'hidden': False
+        'attr': {
+            'unit_of_measurement': '%',
+            'hidden': False
+        }
     },
     {
         'name': 'charge_max_ampere',
         'friendly_name': 'Charge max ampere',
         'icon': 'mdi:flash',
-        'unit_of_measurement': 'A',
-        'hidden': False
+        'attr': {
+            'unit_of_measurement': 'A',
+            'hidden': False
+        }
     },
     {
         'name': 'charging_time_left',
         'friendly_name': 'Charging time left',
         'icon': 'mdi:battery-charging-100',
-        'unit_of_measurement': 'min',
-        'hidden': False
+        'attr': {
+            'unit_of_measurement': 'min',
+            'hidden': False
+        }
     },
     {
         'name': 'climat_target_temperature',
         'friendly_name': 'Climatisation target temperature',
         'icon': 'mdi:thermometer',
-        'unit_of_measurement': '°C',
-        'hidden': False
+        'attr': {
+            'unit_of_measurement': '°C',
+            'hidden': False
+        }
     },
     {
         'name': 'electric_range_left',
         'friendly_name': 'Electric range left',
         'icon': 'mdi:car',
-        'unit_of_measurement': 'km',
-        'hidden': False
+        'attr': {
+            'unit_of_measurement': 'km',
+            'hidden': False,
+        }
     },
     {
         'name': 'distance',
         'friendly_name': 'Distance',
         'icon': 'mdi:speedometer',
-        'unit_of_measurement': 'km',
-        'hidden': False
+        'attr': {
+            'unit_of_measurement': 'km',
+            'hidden': False
+        }
     },
     {
         'name': 'last_connected',
         'friendly_name': 'Last connected',
         'icon': 'mdi:clock',
-        'unit_of_measurement': '',
-        'hidden': False
+        'attr': {
+            'unit_of_measurement': '',
+            'hidden': False
+        }
     },
     {
         'name': 'next_service_inspection',
         'friendly_name': 'Next service inspection',
         'icon': 'mdi:garage',
-        'unit_of_measurement': '',
-        'hidden': False
+        'attr': {
+            'unit_of_measurement': '',
+            'hidden': False
+        }
     }
 ]
 
@@ -80,6 +96,28 @@ def setup_platform(hass, config, add_devices, discovery_info=None):
     functions = []
     for vehicle in vehicles:
         for sensor in SENSORS:
-            functions.append(VolkswagenCarnetEntity(hass, vehicle, sensor))
+            functions.append(VolkswagenCarnetSensor(hass, vehicle, sensor))
     add_devices(functions)
+
+
+class VolkswagenCarnetSensor(VolkswagenCarnetEntity):
+    """Representation of a Volkswagen Carnet Sensor."""
+
+    @property
+    def state(self):
+        """Return the state of the sensor."""
+        return self._state
+
+    @property
+    def available(self):
+        """Return True if entity is available."""
+        if self._state:
+            return True
+        else:
+            return False
+
+    def update(self):
+        """Fetch new state data for the sensor."""
+        _LOGGER.debug("Updating %s sensor for vehicle: %s", self._sensor_name, self.vehicle)
+        return self._state
 
