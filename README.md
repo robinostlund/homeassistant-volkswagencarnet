@@ -99,7 +99,7 @@ sensor.vw_carid_last_connected:
 sensor.vw_carid_next_service_inspection:
     friendly_name: VW Car Next Service
 binary_sensor.vw_carid_door_locked:
-    friendly_name: VW Car Locked
+    friendly_name: VW Car Doors
 binary_sensor.vw_carid_parking_lights:
     friendly_name: VW Car Parking Lights
 binary_sensor.vw_carid_external_power_connected:

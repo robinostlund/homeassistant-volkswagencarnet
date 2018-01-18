@@ -498,7 +498,11 @@ class VWCarnet(object):
         try:
             charging_time_left = int(data_emanager['EManager']['rbc']['status']['chargingRemaningHour']) * 60 * 60
             charging_time_left += int(data_emanager['EManager']['rbc']['status']['chargingRemaningMinute']) * 60
-            self.vehicles[vehicle]['sensor_charging_time_left'] = charging_time_left
+            # only show chargint time left if vehicle is charging
+            if self.vehicles[vehicle]['state_charge']:
+                self.vehicles[vehicle]['sensor_charging_time_left'] = charging_time_left
+            else:
+                self.vehicles[vehicle]['sensor_charging_time_left'] = False
         except:
             self.vehicles[vehicle]['sensor_charging_time_left'] = False
             _LOGGER.debug("Failed to set charging time sensor for vehicle %s" % (self.vehicles[vehicle].get('vin')))
