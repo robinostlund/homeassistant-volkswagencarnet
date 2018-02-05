@@ -1,57 +1,38 @@
 """
 Support for the Volkswagen Carnet platform.
-
 """
 import logging
 
-from homeassistant.helpers.event import track_utc_time_change
 from homeassistant.util import slugify
-
-from custom_components.volkswagen_carnet import CARNET_DATA
+from homeassistant.helpers.dispatcher import (dispatcher_connect, dispatcher_send)
+from custom_components.volkswagen_carnet import SIGNAL_VEHICLE_SEEN, DATA_KEY
 
 _LOGGER = logging.getLogger(__name__)
 
-def setup_scanner(hass, config, see, discovery_info = None):
-    """Set up the Volkswagen tracker."""
+def setup_scanner(hass, config, see, discovery_info=None):
+    """Set up the Volvo tracker."""
+    if discovery_info is None:
+        return
 
-    VolkswagenDeviceTracker(hass, config, see, hass.data[CARNET_DATA])
+    vin, _ = discovery_info
+    vw = hass.data[DATA_KEY]
+    vehicle = vw.vehicles[vin]
 
+    def see_vehicle(vehicle):
+        """Handle the reporting of the vehicle position."""
+        host_name = vw.vehicle_name(vehicle)
+        dev_id = '{}'.format(slugify(host_name))
+        attrs = {}
+        if vehicle.model_image:
+            attrs['entity_picture'] = vehicle.model_image
+        see(dev_id=dev_id,
+            host_name=host_name,
+            gps=(vehicle.position['lat'],
+                 vehicle.position['lng']),
+            attributes=attrs,
+            icon='mdi:car',
+        )
+
+    dispatcher_connect(hass, SIGNAL_VEHICLE_SEEN, see_vehicle)
+    dispatcher_send(hass, SIGNAL_VEHICLE_SEEN, vehicle)
     return True
-
-class VolkswagenDeviceTracker(object):
-    """A class representing a Tesla device."""
-
-    def __init__(self, hass, config, see, vw):
-        """Initialize the Volkswagen device scanner."""
-        self.hass = hass
-        self.see = see
-        self.vw = vw
-        self.vehicles = self.vw.vehicles
-        self._update_location()
-
-        track_utc_time_change(self.hass, self._update_location, second=range(0, 60, 30))
-
-    def _update_location(self, now=None):
-        """Update the device info."""
-        for vehicle in self.vehicles:
-            vehicle_data = self.vehicles[vehicle]
-            name = vehicle_data.get('name')
-            car_id = 'vw_%s' % vehicle_data.get('vin')
-
-            _LOGGER.debug("Updating device position for vehicle: %s", vehicle_data.get('vin'))
-
-            dev_id = slugify(car_id)
-            lat = vehicle_data.get('location_latitude')
-            lon = vehicle_data.get('location_longitude')
-            if lat and lon:
-                attrs = {
-                    'trackr_id': dev_id,
-                    'id': dev_id,
-                    'name': dev_id,
-                    'entity_picture': vehicle_data.get('model_image_url')
-                }
-                self.see(
-                    dev_id=dev_id, host_name=name,
-                    gps=(lat, lon), attributes=attrs,
-                    icon='mdi:car', battery=vehicle_data['sensor_battery_left']
-                )

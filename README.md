@@ -15,7 +15,7 @@ Add a volkswagen_carnet configuration block to your `<config dir>/configuration.
 
 Start the Home Assistant service with the configuration below, check "states" in Home Assistant to find out your CarNet ID, replace vw_carid with your ID throughout the example configuration below, save the config files and restart Home Assistant.
 
-```switch.vw_carid_charge ---> switch.vw_wvwzzzXczheXXXXXXX_charge```
+```switch.vw_carid_charging ---> switch.wvwzzzXczheXXXXXXX_charging```
 
 
 ```yaml
@@ -43,25 +43,24 @@ volkswagenswitches:
     name: Volkswagen Switches
     control: hidden
     entities:
-        - switch.vw_carid_charge
-        - switch.vw_carid_climat
-        - switch.vw_carid_melt
+        - switch.vw_carid_charging
+        - switch.vw_carid_climatisation
+        - switch.vw_carid_window_heater
+        - lock.vw_carid_doors_locked
   
 volkswagensensors:
     name: Volkswagen Information
     control: hidden
     entities:
-        - sensor.vw_carid_battery
-        - sensor.vw_carid_charge_max_ampere
+        - sensor.vw_carid_battery_level
         - sensor.vw_carid_charging_time_left
-        - sensor.vw_carid_climat_target_temperature
-        - sensor.vw_carid_distance
-        - sensor.vw_carid_electric_range_left
+        - sensor.vw_carid_odometer
+        - sensor.vw_carid_electric_range
         - sensor.vw_carid_last_connected
-        - sensor.vw_carid_next_service_inspection
-        - binary_sensor.vw_carid_door_locked
-        - binary_sensor.vw_carid_parking_lights
-        - binary_sensor.vw_carid_external_power_connected
+        - sensor.vw_carid_service_inspection
+        - sensor.vw_carid_climatisation_target_temperature
+        - binary_sensor.vw_carid_parking_light
+        - binary_sensor.vw_carid_external_power
         
 volkswagenlocation:
     name: Volkswagen Location
@@ -74,36 +73,34 @@ Customize example
 ------------
 `<config dir>/customize.yaml`
 ```yaml
-switch.vw_carid_charge:
-    friendly_name: VW Car Charging
-switch.vw_carid_climat:
-    friendly_name: VW Car Climatisation
-switch.vw_carid_melt:
-    friendly_name: VW Car Window Heating
+binary_sensor.vw_carid_parking_light:
+    friendly_name: VW Car Parking Lights
+binary_sensor.vw_carid_external_power:
+    friendly_name: VW Car External Power Connected
 device_tracker.vw_carid:
     friendly_name: VW Car Location
-sensor.vw_carid_battery:
+lock.vw_carid_doors_locked:
+    friendly_name: VW Car Locked
+sensor.vw_carid_battery_level:
     friendly_name: VW Car Battery
-sensor.vw_carid_charge_max_ampere:
-    friendly_name: VW Car Max Ampere
 sensor.vw_carid_charging_time_left:
     friendly_name: VW Car Charging time left
-sensor.vw_carid_climat_target_temperature:
-    friendly_name: VW Car Climatisation Target Temperature
-sensor.vw_carid_distance:
+sensor.vw_carid_odometer:
     friendly_name: VW Car Odometer
 sensor.vw_carid_electric_range_left:
     friendly_name: VW Car Electric Range Left
 sensor.vw_carid_last_connected:
     friendly_name: VW Car Last Connected
-sensor.vw_carid_next_service_inspection:
+sensor.vw_carid_service_inspection:
     friendly_name: VW Car Next Service
-binary_sensor.vw_carid_door_locked:
-    friendly_name: VW Car Doors
-binary_sensor.vw_carid_parking_lights:
-    friendly_name: VW Car Parking Lights
-binary_sensor.vw_carid_external_power_connected:
-    friendly_name: VW Car External Power Connected
+sensor.vw_carid_climatisation_target_temperature
+    friendly_name: VW Car Climatisation Target Temperature
+switch.vw_carid_charging:
+    friendly_name: VW Car Charging
+switch.vw_carid_climatisation:
+    friendly_name: VW Car Climatisation
+switch.vw_carid_window_heater:
+    friendly_name: VW Car Window Heating
 ```
 
 Enable debug logging
@@ -113,6 +110,7 @@ logger:
     default: info
     logs:
         custom_components.volkswagen_carnet: debug
+        custom_components.lock.volkswagen_carnet: debug
         custom_components.sensor.volkswagen_carnet: debug
         custom_components.switch.volkswagen_carnet: debug
         custom_components.device_tracker.volkswagen_carnet: debug
