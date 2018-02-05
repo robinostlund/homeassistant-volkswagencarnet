@@ -1,22 +1,15 @@
 # -*- coding: utf-8 -*-
-import re
-import requests
-import time
 import logging
-
 
 import voluptuous as vol
 import homeassistant.helpers.config_validation as cv
 
-from datetime import timedelta, datetime
-from urllib.parse import urlsplit
-from urllib.error import HTTPError
+from datetime import timedelta
 from homeassistant.const import (CONF_USERNAME, CONF_PASSWORD, CONF_NAME, CONF_RESOURCES)
 from homeassistant.helpers import discovery
 from homeassistant.helpers.event import track_point_in_utc_time
 from homeassistant.util.dt import utcnow
 from homeassistant.helpers.entity import Entity
-from homeassistant.helpers.icon import icon_for_battery_level
 from homeassistant.helpers.dispatcher import dispatcher_send
 
 

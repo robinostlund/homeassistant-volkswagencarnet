@@ -93,7 +93,7 @@ sensor.vw_carid_last_connected:
     friendly_name: VW Car Last Connected
 sensor.vw_carid_service_inspection:
     friendly_name: VW Car Next Service
-sensor.vw_carid_climatisation_target_temperature
+sensor.vw_carid_climatisation_target_temperature:
     friendly_name: VW Car Climatisation Target Temperature
 switch.vw_carid_charging:
     friendly_name: VW Car Charging
