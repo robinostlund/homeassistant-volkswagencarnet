@@ -167,10 +167,10 @@ class VolkswagenEntity(Entity):
         """Return the polling state."""
         return False
 
-    #@property
-    #def assumed_state(self):
-    #    """Return true if unable to access real state of entity."""
-    #    return True
+    @property
+    def assumed_state(self):
+        """Return true if unable to access real state of entity."""
+        return True
 
     @property
     def device_state_attributes(self):
