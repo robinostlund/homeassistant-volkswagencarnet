@@ -60,8 +60,6 @@ CONFIG_SCHEMA = vol.Schema({
 def setup(hass, config):
     """Setup Volkswagen Carnet component"""
     from volkswagencarnet import Connection
-    connection = Connection(config[DOMAIN].get(CONF_USERNAME), config[DOMAIN].get(CONF_PASSWORD))
-    connection._login()
 
     username = config[DOMAIN].get(CONF_USERNAME)
     password = config[DOMAIN].get(CONF_PASSWORD)
@@ -92,6 +90,10 @@ def setup(hass, config):
     def update(now):
         """Update status from Volkswagen Carnet"""
         try:
+            # create carnet connection
+            connection = Connection(username, password)
+            # login to carnet
+            connection._login()
             if not connection.update():
                 _LOGGER.warning("Could not query server")
                 return False
@@ -100,6 +102,9 @@ def setup(hass, config):
 
             for vehicle in connection.vehicles:
                 update_vehicle(vehicle)
+
+            # delete carnet connection
+            del(connection)
             return True
         finally:
             track_point_in_utc_time(hass, update, utcnow() + interval)

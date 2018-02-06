@@ -81,13 +81,14 @@ device_tracker.vw_carid:
     friendly_name: VW Car Location
 lock.vw_carid_doors_locked:
     friendly_name: VW Car Locked
+    assumed_state: false
 sensor.vw_carid_battery_level:
     friendly_name: VW Car Battery
 sensor.vw_carid_charging_time_left:
     friendly_name: VW Car Charging time left
 sensor.vw_carid_odometer:
     friendly_name: VW Car Odometer
-sensor.vw_carid_electric_range_left:
+sensor.vw_carid_electric_range:
     friendly_name: VW Car Electric Range Left
 sensor.vw_carid_last_connected:
     friendly_name: VW Car Last Connected
@@ -97,10 +98,13 @@ sensor.vw_carid_climatisation_target_temperature:
     friendly_name: VW Car Climatisation Target Temperature
 switch.vw_carid_charging:
     friendly_name: VW Car Charging
+    assumed_state: false
 switch.vw_carid_climatisation:
     friendly_name: VW Car Climatisation
+    assumed_state: false
 switch.vw_carid_window_heater:
     friendly_name: VW Car Window Heating
+    assumed_state: false
 ```
 
 Enable debug logging
