@@ -23,7 +23,7 @@ volkswagen_carnet:
     username: <username to volkswagen carnet>
     password: <password to volkswagen carnet>
     update_interval: 
-        minutes: 3 # specify in minutes how often to fetch status data from carnet (optional, default 3 min, minimum 2 min)
+        minutes: 5 # specify in minutes how often to fetch status data from carnet (optional, default 3 min, minimum 3 min)
 ```
 
 Group example
