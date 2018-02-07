@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 import logging
-
 import voluptuous as vol
 import homeassistant.helpers.config_validation as cv
 
@@ -18,13 +17,13 @@ _LOGGER = logging.getLogger(__name__)
 DOMAIN = 'volkswagen_carnet'
 DATA_KEY = DOMAIN
 
-REQUIREMENTS = ['volkswagencarnet==2.0.2']
+REQUIREMENTS = ['volkswagencarnet==2.0.6']
 CONF_UPDATE_INTERVAL = 'update_interval'
 
 SIGNAL_VEHICLE_SEEN = '{}.vehicle_seen'.format(DOMAIN)
 
-MIN_UPDATE_INTERVAL = timedelta(minutes=1)
-DEFAULT_UPDATE_INTERVAL = timedelta(minutes=1)
+MIN_UPDATE_INTERVAL = timedelta(minutes=3)
+DEFAULT_UPDATE_INTERVAL = timedelta(minutes=5)
 
 
 RESOURCES = {
@@ -64,8 +63,13 @@ def setup(hass, config):
     username = config[DOMAIN].get(CONF_USERNAME)
     password = config[DOMAIN].get(CONF_PASSWORD)
     interval = config[DOMAIN].get(CONF_UPDATE_INTERVAL)
-
     state = hass.data[DATA_KEY] = VolkswagenData(config)
+
+    # create carnet connection
+    connection = Connection(username, password)
+    # login to carnet
+    _LOGGER.debug("Creating connection to carnet")
+    connection._login()
 
     def discover_vehicle(vehicle):
         """Load relevant platforms."""
@@ -77,7 +81,7 @@ def setup(hass, config):
                     hass, component, DOMAIN, (vehicle.vin, attr), config)
 
     def update_vehicle(vehicle):
-        """Revieve updated information on vehicle."""
+        """Review updated information on vehicle."""
         state.vehicles[vehicle.vin] = vehicle
         if vehicle.vin not in state.entities:
             discover_vehicle(vehicle)
@@ -90,12 +94,8 @@ def setup(hass, config):
     def update(now):
         """Update status from Volkswagen Carnet"""
         try:
-            # create carnet connection
-            connection = Connection(username, password)
-            # login to carnet
-            connection._login()
             if not connection.update():
-                _LOGGER.warning("Could not query server")
+                _LOGGER.warning("Could not query carnet")
                 return False
             else:
                 _LOGGER.debug("Updating data from carnet")
@@ -103,13 +103,12 @@ def setup(hass, config):
             for vehicle in connection.vehicles:
                 update_vehicle(vehicle)
 
-            # delete carnet connection
-            del(connection)
             return True
+
         finally:
             track_point_in_utc_time(hass, update, utcnow() + interval)
 
-    _LOGGER.info("Logging in to service")
+    _LOGGER.info("Starting service")
     return update(utcnow())
 
 

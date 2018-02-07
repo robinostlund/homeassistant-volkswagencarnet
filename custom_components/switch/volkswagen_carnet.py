@@ -1,5 +1,5 @@
 """
-Support for Volkswagen Carnet.
+Support for Volkswagen Carnet Platform
 """
 import logging
 from homeassistant.helpers.entity import ToggleEntity

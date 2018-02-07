@@ -1,5 +1,5 @@
 """
-Support for the Volkswagen Carnet platform.
+Support for Volkswagen Carnet Platform
 """
 import logging
 
@@ -25,13 +25,8 @@ def setup_scanner(hass, config, see, discovery_info=None):
         attrs = {}
         if vehicle.model_image:
             attrs['entity_picture'] = vehicle.model_image
-        see(dev_id=dev_id,
-            host_name=host_name,
-            gps=(vehicle.position['lat'],
-                 vehicle.position['lng']),
-            attributes=attrs,
-            icon='mdi:car',
-        )
+        _LOGGER.debug('Updating location of %s' % host_name)
+        see(dev_id=dev_id, host_name=host_name, gps=(vehicle.position['lat'], vehicle.position['lng']), attributes=attrs, icon='mdi:car')
 
     dispatcher_connect(hass, SIGNAL_VEHICLE_SEEN, see_vehicle)
     dispatcher_send(hass, SIGNAL_VEHICLE_SEEN, vehicle)

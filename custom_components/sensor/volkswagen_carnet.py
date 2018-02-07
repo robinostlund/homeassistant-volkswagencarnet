@@ -1,5 +1,5 @@
 """
-Support for Volkswagen Carnet.
+Support for Volkswagen Carnet Platform
 """
 import logging
 from custom_components.volkswagen_carnet import VolkswagenEntity, RESOURCES
@@ -19,9 +19,9 @@ class VolkswagenSensor(VolkswagenEntity):
     """Representation of a Volkswagen Carnet Sensor."""
     @property
     def state(self):
+        """Return the state of the sensor."""
         _LOGGER.debug('Getting state of %s sensor' % self._attribute)
 
-        """Return the state of the sensor."""
         val = getattr(self.vehicle, self._attribute)
         if val is None:
             return val

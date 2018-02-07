@@ -1,5 +1,5 @@
 """
-Support for Volkswagen Carnetlocks.
+Support for Volkswagen Carnet Platform
 """
 import logging
 
