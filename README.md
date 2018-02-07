@@ -83,13 +83,17 @@ lock.vw_carid_doors_locked:
     friendly_name: VW Car Locked
     assumed_state: false
 sensor.vw_carid_battery_level:
-    friendly_name: VW Car Battery
+    friendly_name: VW Car Battery Level
+sensor.vw_carid_fuel_level:
+    friendly_name: VW Car Fuel Level
 sensor.vw_carid_charging_time_left:
     friendly_name: VW Car Charging time left
 sensor.vw_carid_odometer:
     friendly_name: VW Car Odometer
 sensor.vw_carid_electric_range:
     friendly_name: VW Car Electric Range Left
+sensor.vw_carid_combustion_range:
+    friendly_name: VW Car Combustion Range Left
 sensor.vw_carid_last_connected:
     friendly_name: VW Car Last Connected
 sensor.vw_carid_service_inspection:
