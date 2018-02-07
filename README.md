@@ -86,6 +86,8 @@ sensor.vw_carid_battery_level:
     friendly_name: VW Car Battery Level
 sensor.vw_carid_fuel_level:
     friendly_name: VW Car Fuel Level
+sensor.vw_carid_charge_max_ampere:
+    friendly_name: VW Charge max ampere
 sensor.vw_carid_charging_time_left:
     friendly_name: VW Car Charging time left
 sensor.vw_carid_odometer:
