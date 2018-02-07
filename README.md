@@ -1,8 +1,10 @@
 Volkswagen Carnet - An home assistant plugin to add integration with your car
 ============================================================
-Information
+Description
 ------------
-This plugin is still in developing state.
+This platform plugin allows you to see some information from volkswagen carnet related to your car that has a valid carnet subscription.
+
+It also allows you to trigger some functions like start climatisation if your car supports that.
 
 Installation
 ------------
@@ -12,12 +14,6 @@ Make sure you have a account on volkswagen carnet.
 Clone or copy the root of the repository into `<config dir>/custom_components`
 
 Add a volkswagen_carnet configuration block to your `<config dir>/configuration.yaml`
-
-Start the Home Assistant service with the configuration below, check "states" in Home Assistant to find out your CarNet ID, replace vw_carid with your ID throughout the example configuration below, save the config files and restart Home Assistant.
-
-```switch.vw_carid_charging ---> switch.wvwzzzXczheXXXXXXX_charging```
-
-
 ```yaml
 volkswagen_carnet:
     username: <username to volkswagen carnet>
@@ -25,6 +21,10 @@ volkswagen_carnet:
     update_interval: 
         minutes: 5 # specify in minutes how often to fetch status data from carnet (optional, default 3 min, minimum 3 min)
 ```
+
+Start the Home Assistant service with the configuration below, check "states" in Home Assistant to find out your CarNet ID, replace vw_carid with your ID throughout the example configuration below, save the config files and restart Home Assistant.
+
+Example: ```switch.vw_carid_charging ---> switch.wvwzzzXczheXXXXXXX_charging```
 
 Group example
 ------------
@@ -118,6 +118,51 @@ switch.vw_carid_climatisation:
 switch.vw_carid_window_heater:
     friendly_name: VW Car Window Heating
     assumed_state: false
+```
+
+Automation example
+------------
+In this example we are sending notifications to a slack channel
+
+`<config dir>/automations.yaml`
+```yaml
+# Get notifications when climatisation is started/stopped
+- alias: vw_carid_climatisation_on
+  trigger:
+   platform: state
+   entity_id: switch.vw_carid_climatisation
+   from: 'off'
+   to: 'on'
+  action:
+   service: notify.slack
+   data_template:
+    title: "VW climatisation started"
+    message: "VW climatisation started"
+
+- alias: vw_carid_climatisation_off
+  trigger:
+   platform: state
+   entity_id: switch.vw_carid_climatisation
+   from: 'on'
+   to: 'off'
+  action:
+   service: notify.slack
+   data_template:
+    title: "VW climatisation stopped"
+    message: "VW climatisation stopped"
+    
+# Get notifications when vehicle is charging
+- alias: vw_carid_charging
+  trigger:
+   platform: state
+   entity_id: switch.vw_carid_charging
+   from: 'off'
+   to: 'on'
+  action:
+   service: notify.slack
+   data_template:
+    title: "VW is now charging"
+    message: "VW is now charging"
 ```
 
 Enable debug logging
