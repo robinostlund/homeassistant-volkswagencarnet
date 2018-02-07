@@ -96,6 +96,8 @@ sensor.vw_carid_electric_range:
     friendly_name: VW Car Electric Range Left
 sensor.vw_carid_combustion_range:
     friendly_name: VW Car Combustion Range Left
+sensor.vw_carid_total_range:
+    friendly_name: VW Car Total Range Left
 sensor.vw_carid_last_connected:
     friendly_name: VW Car Last Connected
 sensor.vw_carid_service_inspection:
