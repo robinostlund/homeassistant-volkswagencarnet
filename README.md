@@ -163,6 +163,18 @@ In this example we are sending notifications to a slack channel
    data_template:
     title: "VW is now charging"
     message: "VW is now charging"
+
+# Get notifications when vehicle is fully charged
+- alias: vw_carid_battery_fully_charged
+  trigger:
+   platform: numeric_state
+   entity_id: switch.vw_carid_battery_level
+   above: 99
+  action:
+   service: notify.slack
+   data_template:
+    title: "VW is now fully charged"
+    message: "VW is now fully charged"
 ```
 
 Enable debug logging
