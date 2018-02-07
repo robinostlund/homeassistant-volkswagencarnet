@@ -17,7 +17,7 @@ _LOGGER = logging.getLogger(__name__)
 DOMAIN = 'volkswagen_carnet'
 DATA_KEY = DOMAIN
 
-REQUIREMENTS = ['volkswagencarnet==2.0.12']
+REQUIREMENTS = ['volkswagencarnet==2.0.13']
 CONF_UPDATE_INTERVAL = 'update_interval'
 
 SIGNAL_VEHICLE_SEEN = '{}.vehicle_seen'.format(DOMAIN)
@@ -39,6 +39,7 @@ RESOURCES = {
     'charging_time_left': ('sensor', 'Charging time left', 'mdi:battery-charging-100', 'min'),
     'external_power': ('binary_sensor', 'External power', 'mdi:power-plug', 'power'),
     'parking_light': ('binary_sensor', 'Parking light', 'mdi:lightbulb', 'light'),
+    'climatisation_without_external_power': ('binary_sensor', 'Climatisation without external power', 'mdi:power-plug', 'power'),
     'doors_locked':  ('lock', 'Doors locked', 'mdi:lock'),
     'electric_range': ('sensor', 'Electric range', 'mdi:car', 'km'),
     'combustion_range': ('sensor', 'Combustion range', 'mdi:car', 'km'),

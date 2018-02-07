@@ -53,14 +53,17 @@ volkswagensensors:
     control: hidden
     entities:
         - sensor.vw_carid_battery_level
+        - sensor.vw_carid_fuel_level
         - sensor.vw_carid_charging_time_left
         - sensor.vw_carid_odometer
         - sensor.vw_carid_electric_range
+        - sensor.vw_carid_combustion_range
         - sensor.vw_carid_last_connected
         - sensor.vw_carid_service_inspection
         - sensor.vw_carid_climatisation_target_temperature
         - binary_sensor.vw_carid_parking_light
         - binary_sensor.vw_carid_external_power
+        - binary_sensor.vw_carid_climatisation_without_external_power
         
 volkswagenlocation:
     name: Volkswagen Location
@@ -77,6 +80,8 @@ binary_sensor.vw_carid_parking_light:
     friendly_name: VW Car Parking Lights
 binary_sensor.vw_carid_external_power:
     friendly_name: VW Car External Power Connected
+binary_sensor.vw_carid_climatisation_without_external_power:
+    friendly_name: VW Car Climatisation Without External Power
 device_tracker.vw_carid:
     friendly_name: VW Car Location
 lock.vw_carid_doors_locked:
