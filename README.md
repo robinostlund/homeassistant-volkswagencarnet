@@ -47,6 +47,7 @@ volkswagenswitches:
         - switch.vw_carid_climatisation
         - switch.vw_carid_window_heater
         - lock.vw_carid_doors_locked
+        - lock.vw_carid_trunk_locked
   
 volkswagensensors:
     name: Volkswagen Information
@@ -87,6 +88,9 @@ device_tracker.vw_carid:
     friendly_name: VW Car Location
 lock.vw_carid_doors_locked:
     friendly_name: VW Car Locked
+    assumed_state: false
+lock.vw_carid_trunk_locked:
+    friendly_name: VW Trunk Locked
     assumed_state: false
 sensor.vw_carid_battery_level:
     friendly_name: VW Car Battery Level
