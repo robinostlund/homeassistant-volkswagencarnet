@@ -78,7 +78,6 @@ def setup(hass, config):
     connection._login()
     if not connection.logged_in:
         _LOGGER.warning('Could not login to carnet')
-        return False
 
     def discover_vehicle(vehicle):
         """Load relevant platforms."""
@@ -103,14 +102,17 @@ def setup(hass, config):
     def update(now):
         """Update status from Volkswagen Carnet"""
         try:
-            if not connection.update():
-                _LOGGER.warning("Could not query carnet")
-                return False
+            if not connection.logged_in:
+                connection._login()
             else:
-                _LOGGER.debug("Updating data from carnet")
+                if not connection.update():
+                    _LOGGER.warning("Could not query carnet")
+                    return False
+                else:
+                    _LOGGER.debug("Updating data from carnet")
 
-            for vehicle in connection.vehicles:
-                update_vehicle(vehicle)
+                for vehicle in connection.vehicles:
+                    update_vehicle(vehicle)
 
             return True
 
