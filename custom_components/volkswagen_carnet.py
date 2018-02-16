@@ -17,7 +17,7 @@ _LOGGER = logging.getLogger(__name__)
 DOMAIN = 'volkswagen_carnet'
 DATA_KEY = DOMAIN
 
-REQUIREMENTS = ['volkswagencarnet==2.0.19']
+REQUIREMENTS = ['volkswagencarnet==2.0.20']
 CONF_UPDATE_INTERVAL = 'update_interval'
 
 SIGNAL_VEHICLE_SEEN = '{}.vehicle_seen'.format(DOMAIN)
@@ -76,6 +76,9 @@ def setup(hass, config):
     # login to carnet
     _LOGGER.debug("Creating connection to carnet")
     connection._login()
+    if not connection.logged_in:
+        _LOGGER.warning('Could not login to carnet')
+        return False
 
     def discover_vehicle(vehicle):
         """Load relevant platforms."""

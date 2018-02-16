@@ -80,49 +80,71 @@ Customize example
 ```yaml
 binary_sensor.vw_carid_parking_light:
     friendly_name: VW Car Parking Lights
+    show_last_changed: true
 binary_sensor.vw_carid_external_power:
     friendly_name: VW Car External Power Connected
+    show_last_changed: true
 binary_sensor.vw_carid_climatisation_without_external_power:
     friendly_name: VW Car Climatisation Without External Power
+    show_last_changed: true
 device_tracker.vw_carid:
     friendly_name: VW Car Location
+    show_last_changed: true
 lock.vw_carid_doors_locked:
     friendly_name: VW Car Locked
     assumed_state: false
+    hide_control: true
+    show_last_changed: true
 lock.vw_carid_trunk_locked:
     friendly_name: VW Trunk Locked
     assumed_state: false
+    hide_control: true
+    show_last_changed: true
 sensor.vw_carid_battery_level:
     friendly_name: VW Car Battery Level
+    show_last_changed: true
 sensor.vw_carid_fuel_level:
     friendly_name: VW Car Fuel Level
+    show_last_changed: true
 sensor.vw_carid_charge_max_ampere:
     friendly_name: VW Charge max ampere
+    show_last_changed: true
 sensor.vw_carid_charging_time_left:
     friendly_name: VW Car Charging time left
+    show_last_changed: true
 sensor.vw_carid_odometer:
     friendly_name: VW Car Odometer
+    show_last_changed: true
 sensor.vw_carid_electric_range:
     friendly_name: VW Car Electric Range Left
+    show_last_changed: true
 sensor.vw_carid_combustion_range:
     friendly_name: VW Car Combustion Range Left
+    show_last_changed: true
 sensor.vw_carid_combined_range:
     friendly_name: VW Car Combined Range Left
+    show_last_changed: true
 sensor.vw_carid_last_connected:
     friendly_name: VW Car Last Connected
+    show_last_changed: true
 sensor.vw_carid_service_inspection:
     friendly_name: VW Car Next Service
+    show_last_changed: true
 sensor.vw_carid_climatisation_target_temperature:
     friendly_name: VW Car Climatisation Target Temperature
+    show_last_changed: true
 switch.vw_carid_charging:
     friendly_name: VW Car Charging
     assumed_state: false
+    show_last_changed: true
 switch.vw_carid_climatisation:
     friendly_name: VW Car Climatisation
     assumed_state: false
+    show_last_changed: true
 switch.vw_carid_window_heater:
     friendly_name: VW Car Window Heating
     assumed_state: false
+    show_last_changed: true
 ```
 
 Automation example
