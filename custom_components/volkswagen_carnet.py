@@ -104,6 +104,8 @@ def setup(hass, config):
         try:
             if not connection.logged_in:
                 connection._login()
+                if not connection.logged_in:
+                    _LOGGER.warning('Could not login to carnet')
             else:
                 if not connection.update():
                     _LOGGER.warning("Could not query carnet")
