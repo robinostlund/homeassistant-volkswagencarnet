@@ -28,7 +28,7 @@ class VolkswagenSensor(VolkswagenEntity):
         if self._attribute in ['last_connected', 'service_inspection']:
             return str(val)
         else:
-            return int(val)
+            return int(float(val))
 
     @property
     def unit_of_measurement(self):
