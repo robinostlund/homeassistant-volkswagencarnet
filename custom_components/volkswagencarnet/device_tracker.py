@@ -5,7 +5,7 @@ import logging
 
 from homeassistant.util import slugify
 from homeassistant.helpers.dispatcher import (dispatcher_connect, dispatcher_send)
-from custom_components.volkswagen_carnet import SIGNAL_VEHICLE_SEEN, DATA_KEY
+from custom_components.volkswagencarnet import SIGNAL_VEHICLE_SEEN, DATA_KEY
 
 _LOGGER = logging.getLogger(__name__)
 

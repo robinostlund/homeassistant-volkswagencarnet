@@ -4,7 +4,7 @@ Support for Volkswagen Carnet Platform
 import logging
 
 from homeassistant.components.lock import LockDevice
-from custom_components.volkswagen_carnet import VolkswagenEntity
+from custom_components.volkswagencarnet import VolkswagenEntity
 
 
 _LOGGER = logging.getLogger(__name__)

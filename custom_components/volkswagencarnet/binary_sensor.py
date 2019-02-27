@@ -2,7 +2,7 @@
 Support for Volkswagen Carnet.
 """
 import logging
-from custom_components.volkswagen_carnet import VolkswagenEntity, RESOURCES
+from custom_components.volkswagencarnet import VolkswagenEntity, RESOURCES
 from homeassistant.components.binary_sensor import BinarySensorDevice
 
 _LOGGER = logging.getLogger(__name__)

@@ -3,7 +3,7 @@ Support for Volkswagen Carnet Platform
 """
 import logging
 from homeassistant.helpers.entity import ToggleEntity
-from custom_components.volkswagen_carnet import VolkswagenEntity, RESOURCES
+from custom_components.volkswagencarnet import VolkswagenEntity, RESOURCES
 
 _LOGGER = logging.getLogger(__name__)
 

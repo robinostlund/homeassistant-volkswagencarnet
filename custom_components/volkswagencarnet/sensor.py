@@ -2,7 +2,7 @@
 Support for Volkswagen Carnet Platform
 """
 import logging
-from custom_components.volkswagen_carnet import VolkswagenEntity, RESOURCES
+from custom_components.volkswagencarnet import VolkswagenEntity, RESOURCES
 from homeassistant.helpers.icon import icon_for_battery_level
 
 
