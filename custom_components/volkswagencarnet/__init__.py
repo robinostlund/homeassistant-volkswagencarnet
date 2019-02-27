@@ -14,7 +14,7 @@ from homeassistant.helpers.dispatcher import dispatcher_send
 
 _LOGGER = logging.getLogger(__name__)
 
-DOMAIN = 'volkswagen_carnet'
+DOMAIN = 'volkswagencarnet'
 DATA_KEY = DOMAIN
 
 REQUIREMENTS = ['volkswagencarnet==2.0.22']

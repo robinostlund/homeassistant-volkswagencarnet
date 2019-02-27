@@ -13,9 +13,9 @@ Make sure you have a account on volkswagen carnet.
 
 Clone or copy the root of the repository into `<config dir>/custom_components`
 
-Add a volkswagen_carnet configuration block to your `<config dir>/configuration.yaml`
+Add a volkswagencarnet configuration block to your `<config dir>/configuration.yaml`
 ```yaml
-volkswagen_carnet:
+volkswagencarnet:
     username: <username to volkswagen carnet>
     password: <password to volkswagen carnet>
     update_interval: 
