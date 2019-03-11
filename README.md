@@ -22,6 +22,10 @@ volkswagencarnet:
         minutes: 5 # specify in minutes how often to fetch status data from carnet (optional, default 3 min, minimum 3 min)
 ```
 
+Update_interval information
+---------------------------
+Depending on the firmware version of your cars control box the update interval needs to be adjusted so that we do not query the car too often. Some users have great success with ```minutes: 5``` and others have to set it to ```minutes: 90``` for a much slower update interval to not "lock up" carnet.
+
 Start the Home Assistant service with the configuration below, check "states" in Home Assistant to find out your CarNet ID, replace vw_carid with your ID throughout the example configuration below, save the config files and restart Home Assistant.
 
 Example: ```switch.vw_carid_charging ---> switch.wvwzzzXczheXXXXXXX_charging```
