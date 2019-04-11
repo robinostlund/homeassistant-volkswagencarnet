@@ -19,11 +19,18 @@ volkswagencarnet:
     username: <username to volkswagen carnet>
     password: <password to volkswagen carnet>
     scan_interval: 
-        minutes: 2 # specify in minutes how often to fetch status data from carnet (optional, default 5 min, minimum 1 min)
+        minutes: 2
     name:
         wvw1234567812356: 'Passat GTE'
 ```
-To set a friendly name of your car you can use the name setting as in confiugration example.
+
+scan_interval: specify in minutes how often to fetch status data from carnet (optional, default 5 min, minimum 1 min)
+
+name: set a friendly name of your car you can use the name setting as in confiugration example.
+
+Example of entities
+------------
+![alt text](https://user-images.githubusercontent.com/12171819/55963464-30216480-5c73-11e9-9b91-3bf06672ef36.png)
 
 
 
@@ -102,3 +109,5 @@ Lovelace Card
 ------------
 Check out this awesome lovelace card by endor
 https://github.com/endor-force/lovelace-carnet
+
+![alt text](https://user-images.githubusercontent.com/12171819/55963632-7d9dd180-5c73-11e9-9eea-c2b211f6843b.png)

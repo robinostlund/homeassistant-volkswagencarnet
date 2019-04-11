@@ -198,7 +198,7 @@ class VolkswagenEntity(Entity):
     @property
     def icon(self):
         """Return the icon."""
-        if self.instrument.attr == 'battery_level':
+        if self.instrument.attr in ['battery_level', 'charging']:
             return icon_for_battery_level(battery_level = self.instrument.state, charging = self.vehicle.charging)
         else:
             return self.instrument.icon
