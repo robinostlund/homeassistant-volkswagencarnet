@@ -26,8 +26,9 @@ def setup_scanner(hass, config, see, discovery_info=None):
         host_name = data.vehicle_name(vehicle)
         dev_id = '{}'.format(slugify(host_name))
         _LOGGER.debug('Updating location of %s' % host_name)
-        see(dev_id=dev_id, host_name=host_name, source_type=SOURCE_TYPE_GPS, gps=instrument.state, icon='mdi:car')
-
+        if instrument.state:
+            see(dev_id=dev_id, host_name=host_name, source_type=SOURCE_TYPE_GPS, gps=instrument.state, icon='mdi:car')
+            
     dispatcher_connect(hass, SIGNAL_STATE_UPDATED, see_vehicle)
     #dispatcher_send(hass, SIGNAL_STATE_UPDATED)
     return True
