@@ -4,124 +4,148 @@ import voluptuous as vol
 import homeassistant.helpers.config_validation as cv
 
 from datetime import timedelta
-from homeassistant.const import (CONF_USERNAME, CONF_PASSWORD, CONF_NAME, CONF_RESOURCES)
+from homeassistant.const import (CONF_USERNAME, CONF_PASSWORD, CONF_RESOURCES, CONF_NAME, CONF_SCAN_INTERVAL)
 from homeassistant.helpers import discovery
 from homeassistant.helpers.event import track_point_in_utc_time
 from homeassistant.util.dt import utcnow
 from homeassistant.helpers.entity import Entity
 from homeassistant.helpers.dispatcher import dispatcher_send
-
+from homeassistant.helpers.icon import icon_for_battery_level
 
 _LOGGER = logging.getLogger(__name__)
 
 DOMAIN = 'volkswagencarnet'
 DATA_KEY = DOMAIN
+CONF_REGION = 'region'
+DEFAULT_REGION = 'SV'
+CONF_MUTABLE = 'mutable'
 
-REQUIREMENTS = ['volkswagencarnet==2.0.22']
-CONF_UPDATE_INTERVAL = 'update_interval'
+REQUIREMENTS = ['volkswagencarnet==4.0.16']
 
-SIGNAL_VEHICLE_SEEN = '{}.vehicle_seen'.format(DOMAIN)
+SIGNAL_STATE_UPDATED = '{}.updated'.format(DOMAIN)
 
-MIN_UPDATE_INTERVAL = timedelta(minutes=3)
+MIN_UPDATE_INTERVAL = timedelta(minutes=1)
 DEFAULT_UPDATE_INTERVAL = timedelta(minutes=5)
 
-
-RESOURCES = {
-    'position': ('device_tracker',),
-    'climatisation': ('switch', 'Climatisation', 'mdi:radiator'),
-    'window_heater': ('switch', 'Window Heater', 'mdi:speedometer'),
-    'charging': ('switch', 'Charging', 'mdi:battery'),
-    'distance': ('sensor', 'Odometer', 'mdi:speedometer', 'km'),
-    'battery_level': ('sensor', 'Battery level', 'mdi:battery', '%'),
-    'fuel_level': ('sensor', 'Fuel level', 'mdi:fuel', '%'),
-    'service_inspection' : ('sensor', 'Service inspection', 'mdi:garage', ''),
-    'last_connected' : ('sensor', 'Last connected', 'mdi:clock', ''),
-    'charging_time_left': ('sensor', 'Charging time left', 'mdi:battery-charging-100', 'min'),
-    'external_power': ('binary_sensor', 'External power', 'mdi:power-plug', 'power'),
-    'parking_light': ('binary_sensor', 'Parking light', 'mdi:lightbulb', 'light'),
-    'climatisation_without_external_power': ('binary_sensor', 'Climatisation without external power', 'mdi:power-plug', 'power'),
-    'doors_locked':  ('lock', 'Doors locked', 'mdi:lock'),
-    'trunk_locked':  ('lock', 'Trunk locked', 'mdi:lock'),
-    'electric_range': ('sensor', 'Electric range', 'mdi:car', 'km'),
-    'combustion_range': ('sensor', 'Combustion range', 'mdi:car', 'km'),
-    'combined_range': ('sensor', 'Combined Range', 'mdi:car', 'km'),
-    'charge_max_ampere': ('sensor', 'Charge max ampere', 'mdi:flash', 'A'),
-    'climatisation_target_temperature': ('sensor', 'Climatisation target temperature', 'mdi:thermometer', '°C')
+COMPONENTS = {
+    'sensor': 'sensor',
+    'binary_sensor': 'binary_sensor',
+    'lock': 'lock',
+    'device_tracker': 'device_tracker',
+    'switch': 'switch',
 }
+
+RESOURCES = [
+    'position',
+    'distance',
+    'climatisation',
+    'window_heater',
+    'charging',
+    'battery_level',
+    'fuel_level',
+    'service_inspection',
+    'oil_inspection',
+    'last_connected',
+    'charging_time_left',
+    'electric_range',
+    'combustion_range',
+    'combined_range',
+    'charge_max_ampere',
+    'climatisation_target_temperature',
+    'external_power',
+    'parking_light',
+    'climatisation_without_external_power',
+    'door_locked',
+    'trunk_locked',
+    'request_in_progress'
+]
 
 CONFIG_SCHEMA = vol.Schema({
     DOMAIN: vol.Schema({
         vol.Required(CONF_USERNAME): cv.string,
         vol.Required(CONF_PASSWORD): cv.string,
-        vol.Optional(CONF_UPDATE_INTERVAL, default=DEFAULT_UPDATE_INTERVAL): (
+        vol.Optional(CONF_REGION, default=DEFAULT_REGION): cv.string,
+        vol.Optional(CONF_MUTABLE, default=True): cv.boolean,
+        vol.Optional(CONF_SCAN_INTERVAL, default=DEFAULT_UPDATE_INTERVAL): (
             vol.All(cv.time_period, vol.Clamp(min=MIN_UPDATE_INTERVAL))),
         vol.Optional(CONF_NAME, default={}): vol.Schema(
             {cv.slug: cv.string}),
         vol.Optional(CONF_RESOURCES): vol.All(
-            cv.ensure_list, [vol.In(RESOURCES)]),
+            cv.ensure_list, [vol.In(RESOURCES)])
     }),
 }, extra = vol.ALLOW_EXTRA)
 
 def setup(hass, config):
     """Setup Volkswagen Carnet component"""
+    interval = config[DOMAIN].get(CONF_SCAN_INTERVAL)
+    data = hass.data[DATA_KEY] = VolkswagenData(config)
+    
     from volkswagencarnet import Connection
 
-    username = config[DOMAIN].get(CONF_USERNAME)
-    password = config[DOMAIN].get(CONF_PASSWORD)
-    interval = config[DOMAIN].get(CONF_UPDATE_INTERVAL)
-    state = hass.data[DATA_KEY] = VolkswagenData(config)
+    _LOGGER.debug("Creating connection to volkswagen carnet")
+    connection = Connection(
+        username = config[DOMAIN].get(CONF_USERNAME),
+        password = config[DOMAIN].get(CONF_PASSWORD),
+        #region = config[DOMAIN].get(CONF_REGION) # add support for this
+    )
 
-    # create carnet connection
-    connection = Connection(username, password)
     # login to carnet
-    _LOGGER.debug("Creating connection to carnet")
+    _LOGGER.debug("Logging in to volkswagen carnet")
     connection._login()
     if not connection.logged_in:
-        _LOGGER.warning('Could not login to carnet')
+        _LOGGER.warning('Could not login to volkswagen carnet, please check your credentials')
+
+    def is_enabled(attr):
+        """Return true if the user has enabled the resource."""
+        return attr in config[DOMAIN].get(CONF_RESOURCES, [attr])
 
     def discover_vehicle(vehicle):
         """Load relevant platforms."""
-        state.entities[vehicle.vin] = []
-        for attr, (component, *_) in RESOURCES.items():
-            if (getattr(vehicle, attr + '_supported', True) and
-                    attr in config[DOMAIN].get(CONF_RESOURCES, [attr])):
-                discovery.load_platform(
-                    hass, component, DOMAIN, (vehicle.vin, attr), config)
+        data.vehicles.add(vehicle.vin)
+        data.entities[vehicle.vin] = []
 
-    def update_vehicle(vehicle):
-        """Review updated information on vehicle."""
-        state.vehicles[vehicle.vin] = vehicle
-        if vehicle.vin not in state.entities:
-            discover_vehicle(vehicle)
+        dashboard = vehicle.dashboard(mutable = config[DOMAIN][CONF_MUTABLE])
 
-        for entity in state.entities[vehicle.vin]:
-            entity.schedule_update_ha_state()
+        for instrument in (
+                instrument
+                for instrument in dashboard.instruments
+                if instrument.component in COMPONENTS and
+                is_enabled(instrument.slug_attr)):
 
-        dispatcher_send(hass, SIGNAL_VEHICLE_SEEN, vehicle)
+            data.instruments.add(instrument)
+            discovery.load_platform(hass, COMPONENTS[instrument.component], DOMAIN, (vehicle.vin,instrument.component,instrument.attr), config)
 
     def update(now):
         """Update status from Volkswagen Carnet"""
         try:
+            # check if we can login again
             if not connection.logged_in:
                 connection._login()
                 if not connection.logged_in:
-                    _LOGGER.warning('Could not login to carnet')
+                    _LOGGER.warning('Could not login to volkswagen carnet, please check your credentials')
+                    return False
             else:
-                if not connection.update():
-                    _LOGGER.warning("Could not query carnet")
+                if not connection.update(request_data = False):
+                    _LOGGER.warning("Could not query update from volkswagen carnet")
                     return False
                 else:
-                    _LOGGER.debug("Updating data from carnet")
+                    _LOGGER.debug("Updating data from volkswagen carnet")
 
-                for vehicle in connection.vehicles:
-                    update_vehicle(vehicle)
+                    for vehicle in connection.vehicles:
+                        if vehicle.vin not in data.vehicles:
+                            _LOGGER.info("Adding data for VIN: %s from carnet" % vehicle.vin.lower())
+                            discover_vehicle(vehicle)
+                        
+                        for entity in data.entities[vehicle.vin]:
+                            entity.schedule_update_ha_state()
 
+                        dispatcher_send(hass, SIGNAL_STATE_UPDATED, vehicle)
             return True
 
         finally:
             track_point_in_utc_time(hass, update, utcnow() + interval)
 
-    _LOGGER.info("Starting service")
+    _LOGGER.info("Starting volkswagencarnet component")
     return update(utcnow())
 
 
@@ -130,10 +154,19 @@ class VolkswagenData:
 
     def __init__(self, config):
         """Initialize the component state."""
+        self.vehicles = set()
+        self.instruments = set()
         self.entities = {}
-        self.vehicles = {}
         self.config = config[DOMAIN]
         self.names = self.config.get(CONF_NAME)
+
+    def instrument(self, vin, component, attr):
+        """Return corresponding instrument."""
+        return next((instrument
+                     for instrument in self.instruments
+                     if instrument.vehicle.vin == vin and
+                     instrument.component == component and
+                     instrument.attr == attr), None)
 
     def vehicle_name(self, vehicle):
         """Provide a friendly name for a vehicle."""
@@ -146,38 +179,47 @@ class VolkswagenData:
 
 
 class VolkswagenEntity(Entity):
-    """Base class for all VOC entities."""
+    """Base class for all Volkswagen entities."""
 
-    def __init__(self, hass, vin, attribute):
+    def __init__(self, data, vin, component, attribute):#, attribute):
         """Initialize the entity."""
-        self._hass = hass
-        self._vin = vin
-        self._attribute = attribute
-        self._state.entities[self._vin].append(self)
+        self.data = data
+        self.vin = vin
+        self.component = component
+        self.attribute = attribute
+
+        self.data.entities[self.vin].append(self)
 
     @property
-    def _state(self):
-        return self._hass.data[DATA_KEY]
+    def instrument(self):
+        """Return corresponding instrument."""
+        return self.data.instrument(self.vin, self.component, self.attribute)
+
+    @property
+    def icon(self):
+        """Return the icon."""
+        if self.instrument.attr == 'battery_level':
+            return icon_for_battery_level(battery_level = self.instrument.state, charging = self.vehicle.charging)
+        else:
+            return self.instrument.icon
 
     @property
     def vehicle(self):
         """Return vehicle."""
-        return self._state.vehicles[self._vin]
+        return self.instrument.vehicle
 
     @property
     def _entity_name(self):
-        return RESOURCES[self._attribute][1]
+        return self.instrument.name
 
     @property
     def _vehicle_name(self):
-        return self._state.vehicle_name(self.vehicle)
+        return self.data.vehicle_name(self.vehicle)
 
     @property
     def name(self):
         """Return full name of the entity."""
-        return '{} {}'.format(
-            self._vehicle_name,
-            self._entity_name)
+        return '{} {}'.format(self._vehicle_name,self._entity_name)
 
     @property
     def should_poll(self):
@@ -192,4 +234,4 @@ class VolkswagenEntity(Entity):
     @property
     def device_state_attributes(self):
         """Return device specific state attributes."""
-        return dict(model='{}/{}'.format(self.vehicle.model,self.vehicle.model_year))
+        return dict(self.instrument.attributes, model='{}/{}'.format(self.vehicle.model,self.vehicle.model_year))

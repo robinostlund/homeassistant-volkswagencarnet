@@ -2,26 +2,34 @@
 Support for Volkswagen Carnet Platform
 """
 import logging
-
 from homeassistant.components.lock import LockDevice
-from custom_components.volkswagencarnet import VolkswagenEntity
-
+from . import VolkswagenEntity, DATA_KEY
 
 _LOGGER = logging.getLogger(__name__)
 
-# pylint: disable=unused-argument
 def setup_platform(hass, config, add_devices, discovery_info=None):
-    """Set up the Volvo On Call lock."""
+    """ Setup the volkswagen lock """
     if discovery_info is None:
         return
-
-    add_devices([VolkswagenLock(hass, *discovery_info)])
+    add_devices([VolkswagenLock(hass.data[DATA_KEY], *discovery_info)])
 
 class VolkswagenLock(VolkswagenEntity, LockDevice):
-    """Represents a car lock."""
+    """Represents a Volkswagen Carnet Lock."""
 
     @property
     def is_locked(self):
         """Return true if lock is locked."""
-        _LOGGER.debug('Getting state of %s lock' % self._attribute)
-        return self.vehicle.is_doors_locked
+        _LOGGER.debug('Getting state of %s' % self.instrument.attr)
+        return self.instrument.is_locked
+
+    def lock(self, **kwargs):
+        """Lock the car."""
+        self.instrument.lock()
+
+    def unlock(self, **kwargs):
+        """Unlock the car."""
+        self.instrument.unlock()
+
+    @property
+    def assumed_state(self):
+        return self.instrument.assumed_state
