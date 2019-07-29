@@ -20,7 +20,7 @@ CONF_REGION = 'region'
 DEFAULT_REGION = 'SV'
 CONF_MUTABLE = 'mutable'
 
-REQUIREMENTS = ['volkswagencarnet==4.0.20']
+REQUIREMENTS = ['volkswagencarnet==4.0.22']
 
 SIGNAL_STATE_UPDATED = '{}.updated'.format(DOMAIN)
 
@@ -86,7 +86,6 @@ def setup(hass, config):
     connection = Connection(
         username = config[DOMAIN].get(CONF_USERNAME),
         password = config[DOMAIN].get(CONF_PASSWORD),
-        #region = config[DOMAIN].get(CONF_REGION) # add support for this
     )
 
     # login to carnet
@@ -181,7 +180,7 @@ class VolkswagenData:
 class VolkswagenEntity(Entity):
     """Base class for all Volkswagen entities."""
 
-    def __init__(self, data, vin, component, attribute):#, attribute):
+    def __init__(self, data, vin, component, attribute):
         """Initialize the entity."""
         self.data = data
         self.vin = vin
