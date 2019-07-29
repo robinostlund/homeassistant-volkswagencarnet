@@ -98,6 +98,7 @@ logger:
     default: info
     logs:
         custom_components.volkswagencarnet: debug
+        custom_components.volkswagencarnet.climate: debug
         custom_components.volkswagencarnet.lock: debug
         custom_components.volkswagencarnet.device_tracker: debug
         custom_components.volkswagencarnet.switch: debug
