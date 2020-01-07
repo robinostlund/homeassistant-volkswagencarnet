@@ -20,7 +20,7 @@ CONF_REGION = 'region'
 DEFAULT_REGION = 'SV'
 CONF_MUTABLE = 'mutable'
 
-REQUIREMENTS = ['volkswagencarnet==4.0.28']
+REQUIREMENTS = ['volkswagencarnet==4.0.29']
 
 SIGNAL_STATE_UPDATED = '{}.updated'.format(DOMAIN)
 
