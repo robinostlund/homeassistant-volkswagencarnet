@@ -19,8 +19,12 @@ DATA_KEY = DOMAIN
 CONF_REGION = 'region'
 DEFAULT_REGION = 'SV'
 CONF_MUTABLE = 'mutable'
+CONF_SPIN = 'spin'
 
-REQUIREMENTS = ['volkswagencarnet==4.0.29']
+# Temporary requirment to get this to work in HA.
+# Until it can get merged to original repo.
+REQUIREMENTS = [
+    'https://github.com/Fredrik-Oberg/volkswagencarnet/archive/4.1.0.zip#volkswagencarnet==4.1.0']
 
 SIGNAL_STATE_UPDATED = '{}.updated'.format(DOMAIN)
 
@@ -41,6 +45,7 @@ RESOURCES = [
     'distance',
     'climatisation',
     'window_heater',
+    'remote_access_heating',
     'charging',
     'battery_level',
     'fuel_level',
@@ -67,6 +72,7 @@ CONFIG_SCHEMA = vol.Schema({
         vol.Required(CONF_PASSWORD): cv.string,
         vol.Optional(CONF_REGION, default=DEFAULT_REGION): cv.string,
         vol.Optional(CONF_MUTABLE, default=True): cv.boolean,
+        vol.Optional(CONF_SPIN, default=''): cv.string,
         vol.Optional(CONF_SCAN_INTERVAL, default=DEFAULT_UPDATE_INTERVAL): (
             vol.All(cv.time_period, vol.Clamp(min=MIN_UPDATE_INTERVAL))),
         vol.Optional(CONF_NAME, default={}): vol.Schema(
@@ -74,13 +80,13 @@ CONFIG_SCHEMA = vol.Schema({
         vol.Optional(CONF_RESOURCES): vol.All(
             cv.ensure_list, [vol.In(RESOURCES)])
     }),
-}, extra = vol.ALLOW_EXTRA)
+}, extra=vol.ALLOW_EXTRA)
 
 def setup(hass, config):
     """Setup Volkswagen Carnet component"""
     interval = config[DOMAIN].get(CONF_SCAN_INTERVAL)
     data = hass.data[DATA_KEY] = VolkswagenData(config)
-    
+
     from volkswagencarnet import Connection
 
     _LOGGER.debug("Creating connection to volkswagen carnet")
@@ -104,7 +110,8 @@ def setup(hass, config):
         data.vehicles.add(vehicle.vin)
         data.entities[vehicle.vin] = []
 
-        dashboard = vehicle.dashboard(mutable = config[DOMAIN][CONF_MUTABLE])
+        dashboard = vehicle.dashboard(
+            mutable = config[DOMAIN][CONF_MUTABLE], spin = config[DOMAIN][CONF_SPIN])
 
         for instrument in (
                 instrument
@@ -114,7 +121,7 @@ def setup(hass, config):
 
             data.instruments.add(instrument)
             discovery.load_platform(hass, COMPONENTS[instrument.component], DOMAIN, (vehicle.vin,instrument.component,instrument.attr), config)
-
+          
     def update(now):
         """Update status from Volkswagen Carnet"""
         try:
@@ -135,7 +142,7 @@ def setup(hass, config):
                         if vehicle.vin not in data.vehicles:
                             _LOGGER.info("Adding data for VIN: %s from carnet" % vehicle.vin.lower())
                             discover_vehicle(vehicle)
-                        
+
                         for entity in data.entities[vehicle.vin]:
                             entity.schedule_update_ha_state()
 
