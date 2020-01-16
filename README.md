@@ -6,6 +6,8 @@ This platform plugin allows you to see some information from volkswagen carnet r
 
 It also allows you to trigger some functions like start climatisation if your car supports that.
 
+Remote engine heating is supported for combustion engine vehicles that uses the carnet portal together provided S-PIN. Probably not availabel for all car models.
+
 Installation
 ------------
 
@@ -18,15 +20,56 @@ Add a volkswagencarnet configuration block to your `<config dir>/configuration.y
 volkswagencarnet:
     username: <username to volkswagen carnet>
     password: <password to volkswagen carnet>
+    spin: <S-PIN to volkswagen carnet>  
     scan_interval: 
         minutes: 2
     name:
         wvw1234567812356: 'Passat GTE'
+    resources:
+        - combustion_engine_heating
+        - position
+        - distance
+        - service_inspection
+        - oil_inspection
+        - door_locked
+        - trunk_locked
+        - request_in_progress
 ```
 
-scan_interval: specify in minutes how often to fetch status data from carnet (optional, default 5 min, minimum 1 min)
+* **spin:** (optional) required for supporting combustion engine heating start/stop.
 
-name: set a friendly name of your car you can use the name setting as in confiugration example.
+* **scan_interval:** (optional) specify in minutes how often to fetch status data from carnet. (default 5 min, minimum 1 min)
+
+* **name:** (optional) set a friendly name of your car you can use the name setting as in confiugration example.
+
+* **resources:** (optional) list of resources that should be enabled. (by default all resources is enabled).
+
+Available resources:
+```
+    'position',
+    'distance',
+    'climatisation',
+    'window_heater',
+    'combustion_engine_heating',
+    'charging',
+    'battery_level',
+    'fuel_level',
+    'service_inspection',
+    'oil_inspection',
+    'last_connected',
+    'charging_time_left',
+    'electric_range',
+    'combustion_range',
+    'combined_range',
+    'charge_max_ampere',
+    'climatisation_target_temperature',
+    'external_power',
+    'parking_light',
+    'climatisation_without_external_power',
+    'door_locked',
+    'trunk_locked',
+    'request_in_progress'
+```
 
 Example of entities
 ------------
