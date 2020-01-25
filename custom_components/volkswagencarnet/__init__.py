@@ -21,9 +21,7 @@ DEFAULT_REGION = 'SV'
 CONF_MUTABLE = 'mutable'
 CONF_SPIN = 'spin'
 
-# Temporary requirment to get this to work in HA.
-# Until it can get merged to original repo.
-REQUIREMENTS = ['volkswagencarnet==4.1.15']
+REQUIREMENTS = ['volkswagencarnet==4.1.5']
 
 SIGNAL_STATE_UPDATED = '{}.updated'.format(DOMAIN)
 
