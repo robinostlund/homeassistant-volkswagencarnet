@@ -23,7 +23,7 @@ CONF_SPIN = 'spin'
 
 # Temporary requirment to get this to work in HA.
 # Until it can get merged to original repo.
-REQUIREMENTS = ['volkswagencarnet==4.1.14']
+REQUIREMENTS = ['volkswagencarnet==4.1.15']
 
 SIGNAL_STATE_UPDATED = '{}.updated'.format(DOMAIN)
 
