@@ -4,7 +4,7 @@ Support for Volkswagen Carnet Platform
 import logging
 from homeassistant.components.climate import ClimateDevice
 from homeassistant.components.climate.const import (HVAC_MODE_HEAT, HVAC_MODE_OFF, SUPPORT_TARGET_TEMPERATURE)
-from homeassistant.const import ATTR_TEMPERATURE, TEMP_CELSIUS, TEMP_FAHRENHEIT
+from homeassistant.const import ATTR_TEMPERATURE, TEMP_CELSIUS, TEMP_FAHRENHEIT, STATE_UNKNOWN
 
 SUPPORT_HVAC = [HVAC_MODE_HEAT, HVAC_MODE_OFF]
 
@@ -51,7 +51,10 @@ class VolkswagenClimate(VolkswagenEntity, ClimateDevice):
     @property
     def target_temperature(self):
         """Return the temperature we try to reach."""
-        return float(self.instrument.target_temperature)
+        if self.instrument.target_temperature:
+            return float(self.instrument.target_temperature)
+        else:
+            return STATE_UNKNOWN
 
     def set_temperature(self, **kwargs):
         """Set new target temperatures."""
