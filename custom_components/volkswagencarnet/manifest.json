@@ -1,0 +1,9 @@
+{
+    "domain": "volkswagencarnet",
+    "name": "Volkswagen WeConnect",
+    "documentation": "https://github.com/robinostlund/homeassistant-volkswagencarnet",
+    "dependencies": [],
+    "render_readme": true,
+    "codeowners": [],
+    "requirements": ["volkswagencarnet==4.1.5"]
+}

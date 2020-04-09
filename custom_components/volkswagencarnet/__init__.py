@@ -21,8 +21,6 @@ DEFAULT_REGION = 'SV'
 CONF_MUTABLE = 'mutable'
 CONF_SPIN = 'spin'
 
-REQUIREMENTS = ['volkswagencarnet==4.1.5']
-
 SIGNAL_STATE_UPDATED = '{}.updated'.format(DOMAIN)
 
 MIN_UPDATE_INTERVAL = timedelta(minutes=1)
