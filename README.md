@@ -8,6 +8,8 @@ It also allows you to trigger some functions like start climatisation if your ca
 
 Remote engine heating is supported for combustion engine vehicles that uses the carnet portal together provided S-PIN. Probably not availabel for all car models.
 
+Note: Some features included in the Passat GTE Facelift/MY2019> models are not yet implemented.
+
 Installation
 ------------
 
@@ -26,7 +28,7 @@ volkswagencarnet:
     name:
         wvw1234567812356: 'Passat GTE'
     resources:
-        - combustion_engine_heating
+        - combustion_engine_heating # Note that this option is only available for 2019> Facelift model
         - position
         - distance
         - service_inspection
