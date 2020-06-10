@@ -2,7 +2,7 @@
 Support for Volkswagen Carnet Platform
 """
 import logging
-from homeassistant.components.lock import LockDevice
+from homeassistant.components.lock import LockEntity
 from . import VolkswagenEntity, DATA_KEY
 
 _LOGGER = logging.getLogger(__name__)
@@ -13,7 +13,7 @@ def setup_platform(hass, config, add_devices, discovery_info=None):
         return
     add_devices([VolkswagenLock(hass.data[DATA_KEY], *discovery_info)])
 
-class VolkswagenLock(VolkswagenEntity, LockDevice):
+class VolkswagenLock(VolkswagenEntity, LockEntity):
     """Represents a Volkswagen Carnet Lock."""
 
     @property
