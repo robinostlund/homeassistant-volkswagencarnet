@@ -2,7 +2,7 @@
 Support for Volkswagen Carnet Platform
 """
 import logging
-from homeassistant.components.climate import ClimateDevice
+from homeassistant.components.climate import ClimateEntity
 from homeassistant.components.climate.const import (HVAC_MODE_HEAT, HVAC_MODE_OFF, SUPPORT_TARGET_TEMPERATURE)
 from homeassistant.const import ATTR_TEMPERATURE, TEMP_CELSIUS, TEMP_FAHRENHEIT, STATE_UNKNOWN
 
@@ -18,7 +18,7 @@ def setup_platform(hass, config, add_devices, discovery_info=None):
         return
     add_devices([VolkswagenClimate(hass.data[DATA_KEY], *discovery_info)])
 
-class VolkswagenClimate(VolkswagenEntity, ClimateDevice):
+class VolkswagenClimate(VolkswagenEntity, ClimateEntity):
     """Representation of a Volkswagen Carnet Climate."""
 
     @property
