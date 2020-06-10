@@ -54,6 +54,7 @@ Available resources:
     'window_heater',
     'combustion_engine_heating',
     'charging',
+    'adblue_level',
     'battery_level',
     'fuel_level',
     'service_inspection',

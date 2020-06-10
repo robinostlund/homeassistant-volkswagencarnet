@@ -238,3 +238,8 @@ class VolkswagenEntity(Entity):
     def device_state_attributes(self):
         """Return device specific state attributes."""
         return dict(self.instrument.attributes, model='{}/{}'.format(self.vehicle.model,self.vehicle.model_year))
+
+    @property
+    def unique_id(self) -> str:
+        """Return a unique ID."""
+        return f"{self.vin}-{self.component}-{self.attribute}"
