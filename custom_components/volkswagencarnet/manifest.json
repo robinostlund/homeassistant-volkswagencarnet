@@ -5,5 +5,5 @@
     "dependencies": [],
     "render_readme": true,
     "codeowners": [],
-    "requirements": ["volkswagencarnet==4.1.23"]
+    "requirements": ["volkswagencarnet==4.1.24"]
 }
