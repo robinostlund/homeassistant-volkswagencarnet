@@ -30,5 +30,4 @@ def setup_scanner(hass, config, see, discovery_info=None):
             see(dev_id=dev_id, host_name=host_name, source_type=SOURCE_TYPE_GPS, gps=instrument.state, icon='mdi:car')
             
     dispatcher_connect(hass, SIGNAL_STATE_UPDATED, see_vehicle)
-    #dispatcher_send(hass, SIGNAL_STATE_UPDATED)
     return True
