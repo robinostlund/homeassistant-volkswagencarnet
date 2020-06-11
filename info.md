@@ -36,7 +36,8 @@ Available resources:
 ```
     'position',
     'distance',
-    'climatisation',
+    'electric_climatisation',
+    'combustion_climatisation',
     'window_heater',
     'combustion_engine_heating',
     'charging',
