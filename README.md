@@ -1,6 +1,6 @@
 Volkswagen Carnet - An home assistant plugin to add integration with your car
 ============================================================
-[![buy me a coffee](https://www.buymeacoffee.com/assets/img/custom_images/yellow_img.png](https://www.buymeacoffee.com/robinostlund)
+[![buy me a coffee](https://www.buymeacoffee.com/assets/img/custom_images/yellow_img.png)](https://www.buymeacoffee.com/robinostlund)
 
 Description
 ------------
