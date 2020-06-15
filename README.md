@@ -10,14 +10,15 @@ It also allows you to trigger some functions like start climatisation if your ca
 
 Remote engine heating is supported for combustion engine vehicles that uses the carnet portal together provided S-PIN. Probably not availabel for all car models.
 
-Note: Some features included with the new 2020 WeConnect make and models (Golf/Passat 8.5/Tiguan etc) MY2019> are to be considered beta. The current release (2020-06-13) has been tested with an Passat GTE MY2017 and Passat GTE MY2020 with full functionality.
+Note: Some features included with the new Volkswagen WeConnect 2019 and newer are not fully tested, this custom component should work with any make and models such as Golf/Passat 8.5/Tiguan etc. But please bare with me and report any faults/errors as an issue.
+The current release (2020-06-13) has been tested with an Passat GTE MY2017 and Passat GTE MY2020 with full functionality.
 
 Installation
 ------------
 
 Make sure you have a account on volkswagen carnet.
 
-Clone or copy the root of the repository into `<config dir>/custom_components`
+Clone or copy the root of the repository and copy the folder 'homeassistant-volkswagencarnet/custom_component/volkswagencarnet' into '<config dir>/custom_components'
 
 Add a volkswagencarnet configuration block to your `<config dir>/configuration.yaml`
 ```yaml
