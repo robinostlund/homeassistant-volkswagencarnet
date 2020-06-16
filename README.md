@@ -1,5 +1,7 @@
 Volkswagen Carnet - An home assistant plugin to add integration with your car
 ============================================================
+[![buy me a coffee](https://www.buymeacoffee.com/assets/img/custom_images/yellow_img.png)](https://www.buymeacoffee.com/robinostlund)
+
 Description
 ------------
 This platform plugin allows you to see some information from volkswagen carnet related to your car that has a valid carnet subscription.
@@ -8,14 +10,15 @@ It also allows you to trigger some functions like start climatisation if your ca
 
 Remote engine heating is supported for combustion engine vehicles that uses the carnet portal together provided S-PIN. Probably not availabel for all car models.
 
-Note: Some features included in the Passat GTE Facelift/MY2019> models are not yet implemented.
+Note: Some features included with the new Volkswagen WeConnect 2019 and newer are not fully tested, this custom component should work with any make and models such as Golf/Passat 8.5/Tiguan etc. But please bare with me and report any faults/errors as an issue.
+The current release (2020-06-13) has been tested with an Passat GTE MY2017 and Passat GTE MY2020 with full functionality.
 
 Installation
 ------------
 
 Make sure you have a account on volkswagen carnet.
 
-Clone or copy the root of the repository into `<config dir>/custom_components`
+Clone or copy the root of the repository and copy the folder 'homeassistant-volkswagencarnet/custom_component/volkswagencarnet' into '<config dir>/custom_components'
 
 Add a volkswagencarnet configuration block to your `<config dir>/configuration.yaml`
 ```yaml
@@ -50,10 +53,12 @@ Available resources:
 ```
     'position',
     'distance',
-    'climatisation',
+    'electric_climatisation',
+    'combustion_climatisation',
     'window_heater',
     'combustion_engine_heating',
     'charging',
+    'adblue_level',
     'battery_level',
     'fuel_level',
     'service_inspection',
@@ -134,6 +139,43 @@ In this example we are sending notifications to a slack channel
    data_template:
     title: "VW is now fully charged"
     message: "VW is now fully charged"
+
+# Announce that the car is unlocked but home
+- id: 'car_is_unlocked'
+  alias: The car is at home and unlocked
+  trigger:
+  - entity_id: binary_sensor.my_passat_gte_external_power
+    platform: state
+    to: 'on'
+    for: 00:10:00
+  condition:
+  - condition: state
+    entity_id: lock.my_passat_gte_door_locked
+    state: unlocked
+  - condition: state
+    entity_id: device_tracker.life360_my_lord
+    state: home
+  - condition: time
+    after: '07:00:00'
+    before: '21:00:00'
+  action:
+# Notification via push message to the lors smartphone
+  - data:
+      message: "The car is unlocked!"
+      target:
+      - device/my_device
+    service: notify.device
+# Notification in a smart speaker (kitchen)
+  - data:
+      entity_id: media_player.kitchen
+      volume_level: '0.6'
+    service: media_player.volume_set
+  - data:
+      entity_id: media_player.kitchen
+      message: "My Lord, the car is unlocked. Please attend this this issue at your earliest inconvenience!"
+    service: tts.google_translate_say
+
+
 ```
 
 Enable debug logging
@@ -142,6 +184,7 @@ Enable debug logging
 logger:
     default: info
     logs:
+        volkswagencarnet: debug
         custom_components.volkswagencarnet: debug
         custom_components.volkswagencarnet.climate: debug
         custom_components.volkswagencarnet.lock: debug

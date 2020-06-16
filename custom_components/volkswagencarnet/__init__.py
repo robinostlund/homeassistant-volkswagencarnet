@@ -38,10 +38,12 @@ COMPONENTS = {
 RESOURCES = [
     'position',
     'distance',
-    'climatisation',
+    'electric_climatisation',
+    'combustion_climatisation',
     'window_heater',
     'combustion_engine_heating',
     'charging',
+    'adblue_level',
     'battery_level',
     'fuel_level',
     'service_inspection',
@@ -221,7 +223,7 @@ class VolkswagenEntity(Entity):
     @property
     def name(self):
         """Return full name of the entity."""
-        return '{} {}'.format(self._vehicle_name,self._entity_name)
+        return f"{self._vehicle_name} {self._entity_name}"
 
     @property
     def should_poll(self):
@@ -236,4 +238,12 @@ class VolkswagenEntity(Entity):
     @property
     def device_state_attributes(self):
         """Return device specific state attributes."""
-        return dict(self.instrument.attributes, model='{}/{}'.format(self.vehicle.model,self.vehicle.model_year))
+        return dict(
+            self.instrument.attributes,
+            model=f"{self.vehicle.model}/{self.vehicle.model_year}"
+        )
+
+    @property
+    def unique_id(self) -> str:
+        """Return a unique ID."""
+        return f"{self.vin}-{self.component}-{self.attribute}"
