@@ -66,7 +66,8 @@ RESOURCES = [
     'climatisation_without_external_power',
     'door_locked',
     'trunk_locked',
-    'request_in_progress'
+    'request_in_progress',
+    'window_closed'
 ]
 
 CONFIG_SCHEMA = vol.Schema({

@@ -61,7 +61,8 @@ Available resources:
     'climatisation_without_external_power',
     'door_locked',
     'trunk_locked',
-    'request_in_progress'
+    'request_in_progress',
+    'windows_closed'
 ```
 
 Example of entities
