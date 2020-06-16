@@ -118,7 +118,6 @@ async def async_setup(hass, config):
     def discover_vehicle(vehicle):
         """Load relevant platforms."""
         data.vehicles.add(vehicle.vin)
-        data.entities[vehicle.vin] = []
 
         dashboard = vehicle.dashboard(
             mutable=config[DOMAIN][CONF_MUTABLE],
@@ -146,29 +145,29 @@ async def async_setup(hass, config):
     async def update(now):
         """Update status from Volkswagen Carnet"""
         try:
+            reset_update = False
             # check if we can login
             if not connection.logged_in:
                 await connection._login()
                 if not connection.logged_in:
                     _LOGGER.warning('Could not login to volkswagen carnet, please check your credentials')
                     return False
+                else:
+                    reset_update = True
+
             # update vehicles
-            if not await connection.update(request_data = False):
+            if not await connection.update(request_data=False, reset=reset_update):
                 _LOGGER.warning("Could not query update from volkswagen carnet")
                 return False
-            else:
-                _LOGGER.debug("Updating data from volkswagen carnet")
 
-                for vehicle in connection.vehicles:
-                    if vehicle.vin not in data.vehicles:
-                        _LOGGER.info("Adding data for VIN: %s from carnet" % vehicle.vin.lower())
-                        discover_vehicle(vehicle)
+            _LOGGER.debug("Updating data from volkswagen carnet")
+            for vehicle in connection.vehicles:
+                if vehicle.vin not in data.vehicles:
+                    _LOGGER.info("Adding data for VIN: %s from carnet" % vehicle.vin.lower())
+                    discover_vehicle(vehicle)
 
-                    # for entity in data.entities[vehicle.vin]:
-                    #     entity.schedule_update_ha_state()
-
-                async_dispatcher_send(hass, SIGNAL_STATE_UPDATED)
-                return True
+            async_dispatcher_send(hass, SIGNAL_STATE_UPDATED)
+            return True
 
         finally:
             async_track_point_in_utc_time(hass, update, utcnow() + interval)
@@ -184,7 +183,6 @@ class VolkswagenData:
         """Initialize the component state."""
         self.vehicles = set()
         self.instruments = set()
-        self.entities = {}
         self.config = config[DOMAIN]
         self.names = self.config.get(CONF_NAME)
 
@@ -220,8 +218,6 @@ class VolkswagenEntity(Entity):
         self.vin = vin
         self.component = component
         self.attribute = attribute
-
-        self.data.entities[self.vin].append(self)
 
     async def async_added_to_hass(self):
         """Register update dispatcher."""
