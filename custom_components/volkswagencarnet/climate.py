@@ -12,11 +12,11 @@ from . import VolkswagenEntity, DATA_KEY
 
 _LOGGER = logging.getLogger(__name__)
 
-def setup_platform(hass, config, add_devices, discovery_info=None):
+async def async_setup_platform(hass, config, async_add_entities, discovery_info=None):
     """ Setup the volkswagen climate."""
     if discovery_info is None:
         return
-    add_devices([VolkswagenClimate(hass.data[DATA_KEY], *discovery_info)])
+    async_add_entities([VolkswagenClimate(hass.data[DATA_KEY], *discovery_info)])
 
 class VolkswagenClimate(VolkswagenEntity, ClimateEntity):
     """Representation of a Volkswagen Carnet Climate."""
@@ -34,7 +34,6 @@ class VolkswagenClimate(VolkswagenEntity, ClimateEntity):
         if self.instrument.hvac_mode:
             return HVAC_MODE_HEAT
         return HVAC_MODE_OFF
-
 
     @property
     def hvac_modes(self):
@@ -56,17 +55,17 @@ class VolkswagenClimate(VolkswagenEntity, ClimateEntity):
         else:
             return STATE_UNKNOWN
 
-    def set_temperature(self, **kwargs):
+    async def async_set_temperature(self, **kwargs):
         """Set new target temperatures."""
         _LOGGER.debug("Setting temperature for: %s", self.instrument.attr)
         temperature = kwargs.get(ATTR_TEMPERATURE)
         if temperature:
-            self.instrument.set_temperature(temperature)
+            await self.instrument.set_temperature(temperature)
 
-    def set_hvac_mode(self, hvac_mode):
+    async def async_set_hvac_mode(self, hvac_mode):
         """Set new target hvac mode."""
         _LOGGER.debug("Setting mode for: %s", self.instrument.attr)
         if hvac_mode == HVAC_MODE_OFF:
-            self.instrument.set_hvac_mode(False)
+            await self.instrument.set_hvac_mode(False)
         elif hvac_mode == HVAC_MODE_HEAT:
-            self.instrument.set_hvac_mode(True)
+            await self.instrument.set_hvac_mode(True)
