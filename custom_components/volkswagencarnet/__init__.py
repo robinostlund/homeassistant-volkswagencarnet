@@ -118,7 +118,6 @@ async def async_setup(hass, config):
     def discover_vehicle(vehicle):
         """Load relevant platforms."""
         data.vehicles.add(vehicle.vin)
-        #data.entities[vehicle.vin] = []
 
         dashboard = vehicle.dashboard(
             mutable=config[DOMAIN][CONF_MUTABLE],
@@ -185,7 +184,6 @@ class VolkswagenData:
         """Initialize the component state."""
         self.vehicles = set()
         self.instruments = set()
-        #self.entities = {}
         self.config = config[DOMAIN]
         self.names = self.config.get(CONF_NAME)
 
@@ -221,8 +219,6 @@ class VolkswagenEntity(Entity):
         self.vin = vin
         self.component = component
         self.attribute = attribute
-
-        #self.data.entities[self.vin].append(self)
 
     async def async_added_to_hass(self):
         """Register update dispatcher."""
