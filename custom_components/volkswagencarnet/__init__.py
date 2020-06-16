@@ -157,8 +157,8 @@ async def async_setup(hass, config):
                     # for entity in data.entities[vehicle.vin]:
                     #     entity.schedule_update_ha_state()
 
-                    async_dispatcher_send(hass, SIGNAL_STATE_UPDATED)
-            return True
+                async_dispatcher_send(hass, SIGNAL_STATE_UPDATED)
+                return True
 
         finally:
             async_track_point_in_utc_time(hass, update, utcnow() + interval)

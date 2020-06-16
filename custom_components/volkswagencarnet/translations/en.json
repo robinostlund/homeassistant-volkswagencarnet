@@ -1,0 +1,15 @@
+{
+    "config": {
+        "title": "Volkswagen Carnet",
+        "step": {
+            "user": {
+                "title": "Carnet Configuration",
+                "description": "Fill in Carnet information",
+                "data": {
+                    "username": "Username",
+                    "password": "Password"
+                }
+            }
+        }
+    }
+}
