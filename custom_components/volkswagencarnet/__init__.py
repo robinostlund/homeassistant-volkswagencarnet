@@ -159,16 +159,15 @@ async def async_setup(hass, config):
             if not await connection.update(request_data=False, reset=reset_update):
                 _LOGGER.warning("Could not query update from volkswagen carnet")
                 return False
-            else:
-                _LOGGER.debug("Updating data from volkswagen carnet")
 
-                for vehicle in connection.vehicles:
-                    if vehicle.vin not in data.vehicles:
-                        _LOGGER.info("Adding data for VIN: %s from carnet" % vehicle.vin.lower())
-                        discover_vehicle(vehicle)
+            _LOGGER.debug("Updating data from volkswagen carnet")
+            for vehicle in connection.vehicles:
+                if vehicle.vin not in data.vehicles:
+                    _LOGGER.info("Adding data for VIN: %s from carnet" % vehicle.vin.lower())
+                    discover_vehicle(vehicle)
 
-                async_dispatcher_send(hass, SIGNAL_STATE_UPDATED)
-                return True
+            async_dispatcher_send(hass, SIGNAL_STATE_UPDATED)
+            return True
 
         finally:
             async_track_point_in_utc_time(hass, update, utcnow() + interval)
