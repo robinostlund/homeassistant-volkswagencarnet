@@ -7,11 +7,12 @@ from . import VolkswagenEntity, DATA_KEY
 
 _LOGGER = logging.getLogger(__name__)
 
-def setup_platform(hass, config, add_devices, discovery_info=None):
+
+async def async_setup_platform(hass, config, async_add_entities, discovery_info=None):
     """ Setup the volkswagen switch."""
     if discovery_info is None:
         return
-    add_devices([VolkswagenSwitch(hass.data[DATA_KEY], *discovery_info)])
+    async_add_entities([VolkswagenSwitch(hass.data[DATA_KEY], *discovery_info)])
 
 class VolkswagenSwitch(VolkswagenEntity, ToggleEntity):
     """Representation of a Volkswagen Carnet Switch."""
@@ -22,15 +23,17 @@ class VolkswagenSwitch(VolkswagenEntity, ToggleEntity):
         _LOGGER.debug('Getting state of %s' % self.instrument.attr)
         return self.instrument.state
 
-    def turn_on(self, **kwargs):
+    async def async_turn_on(self, **kwargs):
         """Turn the switch on."""
         _LOGGER.debug("Turning ON %s." % self.instrument.attr)
-        self.instrument.turn_on()
+        await self.instrument.turn_on()
+        self.async_write_ha_state()
 
-    def turn_off(self, **kwargs):
+    async def async_turn_off(self, **kwargs):
         """Turn the switch off."""
         _LOGGER.debug("Turning OFF %s." % self.instrument.attr)
-        self.instrument.turn_off()
+        await self.instrument.turn_off()
+        self.async_write_ha_state()
 
     @property
     def assumed_state(self):

@@ -8,11 +8,11 @@ from . import VolkswagenEntity, DATA_KEY
 
 _LOGGER = logging.getLogger(__name__)
 
-def setup_platform(hass, config, add_devices, discovery_info=None):
+async def async_setup_platform(hass, config, async_add_entities, discovery_info=None):
     """Set up the Volkswagen sensors."""
     if discovery_info is None:
         return
-    add_devices([VolkswagenSensor(hass.data[DATA_KEY], *discovery_info)])
+    async_add_entities([VolkswagenSensor(hass.data[DATA_KEY], *discovery_info)])
 
 class VolkswagenSensor(VolkswagenEntity):
     """Representation of a Volkswagen Carnet Sensor."""

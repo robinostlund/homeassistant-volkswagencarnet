@@ -7,11 +7,11 @@ from homeassistant.components.binary_sensor import BinarySensorEntity, DEVICE_CL
 
 _LOGGER = logging.getLogger(__name__)
 
-def setup_platform(hass, config, add_devices, discovery_info=None):
+async def async_setup_platform(hass, config, async_add_entities, discovery_info=None):
     """Set up the Volkswagen binary sensors."""
     if discovery_info is None:
         return
-    add_devices([VolkswagenBinarySensor(hass.data[DATA_KEY], *discovery_info)])
+    async_add_entities([VolkswagenBinarySensor(hass.data[DATA_KEY], *discovery_info)])
 
 class VolkswagenBinarySensor(VolkswagenEntity, BinarySensorEntity):
     """Representation of a Volkswagen Binary Sensor """
