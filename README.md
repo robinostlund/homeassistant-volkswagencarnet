@@ -78,7 +78,7 @@ Available resources:
     'door_locked',
     'trunk_locked',
     'request_in_progress',
-    'windows_closed
+    'windows_closed'
 ```
 
 Example of entities

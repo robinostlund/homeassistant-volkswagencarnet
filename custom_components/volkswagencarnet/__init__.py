@@ -152,8 +152,9 @@ async def async_setup(hass, config):
                 if not connection.logged_in:
                     _LOGGER.warning('Could not login to volkswagen carnet, please check your credentials')
                     return False
+
             # update vehicles
-            if not await connection.update(request_data = False):
+            if not await connection.update(request_data=False):
                 _LOGGER.warning("Could not query update from volkswagen carnet")
                 return False
             else:
@@ -163,9 +164,6 @@ async def async_setup(hass, config):
                     if vehicle.vin not in data.vehicles:
                         _LOGGER.info("Adding data for VIN: %s from carnet" % vehicle.vin.lower())
                         discover_vehicle(vehicle)
-
-                    # for entity in data.entities[vehicle.vin]:
-                    #     entity.schedule_update_ha_state()
 
                 async_dispatcher_send(hass, SIGNAL_STATE_UPDATED)
                 return True
