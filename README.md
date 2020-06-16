@@ -25,6 +25,7 @@ volkswagencarnet:
     username: <username to volkswagen carnet>
     password: <password to volkswagen carnet>
     spin: <S-PIN to volkswagen carnet>  
+    scandinavian_miles: false
     scan_interval: 
         minutes: 2
     name:
@@ -43,6 +44,8 @@ volkswagencarnet:
 * **spin:** (optional) required for supporting combustion engine heating start/stop.
 
 * **scan_interval:** (optional) specify in minutes how often to fetch status data from carnet. (default 5 min, minimum 1 min)
+
+* **scandinavian_miles:** (optional) specify true if you want to change from km to mil on sensors
 
 * **name:** (optional) set a friendly name of your car you can use the name setting as in confiugration example.
 

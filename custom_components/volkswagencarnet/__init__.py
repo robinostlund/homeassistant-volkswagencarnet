@@ -25,6 +25,7 @@ CONF_REGION = 'region'
 DEFAULT_REGION = 'SV'
 CONF_MUTABLE = 'mutable'
 CONF_SPIN = 'spin'
+CONF_SCANDINAVIAN_MILES = "scandinavian_miles"
 
 SIGNAL_STATE_UPDATED = f"{DOMAIN}.updated"
 
@@ -77,10 +78,15 @@ CONFIG_SCHEMA = vol.Schema({
         vol.Optional(CONF_SPIN, default=''): cv.string,
         vol.Optional(CONF_SCAN_INTERVAL, default=DEFAULT_UPDATE_INTERVAL): (
             vol.All(cv.time_period, vol.Clamp(min=MIN_UPDATE_INTERVAL))),
-        vol.Optional(CONF_NAME, default={}): vol.Schema(
-            {cv.slug: cv.string}),
+        # vol.Optional(CONF_NAME, default={}): vol.Schema(
+        #     {cv.slug: cv.string}),
+        vol.Optional(CONF_NAME, default={}): cv.schema_with_slug_keys(
+            cv.string
+        ),
         vol.Optional(CONF_RESOURCES): vol.All(
-            cv.ensure_list, [vol.In(RESOURCES)])
+            cv.ensure_list, [vol.In(RESOURCES)]
+        ),
+        vol.Optional(CONF_SCANDINAVIAN_MILES, default=False): cv.boolean
     }),
 }, extra=vol.ALLOW_EXTRA)
 
@@ -114,7 +120,10 @@ async def async_setup(hass, config):
         data.entities[vehicle.vin] = []
 
         dashboard = vehicle.dashboard(
-            mutable = config[DOMAIN][CONF_MUTABLE], spin = config[DOMAIN][CONF_SPIN])
+            mutable=config[DOMAIN][CONF_MUTABLE],
+            spin=config[DOMAIN][CONF_SPIN],
+            scandinavian_miles=config[DOMAIN][CONF_SCANDINAVIAN_MILES],
+        )
 
         for instrument in (
                 instrument
