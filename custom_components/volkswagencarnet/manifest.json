@@ -4,6 +4,6 @@
     "documentation": "https://github.com/robinostlund/homeassistant-volkswagencarnet",
     "dependencies": [],
     "render_readme": true,
-    "codeowners": [],
+    "codeowners": ["@robinostlund"],
     "requirements": ["volkswagencarnet==4.3.0"]
 }
