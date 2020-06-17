@@ -27,7 +27,7 @@ CONF_MUTABLE = 'mutable'
 CONF_SPIN = 'spin'
 CONF_SCANDINAVIAN_MILES = "scandinavian_miles"
 
-SIGNAL_STATE_UPDATED = f"{DOMAIN}.updated"
+SIGNAL_STATE_UPDATED = f'{DOMAIN}.updated'
 
 MIN_UPDATE_INTERVAL = timedelta(minutes=1)
 DEFAULT_UPDATE_INTERVAL = timedelta(minutes=5)
@@ -98,8 +98,8 @@ async def async_setup(hass, config):
     _LOGGER.debug("Creating connection to volkswagen carnet")
     connection = Connection(
         session=session,
-        username = config[DOMAIN].get(CONF_USERNAME),
-        password = config[DOMAIN].get(CONF_PASSWORD),
+        username=config[DOMAIN].get(CONF_USERNAME),
+        password=config[DOMAIN].get(CONF_PASSWORD),
     )
 
     interval = config[DOMAIN].get(CONF_SCAN_INTERVAL)
@@ -128,8 +128,8 @@ async def async_setup(hass, config):
         for instrument in (
                 instrument
                 for instrument in dashboard.instruments
-                if instrument.component in COMPONENTS and
-                is_enabled(instrument.slug_attr)):
+                if instrument.component in COMPONENTS and is_enabled(instrument.slug_attr)
+        ):
 
             data.instruments.add(instrument)
             hass.async_create_task(
@@ -137,7 +137,7 @@ async def async_setup(hass, config):
                     hass,
                     COMPONENTS[instrument.component],
                     DOMAIN,
-                    (vehicle.vin,instrument.component,instrument.attr),
+                    (vehicle.vin, instrument.component, instrument.attr),
                     config
                 )
             )
@@ -156,7 +156,7 @@ async def async_setup(hass, config):
                     reset_update = True
 
             # update vehicles
-            if not await connection.update(request_data=False, reset=reset_update):
+            if not await connection.update(reset=reset_update):
                 _LOGGER.warning("Could not query update from volkswagen carnet")
                 return False
 
