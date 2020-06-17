@@ -156,7 +156,7 @@ async def async_setup(hass, config):
                     reset_update = True
 
             # update vehicles
-            if not await connection.update(request_data=False, reset=reset_update):
+            if not await connection.update(reset=reset_update):
                 _LOGGER.warning("Could not query update from volkswagen carnet")
                 return False
 
