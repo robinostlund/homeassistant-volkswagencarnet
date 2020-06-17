@@ -30,7 +30,3 @@ class VolkswagenLock(VolkswagenEntity, LockEntity):
     async def async_unlock(self, **kwargs):
         """Unlock the car."""
         await self.instrument.unlock()
-
-    @property
-    def assumed_state(self):
-        return self.instrument.assumed_state

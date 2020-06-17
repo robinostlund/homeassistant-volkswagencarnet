@@ -98,8 +98,8 @@ async def async_setup(hass, config):
     _LOGGER.debug("Creating connection to volkswagen carnet")
     connection = Connection(
         session=session,
-        username = config[DOMAIN].get(CONF_USERNAME),
-        password = config[DOMAIN].get(CONF_PASSWORD),
+        username=config[DOMAIN].get(CONF_USERNAME),
+        password=config[DOMAIN].get(CONF_PASSWORD),
     )
 
     interval = config[DOMAIN].get(CONF_SCAN_INTERVAL)
@@ -128,8 +128,8 @@ async def async_setup(hass, config):
         for instrument in (
                 instrument
                 for instrument in dashboard.instruments
-                if instrument.component in COMPONENTS and
-                is_enabled(instrument.slug_attr)):
+                if instrument.component in COMPONENTS and is_enabled(instrument.slug_attr)
+        ):
 
             data.instruments.add(instrument)
             hass.async_create_task(
@@ -137,7 +137,7 @@ async def async_setup(hass, config):
                     hass,
                     COMPONENTS[instrument.component],
                     DOMAIN,
-                    (vehicle.vin,instrument.component,instrument.attr),
+                    (vehicle.vin, instrument.component, instrument.attr),
                     config
                 )
             )
