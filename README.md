@@ -10,10 +10,10 @@ This platform plugin allows you to see some information from volkswagen carnet r
 
 It also allows you to trigger some functions like start climatisation if your car supports that.
 
-Remote engine heating is supported for combustion engine vehicles that uses the carnet portal together provided S-PIN. Probably not availabel for all car models.
+Remote engine heating is supported for combustion engine vehicles that uses the carnet portal together provided S-PIN. Probably not available for all car models.
 
-Note: Some features included with the new Volkswagen WeConnect 2019 and newer are not fully tested, this custom component should work with any make and models such as Golf/Passat 8.5/Tiguan etc. But please bare with me and report any faults/errors as an issue.
-The current release (2020-06-13) has been tested with an Passat GTE MY2017 and Passat GTE MY2020 with full functionality.
+Note: Some features included with the new Volkswagen WeConnect 2019 and newer are not fully tested, this custom component should work with any make and models such as Golf/Passat 8.5/Tiguan etc. But please bear with me and report any faults/errors as an issue.
+The current release (2020-06-13) has been tested with a Passat GTE MY2017 and a Passat GTE MY2020 with full functionality.
 
 Installation
 ------------
@@ -34,7 +34,7 @@ volkswagencarnet:
     name:
         wvw1234567812356: 'Passat GTE'
     resources:
-        - combustion_engine_heating # Note that this option is only available for 2019> Facelift model
+        - combustion_engine_heating # Note that this option is only available for 2019> Facelift models
         - position
         - distance
         - service_inspection
@@ -50,9 +50,9 @@ volkswagencarnet:
 
 * **scandinavian_miles:** (optional) specify true if you want to change from km to mil on sensors
 
-* **name:** (optional) set a friendly name of your car you can use the name setting as in confiugration example.
+* **name:** (optional) set a friendly name of your car you can use the name setting as in configuration example.
 
-* **resources:** (optional) list of resources that should be enabled. (by default all resources is enabled).
+* **resources:** (optional) list of resources that should be enabled. (by default all resources are enabled).
 
 Available resources:
 ```
@@ -184,7 +184,6 @@ In this example we are sending notifications to a slack channel
       entity_id: media_player.kitchen
       message: "My Lord, the car is unlocked. Please attend this this issue at your earliest inconvenience!"
     service: tts.google_translate_say
-
 
 ```
 
