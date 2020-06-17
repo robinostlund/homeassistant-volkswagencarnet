@@ -1,40 +1,43 @@
 [![hacs_badge](https://img.shields.io/badge/HACS-Default-orange.svg)](https://github.com/custom-components/hacs)
 
 Volkswagen Carnet - An home assistant plugin to add integration with your car
-============================================================
+=============================================================================
+
 [![buy me a coffee](https://www.buymeacoffee.com/assets/img/custom_images/yellow_img.png)](https://www.buymeacoffee.com/robinostlund)
 
 Description
 ------------
+
 This platform plugin allows you to see some information from volkswagen carnet related to your car that has a valid carnet subscription.
 
 It also allows you to trigger some functions like start climatisation if your car supports that.
 
-Remote engine heating is supported for combustion engine vehicles that uses the carnet portal together provided S-PIN. Probably not availabel for all car models.
+Remote engine heating is supported for combustion engine vehicles that use the carnet portal together with a provided S-PIN. Not available for all car models.
 
-Note: Some features included with the new Volkswagen WeConnect 2019 and newer are not fully tested, this custom component should work with any make and models such as Golf/Passat 8.5/Tiguan etc. But please bare with me and report any faults/errors as an issue.
-The current release (2020-06-13) has been tested with an Passat GTE MY2017 and Passat GTE MY2020 with full functionality.
+Note: Some features included in Volkswagen WeConnect 2019 and newer are not fully tested. This custom component should work with any models such as Golf/Passat 8.5/Tiguan etc. But please bear with me and report any fault or error as an issue.
+The current release (2020-06-13) has been tested with a Passat GTE MY2017 and a Passat GTE MY2020 with full functionality.
+Users report success with the e-Up! 2020.
 
 Installation
 ------------
 
-Make sure you have a account on volkswagen carnet.
+Make sure you have an account on volkswagen carnet.
 
-Clone or copy the root of the repository and copy the folder 'homeassistant-volkswagencarnet/custom_component/volkswagencarnet' into '<config dir>/custom_components'
+Clone or copy the repository and copy the folder 'homeassistant-volkswagencarnet/custom_component/volkswagencarnet' into '<config dir>/custom_components'
 
-Add a volkswagencarnet configuration block to your `<config dir>/configuration.yaml`
+Add a volkswagencarnet configuration block to your `<config dir>/configuration.yaml`:
 ```yaml
 volkswagencarnet:
-    username: <username to volkswagen carnet>
-    password: <password to volkswagen carnet>
-    spin: <S-PIN to volkswagen carnet>  
+    username: <username for volkswagen carnet>
+    password: <password for volkswagen carnet>
+    spin: <S-PIN for volkswagen carnet>
     scandinavian_miles: false
-    scan_interval: 
+    scan_interval:
         minutes: 2
     name:
         wvw1234567812356: 'Passat GTE'
     resources:
-        - combustion_engine_heating # Note that this option is only available for 2019> Facelift model
+        - combustion_engine_heating # Note that this option is only available for 2019> Facelift models
         - position
         - distance
         - service_inspection
@@ -50,9 +53,9 @@ volkswagencarnet:
 
 * **scandinavian_miles:** (optional) specify true if you want to change from km to mil on sensors
 
-* **name:** (optional) set a friendly name of your car you can use the name setting as in confiugration example.
+* **name:** (optional) map the vehicle identification number (VIN) to a friendly name of your car. This name is then used for naming all entities. See the configuration example. (by default, the VIN is used)
 
-* **resources:** (optional) list of resources that should be enabled. (by default all resources is enabled).
+* **resources:** (optional) list of resources that should be enabled. (by default, all resources are enabled)
 
 Available resources:
 ```
@@ -89,18 +92,18 @@ Available resources:
 ```
 
 Example of entities
-------------
+-------------------
+
 ![alt text](https://user-images.githubusercontent.com/12171819/55963464-30216480-5c73-11e9-9b91-3bf06672ef36.png)
 
-
-
 Automation example
-------------
+------------------
+
 In this example we are sending notifications to a slack channel
 
 `<config dir>/automations.yaml`
 ```yaml
-# Get notifications when climatisation is started/stopped
+# Send notification when climatisation is started/stopped
 - alias: vw_carid_climatisation_on
   trigger:
    platform: state
@@ -124,8 +127,8 @@ In this example we are sending notifications to a slack channel
    data_template:
     title: "VW climatisation stopped"
     message: "VW climatisation stopped"
-    
-# Get notifications when vehicle is charging
+
+# Send notification when vehicle is charging
 - alias: vw_carid_charging
   trigger:
    platform: state
@@ -138,7 +141,7 @@ In this example we are sending notifications to a slack channel
     title: "VW is now charging"
     message: "VW is now charging"
 
-# Get notifications when vehicle is fully charged
+# Send notification when vehicle is fully charged
 - alias: vw_carid_battery_fully_charged
   trigger:
    platform: numeric_state
@@ -169,13 +172,13 @@ In this example we are sending notifications to a slack channel
     after: '07:00:00'
     before: '21:00:00'
   action:
-# Notification via push message to the lors smartphone
+# Notification via push message to smartphone
   - data:
       message: "The car is unlocked!"
       target:
       - device/my_device
     service: notify.device
-# Notification in a smart speaker (kitchen)
+# Notification via smart speaker (kitchen)
   - data:
       entity_id: media_player.kitchen
       volume_level: '0.6'
@@ -184,12 +187,11 @@ In this example we are sending notifications to a slack channel
       entity_id: media_player.kitchen
       message: "My Lord, the car is unlocked. Please attend this this issue at your earliest inconvenience!"
     service: tts.google_translate_say
-
-
 ```
 
 Enable debug logging
-------------
+--------------------
+
 ```yaml
 logger:
     default: info
@@ -205,7 +207,8 @@ logger:
  ```
 
 Lovelace Card
-------------
+-------------
+
 Check out this awesome lovelace card by endor
 https://github.com/endor-force/lovelace-carnet
 
