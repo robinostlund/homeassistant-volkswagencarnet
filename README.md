@@ -125,9 +125,9 @@ This plugin creates entities in the format `DOMAIN.NAME_ENTITY`. Not all entitie
 * **sensor.NAME_last_trip_average_speed:** average speed on the last trip.
 * **sensor.NAME_last_trip_average_fuel_consumption:** average fuel consuption on the last trip.
 * **sensor.NAME_last_trip_average_electric_consumption:** average electric motor consumption on the last trip.
-* **sensor.NAME_last_trip_recuperation:** recuperation on the last trip. (Soon)
-* **sensor.NAME_last_trip_average_auxillary_consumption:** average auxillary consumption by heating, air con... on the last trip. BEVs only. (Soon)
-* **sensor.NAME_last_trip_total_electric_consumption:** total electric consumption on the last trip. (Soon)
+* **sensor.NAME_last_trip_recuperation:** recuperation on the last trip.
+* **sensor.NAME_last_trip_average_auxillary_consumption:** average auxillary consumption by heating, air con... on the last trip. BEVs only.
+* **sensor.NAME_last_trip_total_electric_consumption:** total electric consumption on the last trip.
 * **sensor.NAME_last_trip_duration:** duration of the last trip.
 
 ![alt text](https://user-images.githubusercontent.com/12171819/55963464-30216480-5c73-11e9-9b91-3bf06672ef36.png)
