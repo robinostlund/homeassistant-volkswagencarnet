@@ -27,7 +27,7 @@ CONF_MUTABLE = 'mutable'
 CONF_SPIN = 'spin'
 CONF_SCANDINAVIAN_MILES = "scandinavian_miles"
 
-SIGNAL_STATE_UPDATED = f"{DOMAIN}.updated"
+SIGNAL_STATE_UPDATED = f'{DOMAIN}.updated'
 
 MIN_UPDATE_INTERVAL = timedelta(minutes=1)
 DEFAULT_UPDATE_INTERVAL = timedelta(minutes=5)
