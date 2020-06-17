@@ -145,18 +145,15 @@ async def async_setup(hass, config):
     async def update(now):
         """Update status from Volkswagen Carnet"""
         try:
-            reset_update = False
             # check if we can login
             if not connection.logged_in:
                 await connection._login()
                 if not connection.logged_in:
                     _LOGGER.warning('Could not login to volkswagen carnet, please check your credentials')
                     return False
-                else:
-                    reset_update = True
 
             # update vehicles
-            if not await connection.update(reset=reset_update):
+            if not await connection.update():
                 _LOGGER.warning("Could not query update from volkswagen carnet")
                 return False
 
