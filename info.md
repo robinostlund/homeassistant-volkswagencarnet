@@ -66,7 +66,8 @@ Available resources:
     'trip_last_average_speed',
     'trip_last_average_electric_consumption',
     'trip_last_average_fuel_consumption',
-    'trip_last_duration'
+    'trip_last_duration',
+    'trip_last_length'
 ```
 
 Example of entities
