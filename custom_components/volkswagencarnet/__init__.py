@@ -67,7 +67,12 @@ RESOURCES = [
     'door_locked',
     'trunk_locked',
     'request_in_progress',
-    'window_closed'
+    'windows_closed',
+    'trip_last_average_speed',
+    'trip_last_average_electric_consumption',
+    'trip_last_average_fuel_consumption',
+    'trip_last_duration',
+    'trip_last_length'
 ]
 
 CONFIG_SCHEMA = vol.Schema({
@@ -119,6 +124,7 @@ async def async_setup(hass, config):
         """Load relevant platforms."""
         data.vehicles.add(vehicle.vin)
 
+
         dashboard = vehicle.dashboard(
             mutable=config[DOMAIN][CONF_MUTABLE],
             spin=config[DOMAIN][CONF_SPIN],
@@ -149,18 +155,18 @@ async def async_setup(hass, config):
             if not connection.logged_in:
                 await connection._login()
                 if not connection.logged_in:
-                    _LOGGER.warning('Could not login to volkswagen carnet, please check your credentials')
+                    _LOGGER.warning('Could not login to volkswagen carnet, please check your credentials and verify that the service is working')
                     return False
 
             # update vehicles
             if not await connection.update():
-                _LOGGER.warning("Could not query update from volkswagen carnet")
+                _LOGGER.warning('Could not query update from volkswagen carnet')
                 return False
 
             _LOGGER.debug("Updating data from volkswagen carnet")
             for vehicle in connection.vehicles:
                 if vehicle.vin not in data.vehicles:
-                    _LOGGER.info("Adding data for VIN: %s from carnet" % vehicle.vin.lower())
+                    _LOGGER.info(f'Adding data for VIN: {vehicle.vin} from carnet')
                     discover_vehicle(vehicle)
 
             async_dispatcher_send(hass, SIGNAL_STATE_UPDATED)
