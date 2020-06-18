@@ -67,7 +67,12 @@ RESOURCES = [
     'door_locked',
     'trunk_locked',
     'request_in_progress',
-    'window_closed'
+    'windows_closed',
+    'trip_last_average_speed',
+    'trip_last_average_electric_consumption',
+    'trip_last_average_fuel_consumption',
+    'trip_last_duration',
+    'trip_last_length'
 ]
 
 CONFIG_SCHEMA = vol.Schema({
@@ -118,6 +123,7 @@ async def async_setup(hass, config):
     def discover_vehicle(vehicle):
         """Load relevant platforms."""
         data.vehicles.add(vehicle.vin)
+
 
         dashboard = vehicle.dashboard(
             mutable=config[DOMAIN][CONF_MUTABLE],
