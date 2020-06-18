@@ -101,33 +101,33 @@ This plugin creates entities in the format `DOMAIN.NAME_ENTITY`. Not all entitie
 * **climate.NAME_combustion_climatisation:** climate control for the car. Turning it on will pre-heat or maybe cool the car. Only for cars with a cumbustion engine. May require optional equipment.
 * **window_heater**
 * **combustion_engine_heating**
-* **switch.NAME_charging:** indicates and controls whether the car is charging.
+* **switch.NAME_charging:** indicates and controls whether the car is charging. BEVs and PHEVs only.
 * **sensor.NAME_adblue_level:** indicates how full the diesel exhaust fluid tank is. Cars with diesel engines only.
-* **sensor.NAME_battery_level:** state of charge of the traction battery.
+* **sensor.NAME_battery_level:** state of charge of the traction battery. BEVs and (P)HEVs only.
 * **sensor.NAME_fuel_level:** indicates how full the fuel tank is. Cars with combustion engines only.
 * **sensor.NAME_service_inspection:** days and distance before the next inspection, whichever is reached first.
 * **sensor.NAME_oil_inspection:** days and distance before the next oil change, whichever is reached first. Cars with combustion engines only.
 * **sensor.NAME_last_connected:** timestamp indicating the last time the car was connected to We Connect.
-* **sensor.NAME_charging_time_left:** estimated time until charging has finished.
-* **sensor.NAME_electric_range:** estimated electric range of the car.
+* **sensor.NAME_charging_time_left:** estimated time until charging has finished. BEVs and PHEVs only.
+* **sensor.NAME_electric_range:** estimated electric range of the car. BEVs and (P)HEVs only.
 * **sensor.NAME_combustion_range:** estimated fuel range of the car. Cars with combustion engines only.
 * **sensor.NAME_combined_range:** estimated total range of the car.
-* **sensor.NAME_charge_max_ampere:** the maximum current the car is configured to draw from AC.
+* **sensor.NAME_charge_max_ampere:** the maximum current the car is configured to draw from AC. BEVs and PHEVs only.
 * **sensor.NAME_climatisation_target_temperature:** the temperature the car will climatise to when climatisation is started.
-* **binary_sensor.NAME_external_power:** whether the car is pluggin into an active charger.
+* **binary_sensor.NAME_external_power:** whether the car is pluggin into an active charger. BEVs and PHEVs only.
 * **binary_sensor.NAME_parking_light:** whether the parking lights are on.
 * **binary_sensor.NAME_climatisation_without_external_power:** whether the car would pre-heat or cool when not plugged in.
 * **binary_sensor.NAME_doors_locked:** whether the car's doors are locked.
-* **lock.NAME_door_locked:** indicates and controls the car's door lock. Requires S-PIN to change.
-* **lock.NAME_trunk_locked:** indicates and controls the car's trunk lock. Requires S-PIN to change.
-* **switch.NAME_request_in_progress:** indicates whether the plugin is currently updating it's data from We Connect. Can be turned on to force an update.
+* **lock.NAME_door_locked:** indicates and controls the car's door lock. Requires S-PIN to control.
+* **lock.NAME_trunk_locked:** indicates and controls the car's trunk lock. Requires S-PIN to control.
+* **switch.NAME_request_in_progress:** indicates whether the plugin is currently updating its data from We Connect. Can be turned on to force an update.
 * **binary_sensor.NAME_windows_closed:** whether the car's windows are closed.
 * **sensor.NAME_last_trip_average_speed:** average speed on the last trip.
 * **sensor.NAME_last_trip_average_fuel_consumption:** average fuel consuption on the last trip.
 * **sensor.NAME_last_trip_average_electric_consumption:** average electric motor consumption on the last trip.
-* **sensor.NAME_last_trip_recuperation:** recuperation on the last trip.
+* **sensor.NAME_last_trip_recuperation:** average electric recuperation on the last trip. BEVs and (P)HEVs only.
 * **sensor.NAME_last_trip_average_auxillary_consumption:** average auxillary consumption by heating, air con... on the last trip. BEVs only.
-* **sensor.NAME_last_trip_total_electric_consumption:** total electric consumption on the last trip.
+* **sensor.NAME_last_trip_total_electric_consumption:** average total electric consumption on the last trip. BEVs and (P)HEVs only.
 * **sensor.NAME_last_trip_duration:** duration of the last trip.
 
 ![alt text](https://user-images.githubusercontent.com/12171819/55963464-30216480-5c73-11e9-9b91-3bf06672ef36.png)
