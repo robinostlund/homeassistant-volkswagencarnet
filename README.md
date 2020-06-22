@@ -1,12 +1,10 @@
 [![hacs_badge](https://img.shields.io/badge/HACS-Default-orange.svg)](https://github.com/custom-components/hacs)
 
-Volkswagen Carnet - An home assistant plugin to add integration with your car
-=============================================================================
+# Volkswagen Carnet - An home assistant plugin to add integration with your car
 
 [![buy me a coffee](https://www.buymeacoffee.com/assets/img/custom_images/yellow_img.png)](https://www.buymeacoffee.com/robinostlund)
 
-Description
-------------
+## Description
 
 This platform plugin allows you to see some information from volkswagen carnet related to your car that has a valid carnet subscription.
 
@@ -18,12 +16,18 @@ Note: Some features included in Volkswagen WeConnect 2019 and newer are not full
 The current release (2020-06-13) has been tested with a Passat GTE MY2017 and a Passat GTE MY2020 with full functionality.
 Users report success with the e-Up! 2020.
 
-Installation
-------------
+## Installation
 
+### Install with HACS (recomended)
+
+Do you you have [HACS](https://community.home-assistant.io/t/custom-component-hacs) installed? Just search for Volkswagen We Connect and install it direct from HACS. HACS will keep track of updates and you can easly upgrade volkswagencarnet to latest version.
+
+### Install manually
 Make sure you have an account on volkswagen carnet.
 
 Clone or copy the repository and copy the folder 'homeassistant-volkswagencarnet/custom_component/volkswagencarnet' into '<config dir>/custom_components'
+
+## Configure
 
 Add a volkswagencarnet configuration block to your `<config dir>/configuration.yaml`:
 ```yaml
@@ -91,8 +95,7 @@ Available resources:
     'trip_last_duration'
 ```
 
-Entities
---------
+## Entities
 
 This plugin creates entities in the format `DOMAIN.NAME_ENTITY`. Not all entities are created for all cars, for example pure electric cars will not have entities only applicable to cars with a combustion engine.
 * **device_tracker.NAME_position:** GPS coordinates of the place the car was parked.
@@ -132,8 +135,7 @@ This plugin creates entities in the format `DOMAIN.NAME_ENTITY`. Not all entitie
 
 ![alt text](https://user-images.githubusercontent.com/12171819/55963464-30216480-5c73-11e9-9b91-3bf06672ef36.png)
 
-Automation example
-------------------
+## Automation example
 
 In this example we are sending notifications to a slack channel
 
@@ -225,8 +227,7 @@ In this example we are sending notifications to a slack channel
     service: tts.google_translate_say
 ```
 
-Enable debug logging
---------------------
+## Enable debug logging
 
 ```yaml
 logger:
@@ -242,8 +243,7 @@ logger:
         custom_components.volkswagencarnet.sensor: debug
  ```
 
-Lovelace Card
--------------
+## Lovelace Card
 
 Check out this awesome lovelace card by endor
 https://github.com/endor-force/lovelace-carnet
