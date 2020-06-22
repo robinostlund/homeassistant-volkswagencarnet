@@ -20,6 +20,9 @@ Note: Some features included in Volkswagen WeConnect 2019 and newer are not full
 The current release (2020-06-13) has been tested with a Passat GTE MY2017 and a Passat GTE MY2020 with full functionality.
 Users report success with the e-Up! 2020.
 
+## Having issues with this custom component?
+Please, before posting an issue make sure that VW´s WeConnect service works for you via a normal web browser. If there are problems with the VW WeConnect service this component will not work either. This custom component is only as good as the VW WeConnect service.
+
 ## Installation
 
 ### Install with HACS (recomended)
