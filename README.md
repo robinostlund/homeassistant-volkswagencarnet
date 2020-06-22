@@ -1,5 +1,8 @@
 [![hacs_badge](https://img.shields.io/badge/HACS-Default-orange.svg)](https://github.com/custom-components/hacs)
-![Latest Release](https://img.shields.io/github/v/release/robinostlund/homeassistant-volkswagencarnet?label=Latest%20Release)
+![Version](https://img.shields.io/github/v/release/robinostlund/homeassistant-volkswagencarnet)
+![Downloads](https://img.shields.io/github/downloads/robinostlund/homeassistant-volkswagencarnet/total)
+![Stars](https://img.shields.io/github/stars/robinostlund/homeassistant-volkswagencarnet)
+
 
 # Volkswagen Carnet - An home assistant plugin to add integration with your car
 
