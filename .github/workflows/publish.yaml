@@ -1,0 +1,52 @@
+name: Publish
+
+on:
+  push:
+    branches:
+      - master
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v1
+        with:
+          ref: master
+      - name: Set up Python 3.7
+        uses: actions/setup-python@v1
+        with:
+          python-version: 3.7
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install python-semantic-release
+      - name: Setup Git
+        run: |
+          git config --global user.name "semantic-release"
+          git config --global user.email "semantic-release@GitHub"
+      - name: Publish with semantic-release
+        env:
+          GH_TOKEN: ${{ secrets.GH_TOKEN }}
+        run: |
+          DEBUG='*' semantic-release publish
+      # Pack the alexa_media_player dir as a zip and upload to the release
+      - name: Zip alexa_media dir
+        run: |
+          cd /home/runner/work/homeassistant-volkswagencarnet/homeassistant-volkswagencarnet/custom_components/volkswagencarnet
+          zip volkswagencarnet.zip -r ./
+      - name: Set release variable
+        run: |
+          echo "::set-env name=release_version::`git describe --abbrev=0`"
+      - name: Sleep
+        # add delay so upload does not kill the release notes from semantic-release
+        run: |
+          sleep 5
+      - name: Upload zip to release
+        uses: svenstaro/upload-release-action@v1-release
+        with:
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          file: /home/runner/work/homeassistant-volkswagencarnet/homeassistant-volkswagencarnet/custom_components/volkswagencarnet/volkswagencarnet.zip
+          asset_name: volkswagencarnet.zip
+          tag: ${{ env.release_version }}
+          overwrite: true
