@@ -35,8 +35,7 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           DEBUG='*' semantic-release publish
-      # Pack the alexa_media_player dir as a zip and upload to the release
-      - name: Zip alexa_media dir
+      - name: Zip volkswagencarnet dir
         run: |
           cd /home/runner/work/homeassistant-volkswagencarnet/homeassistant-volkswagencarnet/custom_components/volkswagencarnet
           zip volkswagencarnet.zip -r ./
