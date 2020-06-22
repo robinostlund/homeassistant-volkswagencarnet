@@ -1,9 +1,14 @@
 name: Publish
 
+# on:
+#   push:
+#     branches:
+#       - master
+
 on:
   push:
-    branches:
-      - master
+    tags:
+      - 'v*'
 
 jobs:
   deploy:
@@ -27,7 +32,7 @@ jobs:
           git config --global user.email "semantic-release@GitHub"
       - name: Publish with semantic-release
         env:
-          GH_TOKEN: ${{ secrets.GH_TOKEN }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           DEBUG='*' semantic-release publish
       # Pack the alexa_media_player dir as a zip and upload to the release
