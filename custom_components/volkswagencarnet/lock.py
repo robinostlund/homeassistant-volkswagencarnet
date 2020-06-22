@@ -7,11 +7,12 @@ from . import VolkswagenEntity, DATA_KEY
 
 _LOGGER = logging.getLogger(__name__)
 
-def setup_platform(hass, config, add_devices, discovery_info=None):
+async def async_setup_platform(hass, config, async_add_entities, discovery_info=None):
     """ Setup the volkswagen lock """
     if discovery_info is None:
         return
-    add_devices([VolkswagenLock(hass.data[DATA_KEY], *discovery_info)])
+
+    async_add_entities([VolkswagenLock(hass.data[DATA_KEY], *discovery_info)])
 
 class VolkswagenLock(VolkswagenEntity, LockEntity):
     """Represents a Volkswagen Carnet Lock."""
@@ -22,14 +23,10 @@ class VolkswagenLock(VolkswagenEntity, LockEntity):
         _LOGGER.debug('Getting state of %s' % self.instrument.attr)
         return self.instrument.is_locked
 
-    def lock(self, **kwargs):
+    async def async_lock(self, **kwargs):
         """Lock the car."""
-        self.instrument.lock()
+        await self.instrument.lock()
 
-    def unlock(self, **kwargs):
+    async def async_unlock(self, **kwargs):
         """Unlock the car."""
-        self.instrument.unlock()
-
-    @property
-    def assumed_state(self):
-        return self.instrument.assumed_state
+        await self.instrument.unlock()

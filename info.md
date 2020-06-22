@@ -1,66 +1,29 @@
 
-Configuration
-------------
+[![buy me a coffee](https://www.buymeacoffee.com/assets/img/custom_images/yellow_img.png)](https://www.buymeacoffee.com/robinostlund)
 
-Make sure you have a account on volkswagen carnet.
+This platform plugin allows you to see some information from volkswagen carnet related to your car that has a valid carnet subscription.
 
-```yaml
-volkswagencarnet:
-    username: <username to volkswagen carnet>
-    password: <password to volkswagen carnet>
-    spin: <S-PIN to volkswagen carnet>  
-    scan_interval: 
-        minutes: 2
-    name:
-        wvw1234567812356: 'Passat GTE'
-    resources:
-        - combustion_engine_heating
-        - position
-        - distance
-        - service_inspection
-        - oil_inspection
-        - door_locked
-        - trunk_locked
-        - request_in_progress
-```
+{%- if selected_tag == "master" %}
+## This is a development version!
+This is **only** intended for test by developers!
+Please not install this version!
+{% endif %}
 
-* **spin:** (optional) required for supporting combustion engine heating start/stop.
+{%- if prerelease %}
+## This is a beta version
+Please be careful and do NOT install this on production systems. Also make sure to take a backup/snapshot before installing. Check the [change log](https://github.com/robinostlund/homeassistant-volkswagencarnet/releases) for more information.
+{% endif %}
 
-* **scan_interval:** (optional) specify in minutes how often to fetch status data from carnet. (default 5 min, minimum 1 min)
-
-* **name:** (optional) set a friendly name of your car you can use the name setting as in confiugration example.
-
-* **resources:** (optional) list of resources that should be enabled. (by default all resources is enabled).
-
-Available resources:
-```
-    'position',
-    'distance',
-    'electric_climatisation',
-    'combustion_climatisation',
-    'window_heater',
-    'combustion_engine_heating',
-    'charging',
-    'adblue_level',
-    'battery_level',
-    'fuel_level',
-    'service_inspection',
-    'oil_inspection',
-    'last_connected',
-    'charging_time_left',
-    'electric_range',
-    'combustion_range',
-    'combined_range',
-    'charge_max_ampere',
-    'climatisation_target_temperature',
-    'external_power',
-    'parking_light',
-    'climatisation_without_external_power',
-    'door_locked',
-    'trunk_locked',
-    'request_in_progress'
-```
-
-Example of entities
-------------
+## Example of entities
 ![alt text](https://user-images.githubusercontent.com/12171819/55963464-30216480-5c73-11e9-9b91-3bf06672ef36.png)
+
+# Changes
+You can find change log under [releases](https://github.com/robinostlund/homeassistant-volkswagencarnet/releases)
+
+## Support the development
+Please support us by buying us [some cups of coffee](https://www.buymeacoffee.com/robinostlund).
+
+# Links
+- [Documentation](https://github.com/robinostlund/homeassistant-volkswagencarnet/blob/master/README.md)
+- [Configuration](https://github.com/robinostlund/homeassistant-volkswagencarnet/blob/master/README.md#configure)
+- [Change log](https://github.com/robinostlund/homeassistant-volkswagencarnet/releases)

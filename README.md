@@ -1,37 +1,51 @@
-Volkswagen Carnet - An home assistant plugin to add integration with your car
-============================================================
+[![hacs_badge](https://img.shields.io/badge/HACS-Default-orange.svg)](https://github.com/custom-components/hacs)
+![Version](https://img.shields.io/github/v/release/robinostlund/homeassistant-volkswagencarnet)
+![Downloads](https://img.shields.io/github/downloads/robinostlund/homeassistant-volkswagencarnet/total)
+![Stars](https://img.shields.io/github/stars/robinostlund/homeassistant-volkswagencarnet)
+
+
+# Volkswagen Carnet - An home assistant plugin to add integration with your car
+
 [![buy me a coffee](https://www.buymeacoffee.com/assets/img/custom_images/yellow_img.png)](https://www.buymeacoffee.com/robinostlund)
 
-Description
-------------
+## Description
+
 This platform plugin allows you to see some information from volkswagen carnet related to your car that has a valid carnet subscription.
 
 It also allows you to trigger some functions like start climatisation if your car supports that.
 
-Remote engine heating is supported for combustion engine vehicles that uses the carnet portal together provided S-PIN. Probably not availabel for all car models.
+Remote engine heating is supported for combustion engine vehicles that use the carnet portal together with a provided S-PIN. Not available for all car models.
 
-Note: Some features included with the new Volkswagen WeConnect 2019 and newer are not fully tested, this custom component should work with any make and models such as Golf/Passat 8.5/Tiguan etc. But please bare with me and report any faults/errors as an issue.
-The current release (2020-06-13) has been tested with an Passat GTE MY2017 and Passat GTE MY2020 with full functionality.
+Note: Some features included in Volkswagen WeConnect 2019 and newer are not fully tested. This custom component should work with any models such as Golf/Passat 8.5/Tiguan etc. But please bear with me and report any fault or error as an issue.
+The current release (2020-06-13) has been tested with a Passat GTE MY2017 and a Passat GTE MY2020 with full functionality.
+Users report success with the e-Up! 2020.
 
-Installation
-------------
+## Installation
 
-Make sure you have a account on volkswagen carnet.
+### Install with HACS (recomended)
 
-Clone or copy the root of the repository and copy the folder 'homeassistant-volkswagencarnet/custom_component/volkswagencarnet' into '<config dir>/custom_components'
+Do you you have [HACS](https://community.home-assistant.io/t/custom-component-hacs) installed? Just search for Volkswagen We Connect and install it direct from HACS. HACS will keep track of updates and you can easly upgrade volkswagencarnet to latest version.
 
-Add a volkswagencarnet configuration block to your `<config dir>/configuration.yaml`
+### Install manually
+Make sure you have an account on volkswagen carnet.
+
+Clone or copy the repository and copy the folder 'homeassistant-volkswagencarnet/custom_component/volkswagencarnet' into '<config dir>/custom_components'
+
+## Configure
+
+Add a volkswagencarnet configuration block to your `<config dir>/configuration.yaml`:
 ```yaml
 volkswagencarnet:
-    username: <username to volkswagen carnet>
-    password: <password to volkswagen carnet>
-    spin: <S-PIN to volkswagen carnet>  
-    scan_interval: 
+    username: <username for volkswagen carnet>
+    password: <password for volkswagen carnet>
+    spin: <S-PIN for volkswagen carnet>
+    scandinavian_miles: false
+    scan_interval:
         minutes: 2
     name:
         wvw1234567812356: 'Passat GTE'
     resources:
-        - combustion_engine_heating # Note that this option is only available for 2019> Facelift model
+        - combustion_engine_heating # Note that this option is only available for 2019> Facelift models
         - position
         - distance
         - service_inspection
@@ -45,9 +59,11 @@ volkswagencarnet:
 
 * **scan_interval:** (optional) specify in minutes how often to fetch status data from carnet. (default 5 min, minimum 1 min)
 
-* **name:** (optional) set a friendly name of your car you can use the name setting as in confiugration example.
+* **scandinavian_miles:** (optional) specify true if you want to change from km to mil on sensors
 
-* **resources:** (optional) list of resources that should be enabled. (by default all resources is enabled).
+* **name:** (optional) map the vehicle identification number (VIN) to a friendly name of your car. This name is then used for naming all entities. See the configuration example. (by default, the VIN is used)
+
+* **resources:** (optional) list of resources that should be enabled. (by default, all resources are enabled)
 
 Available resources:
 ```
@@ -75,22 +91,61 @@ Available resources:
     'climatisation_without_external_power',
     'door_locked',
     'trunk_locked',
-    'request_in_progress'
+    'request_in_progress',
+    'windows_closed',
+    'trip_last_average_speed',
+    'trip_last_average_electric_consumption',
+    'trip_last_average_fuel_consumption',
+    'trip_last_duration'
 ```
 
-Example of entities
-------------
+## Entities
+
+This plugin creates entities in the format `DOMAIN.NAME_ENTITY`. Not all entities are created for all cars, for example pure electric cars will not have entities only applicable to cars with a combustion engine.
+* **device_tracker.NAME_position:** GPS coordinates of the place the car was parked.
+* **sensor.NAME_odometer:** total distance the car has travelled.
+* **climate.NAME_electric_climatisation:** climate control for the car. Turning it on will pre-heat or cool the car. BEVs only.
+* **climate.NAME_combustion_climatisation:** climate control for the car. Turning it on will pre-heat or maybe cool the car. Only for cars with a cumbustion engine. May require optional equipment.
+* **window_heater**
+* **combustion_engine_heating**
+* **switch.NAME_charging:** indicates and controls whether the car is charging. BEVs and PHEVs only.
+* **sensor.NAME_adblue_level:** indicates how full the diesel exhaust fluid tank is. Cars with diesel engines only.
+* **sensor.NAME_battery_level:** state of charge of the traction battery. BEVs and (P)HEVs only.
+* **sensor.NAME_fuel_level:** indicates how full the fuel tank is. Cars with combustion engines only.
+* **sensor.NAME_service_inspection:** days and distance before the next inspection, whichever is reached first.
+* **sensor.NAME_oil_inspection:** days and distance before the next oil change, whichever is reached first. Cars with combustion engines only.
+* **sensor.NAME_last_connected:** timestamp indicating the last time the car was connected to We Connect.
+* **sensor.NAME_charging_time_left:** estimated time until charging has finished. BEVs and PHEVs only.
+* **sensor.NAME_electric_range:** estimated electric range of the car. BEVs and (P)HEVs only.
+* **sensor.NAME_combustion_range:** estimated fuel range of the car. Cars with combustion engines only.
+* **sensor.NAME_combined_range:** estimated total range of the car.
+* **sensor.NAME_charge_max_ampere:** the maximum current the car is configured to draw from AC. BEVs and PHEVs only.
+* **sensor.NAME_climatisation_target_temperature:** the temperature the car will climatise to when climatisation is started.
+* **binary_sensor.NAME_external_power:** whether the car is pluggin into an active charger. BEVs and PHEVs only.
+* **binary_sensor.NAME_parking_light:** whether the parking lights are on.
+* **binary_sensor.NAME_climatisation_without_external_power:** whether the car would pre-heat or cool when not plugged in.
+* **binary_sensor.NAME_doors_locked:** whether the car's doors are locked.
+* **lock.NAME_door_locked:** indicates and controls the car's door lock. Requires S-PIN to control.
+* **lock.NAME_trunk_locked:** indicates and controls the car's trunk lock. Requires S-PIN to control.
+* **switch.NAME_request_in_progress:** indicates whether the plugin is currently updating its data from We Connect. Can be turned on to force an update.
+* **binary_sensor.NAME_windows_closed:** whether the car's windows are closed.
+* **sensor.NAME_last_trip_average_speed:** average speed on the last trip.
+* **sensor.NAME_last_trip_average_fuel_consumption:** average fuel consuption on the last trip.
+* **sensor.NAME_last_trip_average_electric_consumption:** average electric motor consumption on the last trip.
+* **sensor.NAME_last_trip_recuperation:** average electric recuperation on the last trip. BEVs and (P)HEVs only.
+* **sensor.NAME_last_trip_average_auxillary_consumption:** average auxillary consumption by heating, air con... on the last trip. BEVs only.
+* **sensor.NAME_last_trip_total_electric_consumption:** average total electric consumption on the last trip. BEVs and (P)HEVs only.
+* **sensor.NAME_last_trip_duration:** duration of the last trip.
+
 ![alt text](https://user-images.githubusercontent.com/12171819/55963464-30216480-5c73-11e9-9b91-3bf06672ef36.png)
 
+## Automation example
 
-
-Automation example
-------------
 In this example we are sending notifications to a slack channel
 
 `<config dir>/automations.yaml`
 ```yaml
-# Get notifications when climatisation is started/stopped
+# Send notification when climatisation is started/stopped
 - alias: vw_carid_climatisation_on
   trigger:
    platform: state
@@ -114,8 +169,8 @@ In this example we are sending notifications to a slack channel
    data_template:
     title: "VW climatisation stopped"
     message: "VW climatisation stopped"
-    
-# Get notifications when vehicle is charging
+
+# Send notification when vehicle is charging
 - alias: vw_carid_charging
   trigger:
    platform: state
@@ -128,7 +183,7 @@ In this example we are sending notifications to a slack channel
     title: "VW is now charging"
     message: "VW is now charging"
 
-# Get notifications when vehicle is fully charged
+# Send notification when vehicle is fully charged
 - alias: vw_carid_battery_fully_charged
   trigger:
    platform: numeric_state
@@ -159,13 +214,13 @@ In this example we are sending notifications to a slack channel
     after: '07:00:00'
     before: '21:00:00'
   action:
-# Notification via push message to the lors smartphone
+# Notification via push message to smartphone
   - data:
       message: "The car is unlocked!"
       target:
       - device/my_device
     service: notify.device
-# Notification in a smart speaker (kitchen)
+# Notification via smart speaker (kitchen)
   - data:
       entity_id: media_player.kitchen
       volume_level: '0.6'
@@ -174,12 +229,10 @@ In this example we are sending notifications to a slack channel
       entity_id: media_player.kitchen
       message: "My Lord, the car is unlocked. Please attend this this issue at your earliest inconvenience!"
     service: tts.google_translate_say
-
-
 ```
 
-Enable debug logging
-------------
+## Enable debug logging
+
 ```yaml
 logger:
     default: info
@@ -194,8 +247,8 @@ logger:
         custom_components.volkswagencarnet.sensor: debug
  ```
 
-Lovelace Card
-------------
+## Lovelace Card
+
 Check out this awesome lovelace card by endor
 https://github.com/endor-force/lovelace-carnet
 
