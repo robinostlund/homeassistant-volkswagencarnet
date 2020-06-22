@@ -1,4 +1,5 @@
 {
   "name": "Volkswagen We Connect",
-  "iot_class": "Cloud Polling"
+  "iot_class": "Cloud Polling",
+  "homeassistant": "0.104.0"
 }
