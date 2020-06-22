@@ -1,7 +1,6 @@
 [![hacs_badge](https://img.shields.io/badge/HACS-Default-orange.svg)](https://github.com/custom-components/hacs)
 ![Latest Release](https://img.shields.io/github/v/release/robinostlund/homeassistant-volkswagencarnet?label=Latest%20Release)
 
-
 # Volkswagen Carnet - An home assistant plugin to add integration with your car
 
 [![buy me a coffee](https://www.buymeacoffee.com/assets/img/custom_images/yellow_img.png)](https://www.buymeacoffee.com/robinostlund)
