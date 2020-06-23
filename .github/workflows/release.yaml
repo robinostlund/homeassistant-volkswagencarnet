@@ -54,17 +54,17 @@ jobs:
           draft: true
           prerelease: true
           change-template: '- $TITLE @$AUTHOR (#$NUMBER)'
-          version-resolver:
-            major:
-              labels:
-                - 'major'
-            minor:
-              labels:
-                - 'minor'
-            patch:
-              labels:
-                - 'patch'
-            default: patch
+          # version-resolver:
+          #   major:
+          #     labels:
+          #       - 'major'
+          #   minor:
+          #     labels:
+          #       - 'minor'
+          #   patch:
+          #     labels:
+          #       - 'patch'
+          #   default: patch
           template: |
             ## What’s Changed
 
