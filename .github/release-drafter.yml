@@ -1,7 +1,3 @@
-template: |
-  ## Changes
-
-  $CHANGES
 name-template: 'v$RESOLVED_VERSION 🌈'
 tag-template: 'v$RESOLVED_VERSION'
 categories:
@@ -28,3 +24,7 @@ version-resolver:
     labels:
       - 'patch'
   default: patch
+template: |
+  ## Changes
+
+  $CHANGES
