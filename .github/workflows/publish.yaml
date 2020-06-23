@@ -14,10 +14,10 @@ jobs:
         uses: actions/checkout@v2
         with:
           fetch-depth: 0
-          token: ${{ secrets.MY_PERSONAL_ACCESS_TOKEN }}
 
       - name: Bump version and push tag
         uses: anothrNick/github-tag-action@1.23.0
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.MY_PERSONAL_ACCESS_TOKEN }}
+          DEFAULT_BUMP: patch
           WITH_V: true
