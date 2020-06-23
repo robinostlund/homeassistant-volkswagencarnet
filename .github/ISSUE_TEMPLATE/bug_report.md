@@ -25,6 +25,7 @@ Please check if the bug is already reported and add more information there inste
 - Operating environment (Home Assistant/Supervised/Docker/venv): 
 - Car model and year: 
 - Valid We Connect subscription: 
+- Debug logs enabled: 
 
 ## Describe the bug
 <!--
