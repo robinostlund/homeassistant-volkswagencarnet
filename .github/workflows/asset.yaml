@@ -24,7 +24,7 @@ jobs:
 
         with:
           repo_token: ${{ secrets.GITHUB_TOKEN }}
-          file: /custom_components/volkswagencarnet/volkswagencarnet.zip
+          file: ./custom_components/volkswagencarnet/volkswagencarnet.zip
           asset_name: volkswagencarnet.zip
           tag: ${{ github.ref }}
           overwrite: true
