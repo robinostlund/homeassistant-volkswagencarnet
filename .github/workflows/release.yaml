@@ -21,25 +21,54 @@ jobs:
           cd custom_components/volkswagencarnet
           zip volkswagencarnet.zip -r ./
 
-      - name: Create Changelog
-        uses: scottbrenner/generate-changelog-action@master
-        id: changelog
-        env:
-          REPO: ${{ github.repository }}
+      # - name: Create Changelog
+      #   uses: scottbrenner/generate-changelog-action@master
+      #   id: changelog
+      #   env:
+      #     REPO: ${{ github.repository }}
+
+      # - name: Create Release
+      #   id: create_release
+      #   uses: actions/create-release@v1
+      #   env:
+      #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      #   with:
+      #     tag_name: ${{ github.ref }}
+      #     release_name: Release ${{ github.ref }}
+      #     body: |
+      #       Changes in this release:
+      #       ${{ steps.changelog.outputs.changelog }}
+      #     draft: true
+      #     prerelease: true
 
       - name: Create Release
-        id: create_release
-        uses: actions/create-release@v1
+        uses: release-drafter/release-drafter@v5
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          tag_name: ${{ github.ref }}
-          release_name: Release ${{ github.ref }}
-          body: |
-            Changes in this release:
-            ${{ steps.changelog.outputs.changelog }}
           draft: true
           prerelease: true
+          change-template: '- $TITLE @$AUTHOR (#$NUMBER)'
+          version-resolver:
+            major:
+              labels:
+                - 'major'
+            minor:
+              labels:
+                - 'minor'
+            patch:
+              labels:
+                - 'patch'
+            default: patch
+          template: |
+            ## What’s Changed
+
+            $CHANGES
+          categories:
+            - title: "🚀 Features"
+              label: "feature"
+            - title: "🐛 Bug Fixes"
+              label: "fix"
 
       - name: Upload Release Asset
         id: upload-release-asset 
