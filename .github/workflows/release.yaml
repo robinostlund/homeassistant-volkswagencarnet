@@ -68,11 +68,11 @@ jobs:
             ## What’s Changed
 
             $CHANGES
-          # categories:
-          #   - title: "🚀 Features"
-          #     label: "feature"
-          #   - title: "🐛 Bug Fixes"
-          #     label: "fix"
+          categories:
+            - title: "🚀 Features"
+              label: "feature"
+            - title: "🐛 Bug Fixes"
+              label: "fix"
 
       - name: Upload Release Asset
         id: upload-release-asset 
