@@ -50,30 +50,6 @@ jobs:
         uses: release-drafter/release-drafter@v5
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          draft: true
-          prerelease: true
-          change-template: '- $TITLE @$AUTHOR (#$NUMBER)'
-          # version-resolver:
-          #   major:
-          #     labels:
-          #       - 'major'
-          #   minor:
-          #     labels:
-          #       - 'minor'
-          #   patch:
-          #     labels:
-          #       - 'patch'
-          #   default: patch
-          template: |
-            ## What’s Changed
-
-            $CHANGES
-          # categories:
-          #   - title: "🚀 Features"
-          #     label: "feature"
-          #   - title: "🐛 Bug Fixes"
-          #     label: "fix"
 
       - name: Upload Release Asset
         id: upload-release-asset 
