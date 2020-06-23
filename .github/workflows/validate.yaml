@@ -1,0 +1,31 @@
+name: Validate with HACS
+
+on:
+  # push:
+  # pull_request:
+  # schedule:
+  #   - cron: "0 0 * * *"
+
+  pull_request:
+    branches:
+      - master
+  push:
+    branches:
+      - master
+
+jobs:
+  validate:
+    name: Validate
+    runs-on: "ubuntu-latest"
+    steps:
+      - name: Check out repository
+        uses: "actions/checkout@v2"
+
+      - name: HACS validation
+        uses: "hacs/integration/action@master"
+        with:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          CATEGORY: "integration"
+
+      - name: Hassfest validation
+        uses: home-assistant/actions/hassfest@master
