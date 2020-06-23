@@ -3,11 +3,11 @@ name: Publish
 on:
   push:
     branches:
-      - masterrr
+      - master
 
 jobs:
   build:
-    name: Publish New Tag
+    name: Create Release
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
@@ -15,9 +15,10 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Bump version and push tag
-        uses: anothrNick/github-tag-action@1.23.0
+      - name: Create Release
+        id: create_release
+        uses: release-drafter/release-drafter@v5
         env:
-          GITHUB_TOKEN: ${{ secrets.MY_PERSONAL_ACCESS_TOKEN }}
-          DEFAULT_BUMP: patch
-          WITH_V: true
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+
