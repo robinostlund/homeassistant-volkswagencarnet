@@ -1,14 +1,14 @@
 name: Upload Release Asset
 
 on:
-  # push:
-  #   # Sequence of patterns matched against refs/tags
-  #   tags:
-  #     - 'v*' # Push events to matching v*, i.e. v1.0, v20.15.10
-
   push:
-    branches:
-      - development
+    # Sequence of patterns matched against refs/tags
+    tags:
+      - 'v*' # Push events to matching v*, i.e. v1.0, v20.15.10
+
+  # push:
+  #   branches:
+  #     - development
 
 jobs:
   build:
@@ -25,11 +25,6 @@ jobs:
           cd custom_components/volkswagencarnet
           zip volkswagencarnet.zip -r ./
 
-      # - name: Create Changelog
-      #   uses: scottbrenner/generate-changelog-action@master
-      #   id: changelog
-      #   env:
-      #     REPO: ${{ github.repository }}
 
       # - name: Create Release
       #   id: create_release
@@ -44,7 +39,6 @@ jobs:
       #       ${{ steps.changelog.outputs.changelog }}
       #     draft: true
       #     prerelease: true
-
 
       - name: Create Release
         id: create_release
