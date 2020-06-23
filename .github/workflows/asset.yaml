@@ -6,7 +6,7 @@ on:
 
 jobs:
   build:
-    name: Assets
+    name: Upload Assets
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
