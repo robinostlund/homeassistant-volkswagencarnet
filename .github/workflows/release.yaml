@@ -1,10 +1,14 @@
 name: Upload Release Asset
 
 on:
+  # push:
+  #   # Sequence of patterns matched against refs/tags
+  #   tags:
+  #     - 'v*' # Push events to matching v*, i.e. v1.0, v20.15.10
+
   push:
-    # Sequence of patterns matched against refs/tags
-    tags:
-      - 'v*' # Push events to matching v*, i.e. v1.0, v20.15.10
+    branches:
+      - development
 
 jobs:
   build:
@@ -41,34 +45,12 @@ jobs:
       #     draft: true
       #     prerelease: true
 
+
       - name: Create Release
+        id: create_release
         uses: release-drafter/release-drafter@v5
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          draft: true
-          prerelease: true
-          change-template: '- $TITLE @$AUTHOR (#$NUMBER)'
-          version-resolver:
-            major:
-              labels:
-                - 'major'
-            minor:
-              labels:
-                - 'minor'
-            patch:
-              labels:
-                - 'patch'
-            default: patch
-          template: |
-            ## What’s Changed
-
-            $CHANGES
-          categories:
-            - title: "🚀 Features"
-              label: "feature"
-            - title: "🐛 Bug Fixes"
-              label: "fix"
 
       - name: Upload Release Asset
         id: upload-release-asset 
