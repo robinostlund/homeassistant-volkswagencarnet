@@ -231,17 +231,6 @@ class VolkswagenEntity(Entity):
         )
 
     @property
-    def device_info(self):
-        """Return the device_info of the device."""
-        return {
-            "identifiers": {(DOMAIN, self.vin)},
-            "name": self._vehicle_name,
-            "manufacturer": "Volkswagen",
-            "model": self.vehicle.model,
-            "sw_version": self.vehicle.model_year,
-        }
-
-    @property
     def instrument(self):
         """Return corresponding instrument."""
         return self.data.instrument(self.vin, self.component, self.attribute)
@@ -289,6 +278,17 @@ class VolkswagenEntity(Entity):
             self.instrument.attributes,
             model=f"{self.vehicle.model}/{self.vehicle.model_year}"
         )
+
+    @property
+    def device_info(self):
+        """Return the device_info of the device."""
+        return {
+            "identifiers": {(DOMAIN, self.vin)},
+            "name": self._vehicle_name,
+            "manufacturer": "Volkswagen",
+            "model": self.vehicle.model,
+            "sw_version": self.vehicle.model_year,
+        }
 
     @property
     def unique_id(self) -> str:
