@@ -280,6 +280,17 @@ class VolkswagenEntity(Entity):
         )
 
     @property
+    def device_info(self):
+        """Return the device_info of the device."""
+        return {
+            "identifiers": {(DOMAIN, self.vin)},
+            "name": self._vehicle_name,
+            "manufacturer": "Volkswagen",
+            "model": self.vehicle.model,
+            "sw_version": self.vehicle.model_year,
+        }
+
+    @property
     def unique_id(self) -> str:
         """Return a unique ID."""
         return f"{self.vin}-{self.component}-{self.attribute}"
