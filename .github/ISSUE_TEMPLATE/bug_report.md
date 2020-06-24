@@ -2,7 +2,7 @@
 name: Bug report
 about: Create a bug report to help us improve homeassistant-volkswagencarnet
 title: "[BUG]"
-labels: ''
+labels: 'bug'
 assignees: ''
 
 ---

@@ -2,7 +2,7 @@
 name: Feature request
 about: Suggest an idea for homeassistant-volkswagencarnet
 title: "[FR]"
-labels: ''
+labels: 'enhancement'
 assignees: ''
 
 ---
