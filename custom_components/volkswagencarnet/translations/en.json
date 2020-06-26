@@ -1,6 +1,6 @@
 {
+    "title": "Volkswagen Carnet",
     "config": {
-        "title": "Volkswagen Carnet",
         "step": {
             "user": {
                 "title": "Carnet Configuration",
