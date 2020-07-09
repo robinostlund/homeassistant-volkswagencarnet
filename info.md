@@ -24,6 +24,7 @@ You can find change log under [releases](https://github.com/robinostlund/homeass
 Please support us by buying us [some cups of coffee](https://www.buymeacoffee.com/robinostlund).
 
 # Links
-- [Documentation](https://github.com/robinostlund/homeassistant-volkswagencarnet/blob/master/README.md)
-- [Configuration](https://github.com/robinostlund/homeassistant-volkswagencarnet/blob/master/README.md#configure)
+- [Automations](https://github.com/robinostlund/homeassistant-volkswagencarnet/blob/master/README.md#automations)
 - [Change log](https://github.com/robinostlund/homeassistant-volkswagencarnet/releases)
+- [Configuration](https://github.com/robinostlund/homeassistant-volkswagencarnet/blob/master/README.md#configure)
+- [Documentation](https://github.com/robinostlund/homeassistant-volkswagencarnet/blob/master/README.md)

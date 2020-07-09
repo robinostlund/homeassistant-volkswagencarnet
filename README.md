@@ -47,7 +47,7 @@ volkswagencarnet:
         minutes: 2
     name:
         wvw1234567812356: 'Passat GTE'
-    resources:
+    resources: # Optional
         - combustion_engine_heating # Note that this option is only available for 2019> Facelift models
         - position
         - distance
@@ -142,105 +142,168 @@ This plugin creates entities in the format `DOMAIN.NAME_ENTITY`. Not all entitie
 
 ![alt text](https://user-images.githubusercontent.com/12171819/55963464-30216480-5c73-11e9-9b91-3bf06672ef36.png)
 
-## Automation example
+## Automations
 
-In this example we are sending notifications to a slack channel
+In this example we are sending notifications to an ios device
 
-`<config dir>/automations.yaml`
+Save these automations in your automations file `<config dir>/automations.yaml`
+
+### Get notification when your car is on a new place and show a map with start position and end position
 ```yaml
-# Send notification when climatisation is started/stopped
-- alias: vw_carid_climatisation_on
+- id: notify_volkswagen_position_change
+  description: Notify when position has been changed
+  alias: VW position changed notification
   trigger:
-   platform: state
-   entity_id: switch.vw_carid_climatisation
-   from: 'off'
-   to: 'on'
+    - platform: state
+      entity_id: device_tracker.vw_carid
   action:
-   service: notify.slack
-   data_template:
-    title: "VW climatisation started"
-    message: "VW climatisation started"
+    - service: notify.ios_my_ios_device
+      data_template:
+        title: "Passat GTE Position Changed"
+        message: |
+          🚗 VW Car is now on a new place.
+        data:
+          url: /lovelace/car
+          apns_headers:
+            'apns-collapse-id': 'car_position_state_{{ trigger.entity_id.split(".")[1] }}'
+          push:
+            category: map
+            thread-id: "HA Car Status"
+          action_data:
+            latitude: "{{trigger.from_state.attributes.latitude}}"
+            longitude: "{{trigger.from_state.attributes.longitude}}"
+            second_latitude: "{{trigger.to_state.attributes.latitude}}"
+            second_longitude: "{{trigger.to_state.attributes.longitude}}"
+            shows_traffic: true
+```
 
-- alias: vw_carid_climatisation_off
+### Get notification when your car has started/stopped climatisation
+```yaml
+- id: notify_volkswagen_climatisation
+  description: Notify when climatisation state changes
+  alias: VW climatisation notifications
   trigger:
-   platform: state
-   entity_id: switch.vw_carid_climatisation
-   from: 'on'
-   to: 'off'
+    - platform: state
+      entity_id: switch.vw_carid_electric_climatisation
+      from: 'off'
+      to: 'on'
+    - platform: state
+      entity_id: switch.vw_carid_electric_climatisation
+      from: 'on'
+      to: 'off'
   action:
-   service: notify.slack
-   data_template:
-    title: "VW climatisation stopped"
-    message: "VW climatisation stopped"
+    - service: notify.ios_my_ios_device
+      data_template:
+        title: "VW Car Climatisation State"
+        message: |
+          🚗 VW Climatisation has {% if trigger.to_state.state == 'on' %}been started{% else %}stopped{% endif %}.
+        data:
+          url: /lovelace/car
+          apns_headers:
+            'apns-collapse-id': 'car_climatisation_state_{{ trigger.entity_id.split(".")[1] }}'
+          push:
+            thread-id: "HA Car Status"
+```
 
-# Send notification when vehicle is charging
-- alias: vw_carid_charging
+### Get notification when your car has started/stopped charging
+```yaml
+- id: notify_volkswagen_charging
+  description: Notify when charging state changes
+  alias: VW charging notifications
   trigger:
-   platform: state
-   entity_id: switch.vw_carid_charging
-   from: 'off'
-   to: 'on'
+    - platform: state
+      entity_id: switch.vw_carid_charging
+      from: 'off'
+      to: 'on'
+
+    - platform: state
+      entity_id: switch.vw_carid_charging
+      from: 'on'
+      to: 'off'
   action:
-   service: notify.slack
-   data_template:
-    title: "VW is now charging"
-    message: "VW is now charging"
+    # delay so charging time gets updated
+    - delay: '00:00:05'
+    - service: notify.ios_my_ios_device
+      data_template:
+        title: "VW Car Charging State"
+        message: |
+          🚗 VW {% if trigger.to_state.state == 'on' %}is now charging{% else %}has stopped charging{% endif %}.
+          {% if trigger.to_state.state == 'on' %}⏰ {{ states('sensor.vw_carid_charging_time_left_2') }} minutes untill battery is fully charged.{% endif %}
+        data:
+          url: /lovelace/car
+          apns_headers:
+            'apns-collapse-id': 'car_charging_state_{{ trigger.entity_id.split(".")[1] }}'
+          push:
+            thread-id: "HA Car Status"
+```
 
-# Send notification when vehicle is fully charged
-- alias: vw_carid_battery_fully_charged
+### Get notification when your car has full battery
+```yaml
+- id: notify_volkswagen_battery_full
+  description: Notify when battery is fully charged
+  alias: VW battery level full Notifications
   trigger:
-   platform: numeric_state
-   entity_id: switch.vw_carid_battery_level
-   above: 99
+    - platform: numeric_state
+      entity_id: sensor.vw_carid_battery_level
+      above: 99
   action:
-   service: notify.slack
-   data_template:
-    title: "VW is now fully charged"
-    message: "VW is now fully charged"
+    - service: notify.ios_my_ios_device
+      data_template:
+        title: "Passat GTE Fully Charged"
+        message: |
+          🚗 VW is now fully charged.
+        data:
+          url: /lovelace/car
+          apns_headers:
+            'apns-collapse-id': 'car_battery_state_{{ trigger.entity_id.split(".")[1] }}'
+          push:
+            thread-id: "HA Car Status"
+```
 
-# Announce that the car is unlocked but home
-- id: 'car_is_unlocked'
-  alias: The car is at home and unlocked
+### Announce when your car is unlocked but no one is home
+```yaml
+- id: 'notify_volkswagen_car_is_unlocked'
+  alias: VW is at home and unlocked
   trigger:
-  - entity_id: binary_sensor.my_passat_gte_external_power
-    platform: state
-    to: 'on'
-    for: 00:10:00
+    - entity_id: binary_sensor.vw_carid_external_power
+      platform: state
+      to: 'on'
+      for: 00:10:00
   condition:
-  - condition: state
-    entity_id: lock.my_passat_gte_door_locked
-    state: unlocked
-  - condition: state
-    entity_id: device_tracker.life360_my_lord
-    state: home
-  - condition: time
-    after: '07:00:00'
-    before: '21:00:00'
+    - condition: state
+      entity_id: lock.vw_carid_door_locked
+      state: unlocked
+    - condition: state
+      entity_id: device_tracker.my_device
+      state: home
+    - condition: time
+      after: '07:00:00'
+      before: '21:00:00'
   action:
-# Notification via push message to smartphone
-  - data:
-      message: "The car is unlocked!"
-      target:
-      - device/my_device
-    service: notify.device
-# Notification via smart speaker (kitchen)
-  - data:
-      entity_id: media_player.kitchen
-      volume_level: '0.6'
-    service: media_player.volume_set
-  - data:
-      entity_id: media_player.kitchen
-      message: "My Lord, the car is unlocked. Please attend this this issue at your earliest inconvenience!"
-    service: tts.google_translate_say
+    # Notification via push message to smartphone
+    - service: notify.device
+      data:
+        message: "The car is unlocked!"
+        target:
+          - device/my_device
+    # Notification via smart speaker (kitchen)
+    - service: media_player.volume_set
+      data:
+        entity_id: media_player.kitchen
+        volume_level: '0.6'
+    - service: tts.google_translate_say
+      data:
+        entity_id: media_player.kitchen
+        message: "My Lord, the car is unlocked. Please attend this this issue at your earliest inconvenience!"
 ```
 
 ## Enable debug logging
-
 ```yaml
 logger:
     default: info
     logs:
         volkswagencarnet: debug
+        dashboard: debug
         custom_components.volkswagencarnet: debug
         custom_components.volkswagencarnet.climate: debug
         custom_components.volkswagencarnet.lock: debug
