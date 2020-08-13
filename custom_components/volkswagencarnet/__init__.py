@@ -68,6 +68,7 @@ RESOURCES = [
     'trunk_locked',
     'request_in_progress',
     'windows_closed',
+    'sunroof_closed',
     'trip_last_average_speed',
     'trip_last_average_electric_consumption',
     'trip_last_average_fuel_consumption',
