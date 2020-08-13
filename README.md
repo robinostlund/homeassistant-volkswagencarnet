@@ -96,6 +96,7 @@ Available resources:
     'trunk_locked',
     'request_in_progress',
     'windows_closed',
+    'sunroof_closed',
     'trip_last_average_speed',
     'trip_last_average_electric_consumption',
     'trip_last_average_fuel_consumption',
@@ -132,6 +133,7 @@ This plugin creates entities in the format `DOMAIN.NAME_ENTITY`. Not all entitie
 * **lock.NAME_trunk_locked:** indicates and controls the car's trunk lock. Requires S-PIN to control.
 * **switch.NAME_request_in_progress:** indicates whether the plugin is currently updating its data from We Connect. Can be turned on to force an update.
 * **binary_sensor.NAME_windows_closed:** whether the car's windows are closed.
+* **binary_sensor.NAME_sunroof_closed:** whether the car's sunroof is closed.
 * **sensor.NAME_last_trip_average_speed:** average speed on the last trip.
 * **sensor.NAME_last_trip_average_fuel_consumption:** average fuel consuption on the last trip.
 * **sensor.NAME_last_trip_average_electric_consumption:** average electric motor consumption on the last trip.
