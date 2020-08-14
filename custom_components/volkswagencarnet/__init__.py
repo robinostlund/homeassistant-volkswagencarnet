@@ -70,6 +70,7 @@ RESOURCES = [
     'door_closed_left_back',
     'door_closed_right_back',
     'trunk_locked',
+    'trunk_closed',
     'request_in_progress',
     'windows_closed',
     'window_closed_left_front',
