@@ -98,6 +98,7 @@ Available resources:
     'door_closed_left_back',
     'door_closed_right_back',
     'trunk_locked',
+    'trunk_closed',
     'request_in_progress',
     'sunroof_closed',
     'windows_closed',
@@ -137,6 +138,7 @@ This plugin creates entities in the format `DOMAIN.NAME_ENTITY`. Not all entitie
 * **binary_sensor.NAME_parking_light:** whether the parking lights are on.
 * **binary_sensor.NAME_climatisation_without_external_power:** whether the car would pre-heat or cool when not plugged in.
 * **binary_sensor.NAME_doors_locked:** whether the car's doors are locked.
+* **binary_sensor.NAME_trunk_closed:** whether the car's trunk are closed.
 * **lock.NAME_door_locked:** indicates and controls the car's door lock. Requires S-PIN to control.
 * **lock.NAME_trunk_locked:** indicates and controls the car's trunk lock. Requires S-PIN to control.
 * **switch.NAME_request_in_progress:** indicates whether the plugin is currently updating its data from We Connect. Can be turned on to force an update.
