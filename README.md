@@ -21,7 +21,7 @@ The current release (2020-06-13) has been tested with a Passat GTE MY2017 and a 
 Users report success with the e-Up! 2020.
 
 ## Having issues with this custom component?
-Please, before posting an issue make sure that VW´s WeConnect service works for you via a normal web browser. If there are problems with the VW WeConnect service this component will not work either. This custom component is only as good as the VW WeConnect service.
+Please, before posting an issue make sure that VW´s WeConnect service works for you via a normal web browser. Not only the login part but also make sure that the VW WeConnect service interacts with the car proper, including updating of all sensors and location. If there are problems with the VW WeConnect service this component will not work either. This custom component is only as good as the VW WeConnect service.
 
 ## Installation
 
