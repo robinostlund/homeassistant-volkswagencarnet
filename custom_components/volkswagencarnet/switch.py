@@ -2,8 +2,10 @@
 Support for Volkswagen Carnet Platform
 """
 import logging
+
 from homeassistant.helpers.entity import ToggleEntity
-from . import VolkswagenEntity, DATA_KEY
+
+from . import DATA_KEY, VolkswagenEntity
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -14,13 +16,14 @@ async def async_setup_platform(hass, config, async_add_entities, discovery_info=
         return
     async_add_entities([VolkswagenSwitch(hass.data[DATA_KEY], *discovery_info)])
 
+
 class VolkswagenSwitch(VolkswagenEntity, ToggleEntity):
     """Representation of a Volkswagen Carnet Switch."""
 
     @property
     def is_on(self):
         """Return true if switch is on."""
-        _LOGGER.debug('Getting state of %s' % self.instrument.attr)
+        _LOGGER.debug("Getting state of %s" % self.instrument.attr)
         return self.instrument.state
 
     async def async_turn_on(self, **kwargs):
