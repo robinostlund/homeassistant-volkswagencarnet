@@ -1,0 +1,15 @@
+{
+    "title": "Volkswagen Carnet",
+    "config": {
+        "step": {
+            "user": {
+                "title": "Carnet-konfigurasjon",
+                "description": "Fyll ut Carnet-informasjon",
+                "data": {
+                    "username": "Brukenavn",
+                    "password": "Passord"
+                }
+            }
+        }
+    }
+}
