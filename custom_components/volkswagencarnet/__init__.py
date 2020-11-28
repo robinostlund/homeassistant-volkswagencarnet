@@ -32,11 +32,14 @@ DEFAULT_REGION = "SV"
 CONF_MUTABLE = "mutable"
 CONF_SPIN = "spin"
 CONF_SCANDINAVIAN_MILES = "scandinavian_miles"
+CONF_REPORT_REQUEST = "report_request"
+CONF_REPORT_SCAN_INTERVAL = "report_scan_interval"
 
 SIGNAL_STATE_UPDATED = f"{DOMAIN}.updated"
 
 MIN_UPDATE_INTERVAL = timedelta(minutes=1)
 DEFAULT_UPDATE_INTERVAL = timedelta(minutes=5)
+DEFAULT_REPORT_UPDATE_INTERVAL = timedelta(days=1)
 
 COMPONENTS = {
     "sensor": "sensor",
@@ -103,6 +106,10 @@ CONFIG_SCHEMA = vol.Schema(
                 vol.Optional(CONF_SCAN_INTERVAL, default=DEFAULT_UPDATE_INTERVAL): (
                     vol.All(cv.time_period, vol.Clamp(min=MIN_UPDATE_INTERVAL))
                 ),
+                vol.Optional(CONF_REPORT_REQUEST, default=False): cv.boolean,
+                vol.Optional(CONF_REPORT_SCAN_INTERVAL, default=DEFAULT_REPORT_UPDATE_INTERVAL): (
+                    vol.All(cv.time_period, vol.Clamp(min=MIN_UPDATE_INTERVAL))
+                ),
                 # vol.Optional(CONF_NAME, default={}): vol.Schema(
                 #     {cv.slug: cv.string}),
                 vol.Optional(CONF_NAME, default={}): cv.schema_with_slug_keys(
@@ -131,6 +138,7 @@ async def async_setup(hass, config):
     )
 
     interval = config[DOMAIN].get(CONF_SCAN_INTERVAL)
+    report_interval = config[DOMAIN].get(CONF_REPORT_SCAN_INTERVAL)
     data = hass.data[DATA_KEY] = VolkswagenData(config)
 
     # login to carnet
@@ -170,6 +178,25 @@ async def async_setup(hass, config):
                 )
             )
 
+    async def report_request(now):
+        """Request car to report itself an update to Volkswagen Carnet"""
+        try:
+            # check if we can login
+            if not connection.logged_in:
+                await connection._login()
+                if not connection.logged_in:
+                    _LOGGER.warning(
+                        "Could not login to volkswagen carnet, please check your credentials and verify that the service is working"
+                    )
+                    return False
+
+            # request report
+            if not await connection.request_report():
+                _LOGGER.warning("Could not request report from volkswagen carnet")
+                return False
+
+            return True
+
     async def update(now):
         """Update status from Volkswagen Carnet"""
         try:
@@ -198,6 +225,8 @@ async def async_setup(hass, config):
 
         finally:
             async_track_point_in_utc_time(hass, update, utcnow() + interval)
+            if config[DOMAIN].get(CONF_REPORT_REQUEST):
+                async_track_point_in_utc_time(hass, report_request, utcnow() + report_interval)
 
     _LOGGER.info("Starting volkswagencarnet component")
     return await update(utcnow())
