@@ -196,6 +196,10 @@ async def async_setup(hass, config):
                 return False
 
             return True
+        
+        except:
+            # This is actually not critical so...
+            pass
 
     async def update(now):
         """Update status from Volkswagen Carnet"""
