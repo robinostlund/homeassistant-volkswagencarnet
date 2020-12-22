@@ -6,7 +6,7 @@
                 "title": "Carnet-konfigurasjon",
                 "description": "Fyll ut Carnet-informasjon",
                 "data": {
-                    "username": "Brukenavn",
+                    "username": "Brukernavn",
                     "password": "Passord"
                 }
             }
