@@ -4,6 +4,7 @@
     "documentation": "https://github.com/robinostlund/homeassistant-volkswagencarnet/blob/master/README.md",
     "issue_tracker": "https://github.com/robinostlund/homeassistant-volkswagencarnet/issues",
     "dependencies": [],
+    "config_flow": true,
     "codeowners": ["@robinostlund"],
     "requirements": ["volkswagencarnet==4.4.24"]
 }

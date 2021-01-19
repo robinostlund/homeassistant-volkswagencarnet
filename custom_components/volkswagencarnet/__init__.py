@@ -4,6 +4,13 @@ from datetime import timedelta
 
 import homeassistant.helpers.config_validation as cv
 import voluptuous as vol
+
+from .const import (
+    DOMAIN,
+    CONF_REGION, DEFAULT_REGION, CONF_MUTABLE, CONF_SPIN,
+    DEFAULT_UPDATE_INTERVAL, MIN_UPDATE_INTERVAL, RESOURCES,
+    CONF_SCANDINAVIAN_MILES, DATA_KEY, COMPONENTS, SIGNAL_STATE_UPDATED
+)
 from homeassistant.const import (
     CONF_NAME,
     CONF_PASSWORD,
@@ -23,73 +30,10 @@ from homeassistant.helpers.icon import icon_for_battery_level
 from homeassistant.util.dt import utcnow
 from volkswagencarnet import Connection
 
+from ...config_entries import ConfigEntry
+from ...core import HomeAssistant
+
 _LOGGER = logging.getLogger(__name__)
-
-DOMAIN = "volkswagencarnet"
-DATA_KEY = DOMAIN
-CONF_REGION = "region"
-DEFAULT_REGION = "SV"
-CONF_MUTABLE = "mutable"
-CONF_SPIN = "spin"
-CONF_SCANDINAVIAN_MILES = "scandinavian_miles"
-
-SIGNAL_STATE_UPDATED = f"{DOMAIN}.updated"
-
-MIN_UPDATE_INTERVAL = timedelta(minutes=1)
-DEFAULT_UPDATE_INTERVAL = timedelta(minutes=5)
-
-COMPONENTS = {
-    "sensor": "sensor",
-    "binary_sensor": "binary_sensor",
-    "lock": "lock",
-    "device_tracker": "device_tracker",
-    "switch": "switch",
-    "climate": "climate",
-}
-
-RESOURCES = [
-    "position",
-    "distance",
-    "electric_climatisation",
-    "combustion_climatisation",
-    "window_heater",
-    "combustion_engine_heating",
-    "charging",
-    "adblue_level",
-    "battery_level",
-    "fuel_level",
-    "service_inspection",
-    "oil_inspection",
-    "last_connected",
-    "charging_time_left",
-    "electric_range",
-    "combustion_range",
-    "combined_range",
-    "charge_max_ampere",
-    "climatisation_target_temperature",
-    "external_power",
-    "parking_light",
-    "climatisation_without_external_power",
-    "door_locked",
-    "door_closed_left_front",
-    "door_closed_right_front",
-    "door_closed_left_back",
-    "door_closed_right_back",
-    "trunk_locked",
-    "trunk_closed",
-    "request_in_progress",
-    "windows_closed",
-    "window_closed_left_front",
-    "window_closed_right_front",
-    "window_closed_left_back",
-    "window_closed_right_back",
-    "sunroof_closed",
-    "trip_last_average_speed",
-    "trip_last_average_electric_consumption",
-    "trip_last_average_fuel_consumption",
-    "trip_last_duration",
-    "trip_last_length",
-]
 
 CONFIG_SCHEMA = vol.Schema(
     {
@@ -100,7 +44,8 @@ CONFIG_SCHEMA = vol.Schema(
                 vol.Optional(CONF_REGION, default=DEFAULT_REGION): cv.string,
                 vol.Optional(CONF_MUTABLE, default=True): cv.boolean,
                 vol.Optional(CONF_SPIN, default=""): cv.string,
-                vol.Optional(CONF_SCAN_INTERVAL, default=DEFAULT_UPDATE_INTERVAL): (
+                vol.Optional(CONF_SCAN_INTERVAL,
+                             default=DEFAULT_UPDATE_INTERVAL): (
                     vol.All(cv.time_period, vol.Clamp(min=MIN_UPDATE_INTERVAL))
                 ),
                 # vol.Optional(CONF_NAME, default={}): vol.Schema(
@@ -111,12 +56,28 @@ CONFIG_SCHEMA = vol.Schema(
                 vol.Optional(CONF_RESOURCES): vol.All(
                     cv.ensure_list, [vol.In(RESOURCES)]
                 ),
-                vol.Optional(CONF_SCANDINAVIAN_MILES, default=False): cv.boolean,
+                vol.Optional(CONF_SCANDINAVIAN_MILES,
+                             default=False): cv.boolean,
             }
         ),
     },
     extra=vol.ALLOW_EXTRA,
 )
+
+
+async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
+    """Setup Volkswagen Carnet component"""
+    session = async_get_clientsession(hass)
+
+    _LOGGER.debug("Creating connection to volkswagen carnet")
+    connection = Connection(
+        session=session,
+        username=entry.data[CONF_USERNAME],
+        password=entry.data[CONF_PASSWORD],
+    )
+
+    interval = entry.data.get(CONF_SCAN_INTERVAL, MIN_UPDATE_INTERVAL)
+    data = hass.data[DATA_KEY] = VolkswagenData(entry.data)
 
 
 async def async_setup(hass, config):
@@ -154,11 +115,11 @@ async def async_setup(hass, config):
         )
 
         for instrument in (
-            instrument
-            for instrument in dashboard.instruments
-            if instrument.component in COMPONENTS and is_enabled(instrument.slug_attr)
+                instrument
+                for instrument in dashboard.instruments
+                if
+        instrument.component in COMPONENTS and is_enabled(instrument.slug_attr)
         ):
-
             data.instruments.add(instrument)
             hass.async_create_task(
                 discovery.async_load_platform(
@@ -184,13 +145,15 @@ async def async_setup(hass, config):
 
             # update vehicles
             if not await connection.update():
-                _LOGGER.warning("Could not query update from volkswagen carnet")
+                _LOGGER.warning(
+                    "Could not query update from volkswagen carnet")
                 return False
 
             _LOGGER.debug("Updating data from volkswagen carnet")
             for vehicle in connection.vehicles:
                 if vehicle.vin not in data.vehicles:
-                    _LOGGER.info(f"Adding data for VIN: {vehicle.vin} from carnet")
+                    _LOGGER.info(
+                        f"Adding data for VIN: {vehicle.vin} from carnet")
                     discover_vehicle(vehicle)
 
             async_dispatcher_send(hass, SIGNAL_STATE_UPDATED)
@@ -220,8 +183,8 @@ class VolkswagenData:
                 instrument
                 for instrument in self.instruments
                 if instrument.vehicle.vin == vin
-                and instrument.component == component
-                and instrument.attr == attr
+                   and instrument.component == component
+                   and instrument.attr == attr
             ),
             None,
         )
@@ -264,7 +227,8 @@ class VolkswagenEntity(Entity):
         """Return the icon."""
         if self.instrument.attr in ["battery_level", "charging"]:
             return icon_for_battery_level(
-                battery_level=self.instrument.state, charging=self.vehicle.charging
+                battery_level=self.instrument.state,
+                charging=self.vehicle.charging
             )
         else:
             return self.instrument.icon
