@@ -9,6 +9,9 @@ CONF_SPIN = "spin"
 CONF_SCANDINAVIAN_MILES = "scandinavian_miles"
 CONF_VEHICLE = "vehicle"
 
+DATA = "data"
+UNDO_UPDATE_LISTENER = "undo_update_listener"
+
 SIGNAL_STATE_UPDATED = f"{DOMAIN}.updated"
 
 MIN_UPDATE_INTERVAL = timedelta(minutes=1)
@@ -109,47 +112,3 @@ RESOURCES = [
     "trip_last_duration",
     "trip_last_length",
 ]
-
-RESOURCES_2 = {
-    "Position",
-    "Distance",
-    "Electric Climatisation",
-    "Combustion Climatisation",
-    "Window Heater",
-    "Combustion Engine Heating",
-    "Charging",
-    "Adblue Level",
-    "Battery Level",
-    "Fuel Level",
-    "Service Inspection",
-    "Oil Inspection",
-    "Last Connected",
-    "Charging Time Left",
-    "Electric Range",
-    "Combustion Range",
-    "Combined Range",
-    "Charge Max Ampere",
-    "Climatisation Target Temperature",
-    "External Power",
-    "Parking Light",
-    "Climatisation Without External Power",
-    "Door Locked",
-    "Door Closed Left Front",
-    "Door Closed Right Front",
-    "Door Closed Left Back",
-    "Door Closed Right Back",
-    "Trunk Locked",
-    "Trunk Closed",
-    "Request In Progress",
-    "Windows Closed",
-    "Window Closed Left Front",
-    "Window Closed Right Front",
-    "Window Closed Left Back",
-    "Window Closed Right Back",
-    "Sunroof Closed",
-    "Trip Last Average Speed",
-    "Trip Last Average Electric Consumption",
-    "Trip Last Average Fuel Consumption",
-    "Trip Last Duration",
-    "Trip Last Length",
-}

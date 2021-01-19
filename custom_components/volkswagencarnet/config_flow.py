@@ -1,7 +1,10 @@
 import logging
 import voluptuous as vol
 import homeassistant.helpers.config_validation as cv
+from homeassistant.helpers.aiohttp_client import async_get_clientsession
 from homeassistant import config_entries
+from homeassistant.config_entries import ConfigEntry
+from volkswagencarnet import Connection
 from .const import (
     DOMAIN,
     CONF_REGION,
@@ -10,11 +13,9 @@ from .const import (
     CONF_SPIN,
     DEFAULT_UPDATE_INTERVAL,
     MIN_UPDATE_INTERVAL,
-    RESOURCES,
     CONF_SCANDINAVIAN_MILES,
-    DATA_KEY,
-    COMPONENTS,
-    SIGNAL_STATE_UPDATED, RESOURCES_DICT, RESOURCES_2, CONF_VEHICLE
+    RESOURCES_DICT,
+    CONF_VEHICLE
 )
 from homeassistant.const import (
     CONF_NAME,
@@ -23,7 +24,6 @@ from homeassistant.const import (
     CONF_SCAN_INTERVAL,
     CONF_USERNAME,
 )
-from ...config_entries import ConfigEntry
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -39,8 +39,6 @@ DATA_SCHEMA = {
         RESOURCES_DICT),
     vol.Optional(CONF_SCANDINAVIAN_MILES, default=False): cv.boolean,
 }
-from homeassistant.helpers.aiohttp_client import async_get_clientsession
-from volkswagencarnet import Connection
 
 
 class VolkswagenCarnetConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
@@ -55,32 +53,6 @@ class VolkswagenCarnetConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         self._errors = {}
         self._connection = None
         self._session = None
-
-    # async def _async_retrieve_vehicles(self):
-    #
-    #
-    #     if not self._connection.logged_in:
-    #         await self._connection._login()
-    #         if not self._connection.logged_in:
-    #             _LOGGER.warning("Could not login to volkswagen carnet, please check your credentials and verify that the service is working")
-    #             self._errors["base"] = "cannot_connect"
-    #             return False
-    #
-    #         # update vehicles
-    #         if not await self._connection.update():
-    #             _LOGGER.warning(
-    #                 "Could not query update from volkswagen carnet")
-    #             self._errors["base"] = "cannot_update"
-    #             return False
-    #
-    #         _LOGGER.debug("Updating data from volkswagen carnet")
-    #         for vehicle in connection.vehicles:
-    #             _LOGGER.info(f"Found data for VIN: {vehicle.vin} from carnet")
-    #
-    #         self._init_info["CONF_VEHICLES"] = [vehicle.vin for vehicle in connection.vehicles]
-    #         return True
-    #
-    #     return False
 
     async def async_step_user(self, user_input=None):
         if user_input is not None:

@@ -18,7 +18,7 @@ from homeassistant.const import (
 
 SUPPORT_HVAC = [HVAC_MODE_HEAT, HVAC_MODE_OFF]
 
-from . import DATA_KEY, VolkswagenEntity
+from . import DATA_KEY, VolkswagenEntity, DOMAIN, DATA
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -28,6 +28,18 @@ async def async_setup_platform(hass, config, async_add_entities, discovery_info=
     if discovery_info is None:
         return
     async_add_entities([VolkswagenClimate(hass.data[DATA_KEY], *discovery_info)])
+
+
+async def async_setup_entry(hass, entry, async_add_devices):
+    data = hass.data[DOMAIN][entry.entry_id][DATA]
+    coordinator = data.coordinator
+    if coordinator.data is not None:
+        async_add_devices(
+            VolkswagenClimate(data, coordinator.vin, instrument.component, instrument.attr)
+            for instrument in (instrument for instrument in data.instruments if instrument.component == 'climate')
+        )
+
+    return True
 
 
 class VolkswagenClimate(VolkswagenEntity, ClimateEntity):
