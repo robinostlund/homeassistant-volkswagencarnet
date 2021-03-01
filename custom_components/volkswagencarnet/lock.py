@@ -5,7 +5,7 @@ import logging
 
 from homeassistant.components.lock import LockEntity
 
-from . import DATA_KEY, VolkswagenEntity, DOMAIN, DATA
+from . import DATA, DATA_KEY, DOMAIN, VolkswagenEntity
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -24,7 +24,11 @@ async def async_setup_entry(hass, entry, async_add_devices):
     if coordinator.data is not None:
         async_add_devices(
             VolkswagenLock(data, coordinator.vin, instrument.component, instrument.attr)
-            for instrument in (instrument for instrument in data.instruments if instrument.component == 'lock')
+            for instrument in (
+                instrument
+                for instrument in data.instruments
+                if instrument.component == "lock"
+            )
         )
 
     return True
