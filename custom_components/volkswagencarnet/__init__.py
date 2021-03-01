@@ -6,14 +6,7 @@ from typing import Union
 
 import homeassistant.helpers.config_validation as cv
 import voluptuous as vol
-
-from .const import (
-    DOMAIN,
-    CONF_REGION, DEFAULT_REGION, CONF_MUTABLE, CONF_SPIN,
-    DEFAULT_UPDATE_INTERVAL, MIN_UPDATE_INTERVAL, RESOURCES,
-    CONF_SCANDINAVIAN_MILES, DATA_KEY, COMPONENTS, SIGNAL_STATE_UPDATED,
-    CONF_VEHICLE, UNDO_UPDATE_LISTENER, DATA
-)
+from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import (
     CONF_NAME,
     CONF_PASSWORD,
@@ -21,6 +14,8 @@ from homeassistant.const import (
     CONF_SCAN_INTERVAL,
     CONF_USERNAME,
 )
+from homeassistant.core import HomeAssistant
+from homeassistant.exceptions import ConfigEntryNotReady
 from homeassistant.helpers import discovery
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
 from homeassistant.helpers.dispatcher import (
@@ -30,13 +25,27 @@ from homeassistant.helpers.dispatcher import (
 from homeassistant.helpers.entity import Entity
 from homeassistant.helpers.event import async_track_point_in_utc_time
 from homeassistant.helpers.icon import icon_for_battery_level
+from homeassistant.helpers.update_coordinator import DataUpdateCoordinator
 from homeassistant.util.dt import utcnow
 from volkswagencarnet import Connection, Vehicle
 
-from homeassistant.config_entries import ConfigEntry
-from homeassistant.core import HomeAssistant
-from homeassistant.exceptions import ConfigEntryNotReady
-from homeassistant.helpers.update_coordinator import DataUpdateCoordinator
+from .const import (
+    COMPONENTS,
+    CONF_MUTABLE,
+    CONF_REGION,
+    CONF_SCANDINAVIAN_MILES,
+    CONF_SPIN,
+    CONF_VEHICLE,
+    DATA,
+    DATA_KEY,
+    DEFAULT_REGION,
+    DEFAULT_UPDATE_INTERVAL,
+    DOMAIN,
+    MIN_UPDATE_INTERVAL,
+    RESOURCES,
+    SIGNAL_STATE_UPDATED,
+    UNDO_UPDATE_LISTENER,
+)
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -49,8 +58,7 @@ CONFIG_SCHEMA = vol.Schema(
                 vol.Optional(CONF_REGION, default=DEFAULT_REGION): cv.string,
                 vol.Optional(CONF_MUTABLE, default=True): cv.boolean,
                 vol.Optional(CONF_SPIN, default=""): cv.string,
-                vol.Optional(CONF_SCAN_INTERVAL,
-                             default=DEFAULT_UPDATE_INTERVAL): (
+                vol.Optional(CONF_SCAN_INTERVAL, default=DEFAULT_UPDATE_INTERVAL): (
                     vol.All(cv.time_period, vol.Clamp(min=MIN_UPDATE_INTERVAL))
                 ),
                 # vol.Optional(CONF_NAME, default={}): vol.Schema(
@@ -61,8 +69,7 @@ CONFIG_SCHEMA = vol.Schema(
                 vol.Optional(CONF_RESOURCES): vol.All(
                     cv.ensure_list, [vol.In(RESOURCES)]
                 ),
-                vol.Optional(CONF_SCANDINAVIAN_MILES,
-                             default=False): cv.boolean,
+                vol.Optional(CONF_SCANDINAVIAN_MILES, default=False): cv.boolean,
             }
         ),
     },
@@ -86,9 +93,11 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
         return attr in entry.data.get(CONF_RESOURCES, [attr])
 
     components = set()
-    for instrument in (instrument for instrument in instruments if
-                       instrument.component in COMPONENTS and is_enabled(
-                               instrument.slug_attr)):
+    for instrument in (
+        instrument
+        for instrument in instruments
+        if instrument.component in COMPONENTS and is_enabled(instrument.slug_attr)
+    ):
         data.instruments.add(instrument)
         components.add(COMPONENTS[instrument.component])
 
@@ -100,7 +109,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
 
     hass.data[DOMAIN][entry.entry_id] = {
         DATA: data,
-        UNDO_UPDATE_LISTENER: entry.add_update_listener(_async_update_listener)
+        UNDO_UPDATE_LISTENER: entry.add_update_listener(_async_update_listener),
     }
 
     return True
@@ -148,11 +157,9 @@ async def __async_setup(hass, config):
         )
 
         for instrument in (
-                instrument
-                for instrument in dashboard.instruments
-                if
-                instrument.component in COMPONENTS and is_enabled(
-                    instrument.slug_attr)
+            instrument
+            for instrument in dashboard.instruments
+            if instrument.component in COMPONENTS and is_enabled(instrument.slug_attr)
         ):
             data.instruments.add(instrument)
             hass.async_create_task(
@@ -179,15 +186,13 @@ async def __async_setup(hass, config):
 
             # update vehicles
             if not await connection.update():
-                _LOGGER.warning(
-                    "Could not query update from volkswagen carnet")
+                _LOGGER.warning("Could not query update from volkswagen carnet")
                 return False
 
             _LOGGER.debug("Updating data from volkswagen carnet")
             for vehicle in connection.vehicles:
                 if vehicle.vin not in data.vehicles:
-                    _LOGGER.info(
-                        f"Adding data for VIN: {vehicle.vin} from carnet")
+                    _LOGGER.info(f"Adding data for VIN: {vehicle.vin} from carnet")
                     discover_vehicle(vehicle)
 
             async_dispatcher_send(hass, SIGNAL_STATE_UPDATED)
@@ -246,8 +251,14 @@ class VolkswagenData:
         return next(
             (
                 instrument
-                for instrument in (self.coordinator.data if self.coordinator is not None else self.instruments)
-                if instrument.vehicle.vin == vin and instrument.component == component and instrument.attr == attr
+                for instrument in (
+                    self.coordinator.data
+                    if self.coordinator is not None
+                    else self.instruments
+                )
+                if instrument.vehicle.vin == vin
+                and instrument.component == component
+                and instrument.attr == attr
             ),
             None,
         )
@@ -311,8 +322,7 @@ class VolkswagenEntity(Entity):
         """Return the icon."""
         if self.instrument.attr in ["battery_level", "charging"]:
             return icon_for_battery_level(
-                battery_level=self.instrument.state,
-                charging=self.vehicle.charging
+                battery_level=self.instrument.state, charging=self.vehicle.charging
             )
         else:
             return self.instrument.icon
@@ -385,10 +395,7 @@ class VolkswagenCoordinator(DataUpdateCoordinator):
         self.entry = entry
         self.platforms = []
 
-        super().__init__(hass,
-                         _LOGGER,
-                         name=DOMAIN,
-                         update_interval=update_interval)
+        super().__init__(hass, _LOGGER, name=DOMAIN, update_interval=update_interval)
 
     async def _async_update_data(self):
         """Update data via library."""
@@ -426,8 +433,7 @@ class VolkswagenCoordinator(DataUpdateCoordinator):
 
         # update vehicles
         if not await self.connection.update():
-            _LOGGER.warning(
-                "Could not query update from volkswagen carnet")
+            _LOGGER.warning("Could not query update from volkswagen carnet")
             return False
 
         _LOGGER.debug("Updating data from volkswagen carnet")
