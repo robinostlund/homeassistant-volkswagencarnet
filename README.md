@@ -25,7 +25,7 @@ Please, before posting an issue make sure that VW´s WeConnect service works for
 
 ## Installation
 
-### Install with HACS (recomended)
+### Install with HACS (recommended)
 
 Do you you have [HACS](https://community.home-assistant.io/t/custom-component-hacs) installed? Just search for Volkswagen We Connect and install it direct from HACS. HACS will keep track of updates and you can easly upgrade volkswagencarnet to latest version.
 
@@ -35,61 +35,8 @@ Make sure you have an account on volkswagen carnet.
 Clone or copy the repository and copy the folder 'homeassistant-volkswagencarnet/custom_component/volkswagencarnet' into '<config dir>/custom_components'
 
 ## Configuration
-Configure via UI: Configuration > Integrations
-
-* **spin:** (optional) required for supporting combustion engine heating start/stop.
-
-* **scan_interval:** (optional) specify in minutes how often to fetch status data from carnet. (default 5 min, minimum 1 min)
-
-* **scandinavian_miles:** (optional) specify true if you want to change from km to mil on sensors
-
-* **name:** (optional) map the vehicle identification number (VIN) to a friendly name of your car. This name is then used for naming all entities. See the configuration example. (by default, the VIN is used)
-
-* **resources:** (optional) list of resources that should be enabled. (by default, all resources are enabled)
-
-Available resources:
-```
-    'position',
-    'distance',
-    'electric_climatisation',
-    'combustion_climatisation',
-    'window_heater',
-    'combustion_engine_heating',
-    'charging',
-    'adblue_level',
-    'battery_level',
-    'fuel_level',
-    'service_inspection',
-    'oil_inspection',
-    'last_connected',
-    'charging_time_left',
-    'electric_range',
-    'combustion_range',
-    'combined_range',
-    'charge_max_ampere',
-    'climatisation_target_temperature',
-    'external_power',
-    'parking_light',
-    'climatisation_without_external_power',
-    'door_locked',
-    'door_closed_left_front',
-    'door_closed_right_front',
-    'door_closed_left_back',
-    'door_closed_right_back',
-    'trunk_locked',
-    'trunk_closed',
-    'request_in_progress',
-    'sunroof_closed',
-    'windows_closed',
-    'window_closed_left_front',
-    'window_closed_right_front',
-    'window_closed_left_back',
-    'window_closed_right_back',
-    'trip_last_average_speed',
-    'trip_last_average_electric_consumption',
-    'trip_last_average_fuel_consumption',
-    'trip_last_duration'
-```
+* Restart Home Assistant
+* Add and configure the component via the UI: Configuration > Integrations > search for "Volkswagen We Connect" and follow the wizard to configure
 
 ## Entities
 
