@@ -4,11 +4,11 @@ Support for Volkswagen Carnet Platform
 import logging
 
 from homeassistant.components.device_tracker import SOURCE_TYPE_GPS
-from homeassistant.components.device_tracker.config_entry import TrackerEntity
 from homeassistant.helpers.dispatcher import async_dispatcher_connect
 from homeassistant.util import slugify
 
-from . import DATA, DATA_KEY, DOMAIN, SIGNAL_STATE_UPDATED, VolkswagenEntity
+from . import DATA_KEY, SIGNAL_STATE_UPDATED, VolkswagenEntity, DOMAIN, DATA
+from homeassistant.components.device_tracker.config_entry import TrackerEntity
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -18,14 +18,8 @@ async def async_setup_entry(hass, entry, async_add_devices):
     coordinator = data.coordinator
     if coordinator.data is not None:
         async_add_devices(
-            VolkswagenDeviceTracker(
-                data, coordinator.vin, instrument.component, instrument.attr
-            )
-            for instrument in (
-                instrument
-                for instrument in data.instruments
-                if instrument.component == "device_tracker"
-            )
+            VolkswagenDeviceTracker(data, coordinator.vin, instrument.component, instrument.attr)
+            for instrument in (instrument for instrument in data.instruments if instrument.component == 'device_tracker')
         )
 
     return True
@@ -59,6 +53,7 @@ async def async_setup_scanner(hass, config, async_see, discovery_info=None):
 
 
 class VolkswagenDeviceTracker(VolkswagenEntity, TrackerEntity):
+
     @property
     def latitude(self) -> float:
         """Return latitude value of the device."""

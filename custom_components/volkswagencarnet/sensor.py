@@ -3,7 +3,7 @@ Support for Volkswagen Carnet Platform
 """
 import logging
 
-from . import DATA_KEY, DOMAIN, VolkswagenEntity
+from . import DATA_KEY, VolkswagenEntity, DOMAIN
 from .const import DATA
 
 _LOGGER = logging.getLogger(__name__)
@@ -21,14 +21,8 @@ async def async_setup_entry(hass, entry, async_add_devices):
     coordinator = data.coordinator
     if coordinator.data is not None:
         async_add_devices(
-            VolkswagenSensor(
-                data, coordinator.vin, instrument.component, instrument.attr
-            )
-            for instrument in (
-                instrument
-                for instrument in data.instruments
-                if instrument.component == "sensor"
-            )
+            VolkswagenSensor(data, coordinator.vin, instrument.component, instrument.attr)
+            for instrument in (instrument for instrument in data.instruments if instrument.component == 'sensor')
         )
 
     return True

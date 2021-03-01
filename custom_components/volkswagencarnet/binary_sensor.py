@@ -5,7 +5,7 @@ import logging
 
 from homeassistant.components.binary_sensor import DEVICE_CLASSES, BinarySensorEntity
 
-from . import DATA, DATA_KEY, DOMAIN, VolkswagenEntity
+from . import DATA_KEY, VolkswagenEntity, DOMAIN, DATA
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -22,14 +22,8 @@ async def async_setup_entry(hass, entry, async_add_devices):
     coordinator = data.coordinator
     if coordinator.data is not None:
         async_add_devices(
-            VolkswagenBinarySensor(
-                data, coordinator.vin, instrument.component, instrument.attr
-            )
-            for instrument in (
-                instrument
-                for instrument in data.instruments
-                if instrument.component == "binary_sensor"
-            )
+            VolkswagenBinarySensor(data, coordinator.vin, instrument.component, instrument.attr)
+            for instrument in (instrument for instrument in data.instruments if instrument.component == 'binary_sensor')
         )
 
     return True
