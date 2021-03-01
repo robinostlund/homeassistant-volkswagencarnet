@@ -3,9 +3,8 @@ Support for Volkswagen Carnet Platform
 """
 import logging
 
-from homeassistant.helpers.icon import icon_for_battery_level
-
-from . import DATA_KEY, VolkswagenEntity
+from . import DATA_KEY, VolkswagenEntity, DOMAIN
+from .const import DATA
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -15,6 +14,18 @@ async def async_setup_platform(hass, config, async_add_entities, discovery_info=
     if discovery_info is None:
         return
     async_add_entities([VolkswagenSensor(hass.data[DATA_KEY], *discovery_info)])
+
+
+async def async_setup_entry(hass, entry, async_add_devices):
+    data = hass.data[DOMAIN][entry.entry_id][DATA]
+    coordinator = data.coordinator
+    if coordinator.data is not None:
+        async_add_devices(
+            VolkswagenSensor(data, coordinator.vin, instrument.component, instrument.attr)
+            for instrument in (instrument for instrument in data.instruments if instrument.component == 'sensor')
+        )
+
+    return True
 
 
 class VolkswagenSensor(VolkswagenEntity):
