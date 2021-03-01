@@ -2,6 +2,7 @@
 import asyncio
 import logging
 from datetime import timedelta
+from typing import Union
 
 import homeassistant.helpers.config_validation as cv
 import voluptuous as vol
@@ -30,7 +31,7 @@ from homeassistant.helpers.entity import Entity
 from homeassistant.helpers.event import async_track_point_in_utc_time
 from homeassistant.helpers.icon import icon_for_battery_level
 from homeassistant.util.dt import utcnow
-from volkswagencarnet import Connection
+from volkswagencarnet import Connection, Vehicle
 
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
@@ -84,14 +85,17 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
         """Return true if the user has enabled the resource."""
         return attr in entry.data.get(CONF_RESOURCES, [attr])
 
+    components = set()
     for instrument in (instrument for instrument in instruments if
                        instrument.component in COMPONENTS and is_enabled(
                                instrument.slug_attr)):
         data.instruments.add(instrument)
-        coordinator.platforms.append(COMPONENTS[instrument.component])
+        components.add(COMPONENTS[instrument.component])
+
+    for component in components:
+        coordinator.platforms.append(component)
         hass.async_create_task(
-            hass.config_entries.async_forward_entry_setup(entry, COMPONENTS[
-                instrument.component])
+            hass.config_entries.async_forward_entry_setup(entry, component)
         )
 
     hass.data[DOMAIN][entry.entry_id] = {
@@ -396,6 +400,10 @@ class VolkswagenCoordinator(DataUpdateCoordinator):
 
         vehicle = await self.update()
 
+        if not vehicle:
+            _LOGGER.warning("Could not query update from volkswagen carnet")
+            return []
+
         dashboard = vehicle.dashboard(
             mutable=self.entry.data.get(CONF_MUTABLE),
             spin=self.entry.data.get(CONF_SPIN),
@@ -404,7 +412,7 @@ class VolkswagenCoordinator(DataUpdateCoordinator):
 
         return dashboard.instruments
 
-    async def update(self):
+    async def update(self) -> Union[bool, Vehicle]:
         """Update status from Volkswagen Carnet"""
 
         # check if we can login
