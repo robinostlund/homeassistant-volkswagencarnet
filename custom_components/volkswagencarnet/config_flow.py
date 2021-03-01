@@ -1,28 +1,30 @@
 import logging
-import voluptuous as vol
+
 import homeassistant.helpers.config_validation as cv
-from homeassistant.helpers.aiohttp_client import async_get_clientsession
+import voluptuous as vol
 from homeassistant import config_entries
 from homeassistant.config_entries import ConfigEntry
-from volkswagencarnet import Connection
-from .const import (
-    DOMAIN,
-    CONF_REGION,
-    DEFAULT_REGION,
-    CONF_MUTABLE,
-    CONF_SPIN,
-    DEFAULT_UPDATE_INTERVAL,
-    MIN_UPDATE_INTERVAL,
-    CONF_SCANDINAVIAN_MILES,
-    RESOURCES_DICT,
-    CONF_VEHICLE
-)
 from homeassistant.const import (
     CONF_NAME,
     CONF_PASSWORD,
     CONF_RESOURCES,
     CONF_SCAN_INTERVAL,
     CONF_USERNAME,
+)
+from homeassistant.helpers.aiohttp_client import async_get_clientsession
+from volkswagencarnet import Connection
+
+from .const import (
+    CONF_MUTABLE,
+    CONF_REGION,
+    CONF_SCANDINAVIAN_MILES,
+    CONF_SPIN,
+    CONF_VEHICLE,
+    DEFAULT_REGION,
+    DEFAULT_UPDATE_INTERVAL,
+    DOMAIN,
+    MIN_UPDATE_INTERVAL,
+    RESOURCES_DICT,
 )
 
 _LOGGER = logging.getLogger(__name__)
@@ -34,9 +36,9 @@ DATA_SCHEMA = {
     vol.Optional(CONF_REGION, default=DEFAULT_REGION): str,
     vol.Optional(CONF_MUTABLE, default=True): cv.boolean,
     vol.Optional(CONF_SPIN, default=""): str,
-    vol.Optional(CONF_RESOURCES,
-                 default=list(RESOURCES_DICT.keys())): cv.multi_select(
-        RESOURCES_DICT),
+    vol.Optional(CONF_RESOURCES, default=list(RESOURCES_DICT.keys())): cv.multi_select(
+        RESOURCES_DICT
+    ),
     vol.Optional(CONF_SCANDINAVIAN_MILES, default=False): cv.boolean,
 }
 
@@ -73,9 +75,7 @@ class VolkswagenCarnetConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
             return await self.async_step_login()
 
         return self.async_show_form(
-            step_id="user",
-            data_schema=vol.Schema(DATA_SCHEMA),
-            errors=self._errors
+            step_id="user", data_schema=vol.Schema(DATA_SCHEMA), errors=self._errors
         )
 
     async def _async_task_login(self):
@@ -110,8 +110,9 @@ class VolkswagenCarnetConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
             await self.async_set_unique_id(self._init_info[CONF_VEHICLE])
             self._abort_if_unique_id_configured()
 
-            return self.async_create_entry(title=self._init_info[CONF_NAME],
-                                    data=self._init_info)
+            return self.async_create_entry(
+                title=self._init_info[CONF_NAME], data=self._init_info
+            )
 
         return self.async_show_form(
             step_id="select_vehicle",
@@ -119,20 +120,21 @@ class VolkswagenCarnetConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
             data_schema=vol.Schema(
                 {
                     vol.Required(CONF_VEHICLE): vol.In(
-                        list(self._init_info["CONF_VEHICLES"]))
+                        list(self._init_info["CONF_VEHICLES"])
+                    )
                 }
-            )
+            ),
         )
 
     async def async_step_login(self, user_input=None):
         if not self.task_login or not self.task_update:
             if not self.task_login and not self._connection.logged_in:
-                self.task_login = self.hass.async_create_task(
-                    self._async_task_login())
+                self.task_login = self.hass.async_create_task(self._async_task_login())
                 progress_action = "task_login"
             else:
                 self.task_update = self.hass.async_create_task(
-                    self._async_task_update())
+                    self._async_task_update()
+                )
                 progress_action = "task_update"
 
             return self.async_show_progress(
@@ -149,8 +151,9 @@ class VolkswagenCarnetConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         for vehicle in self._connection.vehicles:
             _LOGGER.info(f"Found data for VIN: {vehicle.vin} from carnet")
 
-        self._init_info["CONF_VEHICLES"] = [vehicle.vin for vehicle in
-                                            self._connection.vehicles]
+        self._init_info["CONF_VEHICLES"] = [
+            vehicle.vin for vehicle in self._connection.vehicles
+        ]
 
         return self.async_show_progress_done(next_step_id="select_vehicle")
 
@@ -180,11 +183,9 @@ class VolkswagenCarnetOptionsFlowHandler(config_entries.OptionsFlow):
                     vol.Optional(
                         CONF_SCAN_INTERVAL,
                         default=self._config_entry.options.get(
-                            CONF_SCAN_INTERVAL, DEFAULT_UPDATE_INTERVAL),
-                    ): (
-                        vol.All(cv.time_period,
-                                vol.Clamp(min=MIN_UPDATE_INTERVAL))
-                    )
+                            CONF_SCAN_INTERVAL, DEFAULT_UPDATE_INTERVAL
+                        ),
+                    ): (vol.All(cv.time_period, vol.Clamp(min=MIN_UPDATE_INTERVAL)))
                 }
             ),
         )
