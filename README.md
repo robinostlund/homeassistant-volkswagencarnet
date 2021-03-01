@@ -34,29 +34,8 @@ Make sure you have an account on volkswagen carnet.
 
 Clone or copy the repository and copy the folder 'homeassistant-volkswagencarnet/custom_component/volkswagencarnet' into '<config dir>/custom_components'
 
-## Configure
-
-Add a volkswagencarnet configuration block to your `<config dir>/configuration.yaml`:
-```yaml
-volkswagencarnet:
-    username: <username for volkswagen carnet>
-    password: <password for volkswagen carnet>
-    spin: <S-PIN for volkswagen carnet>
-    scandinavian_miles: false
-    scan_interval:
-        minutes: 2
-    name:
-        wvw1234567812356: 'Passat GTE'
-    resources: # Optional
-        - combustion_engine_heating # Note that this option is only available for 2019> Facelift models
-        - position
-        - distance
-        - service_inspection
-        - oil_inspection
-        - door_locked
-        - trunk_locked
-        - request_in_progress
-```
+## Configuration
+Configure via UI: Configuration > Integrations
 
 * **spin:** (optional) required for supporting combustion engine heating start/stop.
 
