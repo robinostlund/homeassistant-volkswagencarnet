@@ -12,15 +12,21 @@
           "region": "Region",
           "spin": "S-PIN",
           "scandinavian_miles": "Enable if you want to change from km to mil on sensors",
-          "name": "Name your car (defaults to VIN number)",
-          "resources": "Resources to monitor"
+          "name": "Name your car (defaults to VIN number)"
         }
       },
       "select_vehicle": {
-        "title": "Select vehicle",
+        "title": "Vehicle",
         "description": "The following vehicles was found. Please select the vehicle you wish to monitor",
         "data": {
           "vehicle": "VIN Number"
+        }
+      },
+      "select_instruments": {
+        "title": "Instruments",
+        "description": "Select instruments to monitor",
+        "data": {
+          "resources": "Resources to monitor"
         }
       }
     },

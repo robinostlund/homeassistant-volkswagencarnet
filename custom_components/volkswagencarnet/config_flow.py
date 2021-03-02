@@ -2,6 +2,7 @@ import logging
 
 import homeassistant.helpers.config_validation as cv
 import voluptuous as vol
+from aiohttp import InvalidURL
 from homeassistant import config_entries
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import (
@@ -36,9 +37,6 @@ DATA_SCHEMA = {
     vol.Optional(CONF_REGION, default=DEFAULT_REGION): str,
     vol.Optional(CONF_MUTABLE, default=True): cv.boolean,
     vol.Optional(CONF_SPIN, default=""): str,
-    vol.Optional(CONF_RESOURCES, default=list(RESOURCES_DICT.keys())): cv.multi_select(
-        RESOURCES_DICT
-    ),
     vol.Optional(CONF_SCANDINAVIAN_MILES, default=False): cv.boolean,
 }
 
@@ -104,6 +102,19 @@ class VolkswagenCarnetConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         if user_input is not None:
             self._init_info[CONF_VEHICLE] = user_input[CONF_VEHICLE]
 
+            return await self.async_step_select_instruments()
+
+        vin_numbers = self._init_info["CONF_VEHICLES"].keys()
+        return self.async_show_form(
+            step_id="select_vehicle",
+            errors=self._errors,
+            data_schema=vol.Schema({vol.Required(CONF_VEHICLE): vol.In(vin_numbers)}),
+        )
+
+    async def async_step_select_instruments(self, user_input=None):
+        if user_input is not None:
+            self._init_info[CONF_RESOURCES] = user_input[CONF_RESOURCES]
+
             if self._init_info[CONF_NAME] is None:
                 self._init_info[CONF_NAME] = self._init_info[CONF_VEHICLE]
 
@@ -114,14 +125,18 @@ class VolkswagenCarnetConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                 title=self._init_info[CONF_NAME], data=self._init_info
             )
 
+        instruments = self._init_info["CONF_VEHICLES"][self._init_info[CONF_VEHICLE]]
+        instruments_dict = {
+            instrument.attr: instrument.name for instrument in instruments
+        }
         return self.async_show_form(
-            step_id="select_vehicle",
+            step_id="select_instruments",
             errors=self._errors,
             data_schema=vol.Schema(
                 {
-                    vol.Required(CONF_VEHICLE): vol.In(
-                        list(self._init_info["CONF_VEHICLES"])
-                    )
+                    vol.Optional(
+                        CONF_RESOURCES, default=list(instruments_dict.keys())
+                    ): cv.multi_select(instruments_dict)
                 }
             ),
         )
@@ -142,7 +157,10 @@ class VolkswagenCarnetConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                 progress_action=progress_action,
             )
 
-        await self.task_update
+        try:
+            await self.task_update
+        except InvalidURL:
+            return self.async_abort("Failed to connect to WeConnect")
 
         if self._errors:
             return self.async_show_progress_done(next_step_id="user")
@@ -151,9 +169,10 @@ class VolkswagenCarnetConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         for vehicle in self._connection.vehicles:
             _LOGGER.info(f"Found data for VIN: {vehicle.vin} from carnet")
 
-        self._init_info["CONF_VEHICLES"] = [
-            vehicle.vin for vehicle in self._connection.vehicles
-        ]
+        self._init_info["CONF_VEHICLES"] = {
+            vehicle.vin: vehicle.dashboard().instruments
+            for vehicle in self._connection.vehicles
+        }
 
         return self.async_show_progress_done(next_step_id="select_vehicle")
 
