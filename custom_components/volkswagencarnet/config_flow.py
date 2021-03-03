@@ -114,6 +114,7 @@ class VolkswagenCarnetConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
     async def async_step_select_instruments(self, user_input=None):
         if user_input is not None:
             self._init_info[CONF_RESOURCES] = user_input[CONF_RESOURCES]
+            del self._init_info["CONF_VEHICLES"]
 
             if self._init_info[CONF_NAME] is None:
                 self._init_info[CONF_NAME] = self._init_info[CONF_VEHICLE]
