@@ -25,8 +25,13 @@ Please, before posting an issue make sure that VW´s WeConnect service works for
 
 ## Installation
 
-### Install with HACS (recommended)
+### Upgrading from an old component version
+* Remove all configuration from Home Assistants config file configuration.yaml
+* Upgrade the component via HACS or manually replace the files in the custom_component folder (see install manually below)
+* Restart Home Assistant
+* Add the component again as per below (install+configuration)
 
+### Install with HACS (recommended)
 Do you you have [HACS](https://community.home-assistant.io/t/custom-component-hacs) installed? Just search for Volkswagen We Connect and install it direct from HACS. HACS will keep track of updates and you can easly upgrade volkswagencarnet to latest version.
 
 ### Install manually
