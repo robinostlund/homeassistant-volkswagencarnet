@@ -36,7 +36,17 @@ Clone or copy the repository and copy the folder 'homeassistant-volkswagencarnet
 
 ## Configuration
 * Restart Home Assistant
-* Add and configure the component via the UI: Configuration > Integrations > search for "Volkswagen We Connect" and follow the wizard to configure
+* Add and configure the component via the UI: Configuration > Integrations > search for "Volkswagen We Connect" and follow the wizard to configure (use your We Connect credentials)
+* All available features of your car should be added automatically after you have selected the VIN
+
+### Configuration flow settings
+* Name your car - Enter a custom name, defaults to VIN (Optional)
+* Username/Password - We Connect (Required)
+* Region - The country where the car was sold (Required)
+* Mutable - **?????** (Optional)
+* S-PIN - Required for some specific options (Optional)
+* Enable "Swedish mil" instead of KM (Optional)
+![image](https://user-images.githubusercontent.com/26795429/109767976-94979500-7bf8-11eb-9c6b-c41f861a927f.png)
 
 ## Entities
 
