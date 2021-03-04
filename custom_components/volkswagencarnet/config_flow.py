@@ -34,9 +34,9 @@ DATA_SCHEMA = {
     vol.Optional(CONF_NAME, default=""): str,
     vol.Required(CONF_USERNAME, default=""): str,
     vol.Required(CONF_PASSWORD, default=""): str,
+    vol.Optional(CONF_SPIN, default=""): str,
     vol.Optional(CONF_REGION, default=DEFAULT_REGION): str,
     vol.Optional(CONF_MUTABLE, default=True): cv.boolean,
-    vol.Optional(CONF_SPIN, default=""): str,
     vol.Optional(CONF_SCANDINAVIAN_MILES, default=False): cv.boolean,
 }
 
