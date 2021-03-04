@@ -25,8 +25,13 @@ Please, before posting an issue make sure that VW´s WeConnect service works for
 
 ## Installation
 
-### Install with HACS (recommended)
+### Upgrading from an old component version
+* Remove all configuration from Home Assistants config file configuration.yaml
+* Upgrade the component via HACS or manually replace the files in the custom_component folder (see install manually below)
+* Restart Home Assistant
+* Add the component again as per below (install+configuration)
 
+### Install with HACS (recommended)
 Do you you have [HACS](https://community.home-assistant.io/t/custom-component-hacs) installed? Just search for Volkswagen We Connect and install it direct from HACS. HACS will keep track of updates and you can easly upgrade volkswagencarnet to latest version.
 
 ### Install manually
@@ -36,7 +41,17 @@ Clone or copy the repository and copy the folder 'homeassistant-volkswagencarnet
 
 ## Configuration
 * Restart Home Assistant
-* Add and configure the component via the UI: Configuration > Integrations > search for "Volkswagen We Connect" and follow the wizard to configure
+* Add and configure the component via the UI: Configuration > Integrations > search for "Volkswagen We Connect" and follow the wizard to configure (use your We Connect credentials)
+* All available features of your car should be added automatically after you have selected the VIN
+
+### Configuration flow settings
+* Name your car - Enter a custom name, defaults to VIN (Optional)
+* Username/Password - We Connect (Required)
+* Region - The country where the car was sold (Required)
+* Mutable - If enabled you can interact with the car, if disabled only data from the car will be presented (Optional)
+* S-PIN - Required for some specific options such as lock/unlock (Optional)
+* Enable "Swedish mil" instead of KM (Optional)
+![image](https://user-images.githubusercontent.com/26795429/109767976-94979500-7bf8-11eb-9c6b-c41f861a927f.png)
 
 ## Entities
 
