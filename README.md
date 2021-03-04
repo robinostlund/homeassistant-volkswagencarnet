@@ -47,9 +47,9 @@ Clone or copy the repository and copy the folder 'homeassistant-volkswagencarnet
 ### Configuration flow settings
 * Name your car - Enter a custom name, defaults to VIN (Optional)
 * Username/Password - We Connect (Required)
-* Region - The country where the car was sold (Required) **<<REF to framework>>**
-* Mutable - **?????** (Optional)
-* S-PIN - Required for some specific options (Optional)
+* Region - The country where the car was sold (Required)
+* Mutable - If enabled you can interact with the car, if disabled only data from the car will be presented (Optional)
+* S-PIN - Required for some specific options such as lock/unlock (Optional)
 * Enable "Swedish mil" instead of KM (Optional)
 ![image](https://user-images.githubusercontent.com/26795429/109767976-94979500-7bf8-11eb-9c6b-c41f861a927f.png)
 
