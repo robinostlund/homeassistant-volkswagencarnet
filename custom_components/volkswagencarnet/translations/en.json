@@ -42,5 +42,18 @@
       "task_login": "Logging in to WeConnect",
       "task_update": "Fetching vehicles"
     }
+  },
+  "options": {
+    "step": {
+      "user": {
+        "title": "Options for WeConnect",
+        "description": "Configure update intervals",
+        "data": {
+          "report_request": "Enable automatic report request",
+          "report_scan_interval": "Report request update interval (days)",
+          "scan_interval": "Sensors update interval (minutes)"
+        }
+      }
+    }
   }
 }

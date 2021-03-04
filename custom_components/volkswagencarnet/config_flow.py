@@ -12,20 +12,22 @@ from homeassistant.const import (
     CONF_SCAN_INTERVAL,
     CONF_USERNAME,
 )
+from homeassistant.core import callback
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
 from volkswagencarnet import Connection
 
 from .const import (
     CONF_MUTABLE,
     CONF_REGION,
+    CONF_REPORT_REQUEST,
+    CONF_REPORT_SCAN_INTERVAL,
     CONF_SCANDINAVIAN_MILES,
     CONF_SPIN,
     CONF_VEHICLE,
     DEFAULT_REGION,
+    DEFAULT_REPORT_UPDATE_INTERVAL,
     DEFAULT_UPDATE_INTERVAL,
     DOMAIN,
-    MIN_UPDATE_INTERVAL,
-    RESOURCES_DICT,
 )
 
 _LOGGER = logging.getLogger(__name__)
@@ -166,9 +168,9 @@ class VolkswagenCarnetConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         if self._errors:
             return self.async_show_progress_done(next_step_id="user")
 
-        _LOGGER.debug("Updating data from volkswagen carnet")
+        _LOGGER.debug("Updating data from volkswagen WeConnect")
         for vehicle in self._connection.vehicles:
-            _LOGGER.info(f"Found data for VIN: {vehicle.vin} from carnet")
+            _LOGGER.info(f"Found data for VIN: {vehicle.vin} from WeConnect")
 
         self._init_info["CONF_VEHICLES"] = {
             vehicle.vin: vehicle.dashboard().instruments
@@ -176,6 +178,12 @@ class VolkswagenCarnetConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         }
 
         return self.async_show_progress_done(next_step_id="select_vehicle")
+
+    @staticmethod
+    @callback
+    def async_get_options_flow(config_entry):
+        """Get the options flow for this handler."""
+        return VolkswagenCarnetOptionsFlowHandler(config_entry)
 
 
 class VolkswagenCarnetOptionsFlowHandler(config_entries.OptionsFlow):
@@ -201,11 +209,23 @@ class VolkswagenCarnetOptionsFlowHandler(config_entries.OptionsFlow):
             data_schema=vol.Schema(
                 {
                     vol.Optional(
+                        CONF_REPORT_REQUEST,
+                        default=self._config_entry.options.get(
+                            CONF_REPORT_REQUEST, False
+                        ),
+                    ): cv.boolean,
+                    vol.Optional(
+                        CONF_REPORT_SCAN_INTERVAL,
+                        default=self._config_entry.options.get(
+                            CONF_REPORT_SCAN_INTERVAL, DEFAULT_REPORT_UPDATE_INTERVAL
+                        ),
+                    ): cv.positive_int,
+                    vol.Optional(
                         CONF_SCAN_INTERVAL,
                         default=self._config_entry.options.get(
-                            CONF_SCAN_INTERVAL, DEFAULT_UPDATE_INTERVAL
+                            CONF_SCAN_INTERVAL, DEFAULT_UPDATE_INTERVAL.seconds / 60
                         ),
-                    ): (vol.All(cv.time_period, vol.Clamp(min=MIN_UPDATE_INTERVAL)))
+                    ): cv.positive_int,
                 }
             ),
         )

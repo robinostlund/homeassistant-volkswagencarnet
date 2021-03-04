@@ -1,5 +1,5 @@
 """
-Support for Volkswagen Carnet Platform
+Support for Volkswagen WeConnect Platform
 """
 import logging
 
@@ -35,7 +35,7 @@ async def async_setup_entry(hass, entry, async_add_devices):
 
 
 class VolkswagenLock(VolkswagenEntity, LockEntity):
-    """Represents a Volkswagen Carnet Lock."""
+    """Represents a Volkswagen WeConnect Lock."""
 
     @property
     def is_locked(self):

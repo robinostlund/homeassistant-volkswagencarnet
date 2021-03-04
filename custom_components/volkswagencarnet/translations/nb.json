@@ -1,10 +1,10 @@
 {
-    "title": "Volkswagen Carnet",
+    "title": "Volkswagen WeConnect",
     "config": {
         "step": {
             "user": {
-                "title": "Carnet-konfigurasjon",
-                "description": "Fyll ut Carnet-informasjon",
+                "title": "WeConnect-konfigurasjon",
+                "description": "Fyll ut WeConnect-informasjon",
                 "data": {
                     "username": "Brukernavn",
                     "password": "Passord"

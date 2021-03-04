@@ -1,5 +1,5 @@
 """
-Support for Volkswagen Carnet.
+Support for Volkswagen WeConnect.
 """
 import logging
 
