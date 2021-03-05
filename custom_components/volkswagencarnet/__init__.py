@@ -247,10 +247,16 @@ class VolkswagenEntity(Entity):
     @property
     def device_state_attributes(self):
         """Return device specific state attributes."""
-        return dict(
+        attributes = dict(
             self.instrument.attributes,
             model=f"{self.vehicle.model}/{self.vehicle.model_year}",
         )
+
+        if not self.vehicle.is_model_image_supported:
+            return attributes
+
+        attributes['image_url'] = self.vehicle.model_image
+        return attributes
 
     @property
     def device_info(self):
