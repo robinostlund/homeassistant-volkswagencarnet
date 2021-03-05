@@ -1,4 +1,4 @@
-name: "Labels"
+name: "Validate"
 
 on:
   pull_request_target:
@@ -6,10 +6,10 @@ on:
 
 jobs:
   validate-labels:
-    name: Validate labels
+    name: With PR Label action
     runs-on: ubuntu-latest
     steps:
-      - name: Verify PR labels
+      - name: PR Label Validation
         uses: jesusvasquez333/verify-pr-label-action@v1.3.1
         with:
           github-token: '${{ secrets.GITHUB_TOKEN }}'
