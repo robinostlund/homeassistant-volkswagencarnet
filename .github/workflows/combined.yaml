@@ -20,18 +20,20 @@ jobs:
         name: Setup Python
 
       - uses: actions/cache@v2
-        name: Cache
+        name: PIP Cache
         with:
           path: |
             ~/.cache/pip
           key: custom-component-ci
 
       - uses: hacs/action@main
+        name: HACS Validation
         with:
           # GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           CATEGORY: integration
 
       - uses: home-assistant/actions/hassfest@master
+        name: Hassfest Validation
 
       # - uses: KTibow/ha-blueprint@stable
       #   name: CI
