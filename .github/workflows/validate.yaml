@@ -1,35 +1,56 @@
-name: "Validation And Formatting"
+name: "Validate"
 
 on:
   push:
+    branches:
+      - main
   pull_request:
+    branches:
+      - main
   schedule:
     - cron: '0 0 * * *'
 
 jobs:
-  validate:
-    name: Validate
+  validate-hassfest:
+    name: With hassfest
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
-        name: Download repo
+      - name: Check out repository
+        uses: actions/checkout@v2
+
+      - name: Hassfest validation
+        uses: home-assistant/actions/hassfest@master
+
+  validate-hacs:
+    name: With HACS action
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v2
+
+      - name: HACS Validation
+        uses: hacs/action@main
         with:
-          fetch-depth: 0
+          category: integration
+          comment: True
 
-      - uses: actions/setup-python@v2
-        name: Setup Python
+        
+        
 
-      - uses: actions/cache@v2
-        name: PIP Cache
-        with:
-          path: |
-            ~/.cache/pip
-          key: custom-component-ci
+      # - uses: actions/setup-python@v2
+      #   name: Setup Python
 
-      - uses: hacs/action@main
-        name: HACS Validation
-        with:
-          CATEGORY: integration
+      # - uses: actions/cache@v2
+      #   name: PIP Cache
+      #   with:
+      #     path: |
+      #       ~/.cache/pip
+      #     key: custom-component-ci
 
-      - uses: home-assistant/actions/hassfest@master
-        name: Hassfest Validation
+      # - uses: hacs/action@main
+      #   name: HACS Validation
+      #   with:
+      #     CATEGORY: integration
+
+      # - uses: home-assistant/actions/hassfest@master
+      #   name: Hassfest Validation
