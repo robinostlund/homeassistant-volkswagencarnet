@@ -1,4 +1,4 @@
-name: Publish
+name: Release Drafter
 
 on:
   push:
@@ -6,14 +6,14 @@ on:
       - master
 
 jobs:
-  build:
-    name: Create Release
+  update_release_draft:
+    #name: Create Release
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v2
-        # with:
-        #   fetch-depth: 0
+      # - name: Checkout code
+      #   uses: actions/checkout@v2
+      #   # with:
+      #   #   fetch-depth: 0
 
       - name: Create Release
         id: create_release

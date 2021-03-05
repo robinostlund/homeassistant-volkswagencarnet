@@ -2,17 +2,27 @@ name: Release
 
 on:
   release:
-    types: [prereleased,published]
+    #types: [prereleased,published]
+    types: [published]
 
 jobs:
-  build:
-    name: Upload Assets
+  release_zip_file:
+    name: Prepare release asset
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout code
+      - name: Check out repository
         uses: actions/checkout@v2
-        # with:
-        #   fetch-depth: 0
+
+      - name: Get version
+        id: version
+        uses: home-assistant/actions/helpers/version@master
+
+      - name: "Set version number"
+        # run: |
+        #   sed -i '/INTEGRATION_VERSION = /c\INTEGRATION_VERSION = "${{ steps.version.outputs.version }}"' ${{ github.workspace }}/custom_components/volkswagencarnet/const.py
+        #   python3 ${{ github.workspace }}/manage/update_manifest.py --version ${{ steps.version.outputs.version }}
+        run: |
+          python3 ${{ github.workspace }}/manage/update_manifest.py --version ${{ steps.version.outputs.version }}
 
       - name: Create zip
         run: |
@@ -21,7 +31,6 @@ jobs:
 
       - name: Upload zip to release
         uses: svenstaro/upload-release-action@v1-release
-
         with:
           repo_token: ${{ secrets.GITHUB_TOKEN }}
           file: ./custom_components/volkswagencarnet/volkswagencarnet.zip
