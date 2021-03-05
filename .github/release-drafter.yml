@@ -29,7 +29,7 @@ version-resolver:
       - 'patch'
   default: patch
 template: |
-  [![Downloads for this release](https://img.shields.io/github/downloads/robinostlund/homeassistant-volkswagencarnet/$RESOLVED_VERSION/total.svg)](https://github.com/robinostlund/homeassistant-volkswagencarnet/releases/$RESOLVED_VERSION)
+  [![Downloads for this release](https://img.shields.io/github/downloads/robinostlund/homeassistant-volkswagencarnet/v$RESOLVED_VERSION/total.svg)](https://github.com/robinostlund/homeassistant-volkswagencarnet/releases/v$RESOLVED_VERSION)
   ## Changes
 
   $CHANGES
