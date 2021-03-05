@@ -1,0 +1,28 @@
+name: "Cron actions 16:30 every 3 days"
+on:
+  schedule:
+    - cron:  '30 16 */3 * *'
+
+jobs:
+  validate-hassfest:
+    name: With hassfest
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v2
+
+      - name: Hassfest validation
+        uses: home-assistant/actions/hassfest@master
+
+  validate-hacs:
+    name: With HACS action
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v2
+
+      - name: HACS Validation
+        uses: hacs/action@main
+        with:
+          category: integration
+          comment: True
