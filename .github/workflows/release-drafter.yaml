@@ -7,7 +7,7 @@ on:
 
 jobs:
   update_release_draft:
-    #name: Create Release
+    name: Update release draft
     runs-on: ubuntu-latest
     steps:
       # - name: Checkout code
