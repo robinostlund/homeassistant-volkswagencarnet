@@ -223,7 +223,7 @@ class VolkswagenCarnetOptionsFlowHandler(config_entries.OptionsFlow):
                     vol.Optional(
                         CONF_SCAN_INTERVAL,
                         default=self._config_entry.options.get(
-                            CONF_SCAN_INTERVAL, DEFAULT_UPDATE_INTERVAL.seconds / 60
+                            CONF_SCAN_INTERVAL, DEFAULT_UPDATE_INTERVAL
                         ),
                     ): cv.positive_int,
                 }
