@@ -32,6 +32,18 @@ jobs:
           category: integration
           comment: True
 
+  validate-labels:
+    name: With PR label action
+    runs-on: ubuntu-latest
+    steps:
+      - name: Verify PR labels
+        uses: jesusvasquez333/verify-pr-label-action@v1.3.1
+        with:
+          github-token: '${{ secrets.GITHUB_TOKEN }}'
+          valid-labels: 'bug, enhancement'
+          invalid-labels: 'help wanted, invalid, question'
+          pull-request-number: '${{ github.event.pull_request.number }}'
+
         
         
 
