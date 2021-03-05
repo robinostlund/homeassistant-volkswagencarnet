@@ -8,6 +8,8 @@ CONF_MUTABLE = "mutable"
 CONF_SPIN = "spin"
 CONF_SCANDINAVIAN_MILES = "scandinavian_miles"
 CONF_VEHICLE = "vehicle"
+CONF_REPORT_REQUEST = "report_request"
+CONF_REPORT_SCAN_INTERVAL = "report_scan_interval"
 
 DATA = "data"
 UNDO_UPDATE_LISTENER = "undo_update_listener"
@@ -15,7 +17,8 @@ UNDO_UPDATE_LISTENER = "undo_update_listener"
 SIGNAL_STATE_UPDATED = f"{DOMAIN}.updated"
 
 MIN_UPDATE_INTERVAL = timedelta(minutes=1)
-DEFAULT_UPDATE_INTERVAL = timedelta(minutes=5)
+DEFAULT_UPDATE_INTERVAL = 5
+DEFAULT_REPORT_UPDATE_INTERVAL = 1
 
 COMPONENTS = {
     "sensor": "sensor",

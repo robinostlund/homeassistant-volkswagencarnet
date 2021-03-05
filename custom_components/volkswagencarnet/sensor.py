@@ -1,5 +1,5 @@
 """
-Support for Volkswagen Carnet Platform
+Support for Volkswagen WeConnect Platform
 """
 import logging
 
@@ -35,7 +35,7 @@ async def async_setup_entry(hass, entry, async_add_devices):
 
 
 class VolkswagenSensor(VolkswagenEntity):
-    """Representation of a Volkswagen Carnet Sensor."""
+    """Representation of a Volkswagen WeConnect Sensor."""
 
     @property
     def state(self):

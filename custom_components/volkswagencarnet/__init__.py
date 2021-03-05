@@ -1,11 +1,9 @@
 # -*- coding: utf-8 -*-
 import asyncio
 import logging
-from datetime import timedelta
+from datetime import datetime, timedelta
 from typing import Union
 
-import homeassistant.helpers.config_validation as cv
-import voluptuous as vol
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import (
     CONF_NAME,
@@ -16,29 +14,26 @@ from homeassistant.const import (
 )
 from homeassistant.core import HomeAssistant
 from homeassistant.exceptions import ConfigEntryNotReady
-from homeassistant.helpers import discovery
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
-from homeassistant.helpers.dispatcher import (
-    async_dispatcher_connect,
-    async_dispatcher_send,
-)
+from homeassistant.helpers.dispatcher import async_dispatcher_connect
 from homeassistant.helpers.entity import Entity
-from homeassistant.helpers.event import async_track_point_in_utc_time
 from homeassistant.helpers.icon import icon_for_battery_level
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator
-from homeassistant.util.dt import utcnow
 from volkswagencarnet import Connection, Vehicle
 
 from .const import (
     COMPONENTS,
     CONF_MUTABLE,
     CONF_REGION,
+    CONF_REPORT_REQUEST,
+    CONF_REPORT_SCAN_INTERVAL,
     CONF_SCANDINAVIAN_MILES,
     CONF_SPIN,
     CONF_VEHICLE,
     DATA,
     DATA_KEY,
     DEFAULT_REGION,
+    DEFAULT_REPORT_UPDATE_INTERVAL,
     DEFAULT_UPDATE_INTERVAL,
     DOMAIN,
     MIN_UPDATE_INTERVAL,
@@ -51,9 +46,14 @@ _LOGGER = logging.getLogger(__name__)
 
 
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
-    """Setup Volkswagen Carnet component"""
+    """Setup Volkswagen WeConnect component"""
 
-    coordinator = VolkswagenCoordinator(hass, entry, DEFAULT_UPDATE_INTERVAL)
+    if entry.options.get(CONF_SCAN_INTERVAL):
+        update_interval = timedelta(minutes=entry.options[CONF_SCAN_INTERVAL])
+    else:
+        update_interval = timedelta(minutes=DEFAULT_UPDATE_INTERVAL)
+
+    coordinator = VolkswagenCoordinator(hass, entry, update_interval)
     await coordinator.async_refresh()
     if not coordinator.last_update_success:
         raise ConfigEntryNotReady
@@ -255,7 +255,7 @@ class VolkswagenEntity(Entity):
         if not self.vehicle.is_model_image_supported:
             return attributes
 
-        attributes['image_url'] = self.vehicle.model_image
+        attributes["image_url"] = self.vehicle.model_image
         return attributes
 
     @property
@@ -286,9 +286,10 @@ class VolkswagenCoordinator(DataUpdateCoordinator):
     """Class to manage fetching data from the API."""
 
     def __init__(self, hass: HomeAssistant, entry, update_interval: timedelta):
-        self.vin = entry.data.get(CONF_VEHICLE)
+        self.vin = entry.data[CONF_VEHICLE]
         self.entry = entry
         self.platforms = []
+        self.report_last_updated = None
 
         super().__init__(hass, _LOGGER, name=DOMAIN, update_interval=update_interval)
 
@@ -296,15 +297,18 @@ class VolkswagenCoordinator(DataUpdateCoordinator):
         """Update data via library."""
         self.connection = Connection(
             session=async_get_clientsession(self.hass),
-            username=self.entry.data.get(CONF_USERNAME),
-            password=self.entry.data.get(CONF_PASSWORD),
+            username=self.entry.data[CONF_USERNAME],
+            password=self.entry.data[CONF_PASSWORD],
         )
 
         vehicle = await self.update()
 
         if not vehicle:
-            _LOGGER.warning("Could not query update from volkswagen carnet")
-            return []
+            _LOGGER.warning("Could not query update from volkswagen WeConnect")
+            raise Exception
+
+        if self.entry.options.get(CONF_REPORT_REQUEST, False):
+            await self.report_request(vehicle)
 
         dashboard = vehicle.dashboard(
             mutable=self.entry.data.get(CONF_MUTABLE),
@@ -315,25 +319,59 @@ class VolkswagenCoordinator(DataUpdateCoordinator):
         return dashboard.instruments
 
     async def update(self) -> Union[bool, Vehicle]:
-        """Update status from Volkswagen Carnet"""
+        """Update status from Volkswagen WeConnect"""
 
         # check if we can login
         if not self.connection.logged_in:
             await self.connection._login()
             if not self.connection.logged_in:
                 _LOGGER.warning(
-                    "Could not login to volkswagen carnet, please check your credentials and verify that the service is working"
+                    "Could not login to volkswagen WeConnect, please check your credentials and verify that the service is working"
                 )
                 return False
 
         # update vehicles
         if not await self.connection.update():
-            _LOGGER.warning("Could not query update from volkswagen carnet")
+            _LOGGER.warning("Could not query update from volkswagen WeConnect")
             return False
 
-        _LOGGER.debug("Updating data from volkswagen carnet")
+        _LOGGER.debug("Updating data from volkswagen WeConnect")
         for vehicle in self.connection.vehicles:
             if vehicle.vin == self.vin:
                 return vehicle
 
         return False
+
+    async def report_request(self, vehicle: Vehicle):
+        """Request car to report itself an update to Volkswagen WeConnect"""
+        report_interval = self.entry.options.get(
+            CONF_REPORT_SCAN_INTERVAL, DEFAULT_REPORT_UPDATE_INTERVAL
+        )
+
+        if not self.report_last_updated:
+            days_since_last_update = 1
+        else:
+            days_since_last_update = (datetime.now() - self.report_last_updated).days
+
+        if days_since_last_update < report_interval:
+            return
+
+        try:
+            # check if we can login
+            if not self.connection.logged_in:
+                await self.connection._login()
+                if not self.connection.logged_in:
+                    _LOGGER.warning(
+                        "Could not login to volkswagen WeConnect, please check your credentials and verify that the service is working"
+                    )
+                    return
+
+            # request report
+            if not await vehicle.request_report():
+                _LOGGER.warning("Could not request report from volkswagen WeConnect")
+                return
+
+            self.report_last_updated = datetime.now()
+        except:
+            # This is actually not critical so...
+            pass

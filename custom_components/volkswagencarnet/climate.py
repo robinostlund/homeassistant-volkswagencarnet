@@ -1,5 +1,5 @@
 """
-Support for Volkswagen Carnet Platform
+Support for Volkswagen WeConnect Platform
 """
 import logging
 
@@ -49,7 +49,7 @@ async def async_setup_entry(hass, entry, async_add_devices):
 
 
 class VolkswagenClimate(VolkswagenEntity, ClimateEntity):
-    """Representation of a Volkswagen Carnet Climate."""
+    """Representation of a Volkswagen WeConnect Climate."""
 
     @property
     def supported_features(self):

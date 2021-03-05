@@ -1,5 +1,5 @@
 """
-Support for Volkswagen Carnet Platform
+Support for Volkswagen WeConnect Platform
 """
 import logging
 
@@ -36,7 +36,7 @@ async def async_setup_entry(hass, entry, async_add_devices):
 
 
 class VolkswagenSwitch(VolkswagenEntity, ToggleEntity):
-    """Representation of a Volkswagen Carnet Switch."""
+    """Representation of a Volkswagen WeConnect Switch."""
 
     @property
     def is_on(self):
