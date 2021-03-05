@@ -1,4 +1,4 @@
-name: "Validate"
+name: "Labels"
 
 on:
   pull_request_target:
@@ -6,7 +6,7 @@ on:
 
 jobs:
   validate-labels:
-    name: With PR Label action
+    name: With PR label action
     runs-on: ubuntu-latest
     steps:
       - name: PR Label Validation
