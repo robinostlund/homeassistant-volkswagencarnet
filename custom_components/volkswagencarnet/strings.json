@@ -4,12 +4,12 @@
     "step": {
       "user": {
         "title": "WeConnect Configuration",
-        "description": "Fill in WeConnect information\n\nS-PIN is required to support combustion engine heating start/stop",
+        "description": "Fill in WeConnect information\n\nS-PIN is required for some specific options such as lock/unlock and combustion engine heating start/stop",
         "data": {
           "username": "Username",
           "password": "Password",
-          "mutable": "Mutable",
-          "region": "Region",
+          "mutable": "Disable to remove sensors that can interact with the car",
+          "region": "Region (The country where the car was sold)",
           "spin": "S-PIN",
           "scandinavian_miles": "Enable if you want to change from km to mil on sensors",
           "name": "Name your car (defaults to VIN number)"
