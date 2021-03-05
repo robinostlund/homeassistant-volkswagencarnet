@@ -1,4 +1,4 @@
-name: "Validate"
+name: "Labels"
 
 on:
   pull_request_target:
