@@ -6,7 +6,7 @@ on:
 
 jobs:
   validate-labels:
-    name: Prepare release asset
+    name: Validate labels
     runs-on: ubuntu-latest
     steps:
       - name: Verify PR labels
