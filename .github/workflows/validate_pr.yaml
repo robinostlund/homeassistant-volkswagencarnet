@@ -1,8 +1,11 @@
-name: "Labels"
+name: "Validate"
 
 on:
   pull_request_target:
    types: [opened, labeled, unlabeled, synchronize]
+  # pull_request:
+  #   branches:
+  #     - master
 
 jobs:
   validate-labels:
