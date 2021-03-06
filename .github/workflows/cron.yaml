@@ -1,7 +1,7 @@
-name: "Cron actions 16:30 every 3 days"
+name: "Cron actions 16:30 every 4 days"
 on:
   schedule:
-    - cron:  '30 16 */3 * *'
+    - cron:  '30 16 */4 * *'
 
 jobs:
   validate-hassfest:
