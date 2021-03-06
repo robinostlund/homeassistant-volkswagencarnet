@@ -1,8 +1,11 @@
-name: "Labels"
+name: "Validate"
 
 on:
   pull_request_target:
    types: [opened, labeled, unlabeled, synchronize]
+  # pull_request:
+  #   branches:
+  #     - master
 
 jobs:
   validate-labels:
@@ -10,9 +13,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: PR Label Validation
-        uses: jesusvasquez333/verify-pr-label-action@v1.3.1
+        uses: jesusvasquez333/verify-pr-label-action@v1.4.0
         with:
           github-token: '${{ secrets.GITHUB_TOKEN }}'
           valid-labels: 'bug, enhancement'
           invalid-labels: 'help wanted, invalid, question'
           pull-request-number: '${{ github.event.pull_request.number }}'
+          disable-reviews: true

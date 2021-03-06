@@ -7,5 +7,5 @@
     "config_flow": true,
     "codeowners": ["@robinostlund"],
     "requirements": ["volkswagencarnet==4.4.24"],
-    "version": "v4.5.0-alpha"
+    "version": "this will be autoset on release by manage/update_manifest.json"
 }
