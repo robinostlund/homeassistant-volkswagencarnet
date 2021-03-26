@@ -2,6 +2,7 @@
 Support for Volkswagen WeConnect Platform
 """
 import logging
+from typing import Any, Dict, Optional
 
 from homeassistant.helpers.entity import ToggleEntity
 
@@ -59,3 +60,7 @@ class VolkswagenSwitch(VolkswagenEntity, ToggleEntity):
     @property
     def assumed_state(self):
         return self.instrument.assumed_state
+
+    @property
+    def state_attributes(self) -> Optional[Dict[str, Any]]:
+        return self.instrument.attributes
