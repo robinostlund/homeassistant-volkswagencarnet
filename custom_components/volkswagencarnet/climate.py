@@ -5,6 +5,7 @@ import logging
 
 from homeassistant.components.climate import ClimateEntity
 from homeassistant.components.climate.const import (
+    HVAC_MODE_COOL,
     HVAC_MODE_HEAT,
     HVAC_MODE_OFF,
     SUPPORT_TARGET_TEMPERATURE,
@@ -16,7 +17,7 @@ from homeassistant.const import (
     TEMP_FAHRENHEIT,
 )
 
-SUPPORT_HVAC = [HVAC_MODE_HEAT, HVAC_MODE_OFF]
+SUPPORT_HVAC = [HVAC_MODE_COOL, HVAC_MODE_HEAT, HVAC_MODE_OFF]
 
 from . import DATA, DATA_KEY, DOMAIN, VolkswagenEntity
 
@@ -61,9 +62,14 @@ class VolkswagenClimate(VolkswagenEntity, ClimateEntity):
         """Return hvac operation ie. heat, cool mode.
         Need to be one of HVAC_MODE_*.
         """
-        if self.instrument.hvac_mode:
-            return HVAC_MODE_HEAT
-        return HVAC_MODE_OFF
+        if not self.instrument.hvac_mode:
+            return HVAC_MODE_OFF
+
+        hvac_modes = {
+            "HEATING": HVAC_MODE_HEAT,
+            "COOLING": HVAC_MODE_COOL,
+        }
+        return hvac_modes.get(self.instrument.hvac_mode, HVAC_MODE_OFF)
 
     @property
     def hvac_modes(self):
