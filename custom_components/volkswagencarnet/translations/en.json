@@ -6,7 +6,7 @@
         "title": "WeConnect Configuration",
         "description": "Fill in WeConnect information\n\nS-PIN is required for some specific options such as lock/unlock and combustion engine heating start/stop",
         "data": {
-          "username": "Username",
+          "username": "Email",
           "password": "Password",
           "mutable": "Disable to remove sensors that can interact with the car",
           "region": "Region (The country where the car was sold)",
@@ -28,10 +28,18 @@
         "data": {
           "resources": "Resources to monitor"
         }
+      },
+      "reauth_confirm": {
+        "data": {
+          "description": "Re-authenticate with your WeConnect account. Make sure to accept any new EULA in the WeConnect portal (https://www.portal.volkswagen-we.com/) before proceeding. ",
+          "username": "Email",
+          "password": "Password"
+        }
       }
     },
     "abort": {
-      "already_configured": "[%key:common::config_flow::abort::already_configured_account%]"
+      "already_configured": "Car with this VIN is already configured",
+      "reauth_successful": "Re-authentication was successful"
     },
     "error": {
       "cannot_connect": "Could not login to Volkswagen WeConnect, please check your credentials and verify that the service is working",

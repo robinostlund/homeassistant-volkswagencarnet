@@ -6,7 +6,7 @@ from typing import Any, Dict, Optional
 
 from homeassistant.helpers.entity import ToggleEntity
 
-from . import DATA, DATA_KEY, DOMAIN, VolkswagenEntity
+from . import DATA, DATA_KEY, DOMAIN, VolkswagenEntity, UPDATE_CALLBACK
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -24,7 +24,7 @@ async def async_setup_entry(hass, entry, async_add_devices):
     if coordinator.data is not None:
         async_add_devices(
             VolkswagenSwitch(
-                data, coordinator.vin, instrument.component, instrument.attr
+                data, coordinator.vin, instrument.component, instrument.attr, hass.data[DOMAIN][entry.entry_id][UPDATE_CALLBACK]
             )
             for instrument in (
                 instrument
