@@ -1,1 +1,1 @@
-volkswagencarnet==4.4.26
+pyweconnect==4.4.26

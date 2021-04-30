@@ -15,7 +15,7 @@ from homeassistant.const import (
 )
 from homeassistant.core import callback
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
-from volkswagencarnet.vw_connection import Connection
+from pyweconnect.connection import Connection
 
 from .const import (
     CONF_MUTABLE,
@@ -206,6 +206,7 @@ class VolkswagenCarnetConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                 session=async_get_clientsession(self.hass),
                 username=user_input[CONF_USERNAME],
                 password=user_input[CONF_PASSWORD],
+                fulldebug=True
             )
 
             await self._connection.doLogin()

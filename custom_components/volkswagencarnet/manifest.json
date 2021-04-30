@@ -7,6 +7,6 @@
     "dependencies": [],
     "config_flow": true,
     "codeowners": ["@robinostlund"],
-    "requirements": ["volkswagencarnet==4.4.26"],
+    "requirements": ["pyweconnect==4.4.27"],
     "version": "v0.0.0"
 }
