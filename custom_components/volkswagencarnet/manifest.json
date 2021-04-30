@@ -1,6 +1,7 @@
 {
     "domain": "volkswagencarnet",
     "name": "Volkswagen WeConnect",
+    "iot_class": "cloud_polling",
     "documentation": "https://github.com/robinostlund/homeassistant-volkswagencarnet/blob/master/README.md",
     "issue_tracker": "https://github.com/robinostlund/homeassistant-volkswagencarnet/issues",
     "dependencies": [],
