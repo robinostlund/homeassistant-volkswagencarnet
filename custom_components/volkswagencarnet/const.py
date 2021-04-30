@@ -11,6 +11,7 @@ CONF_VEHICLE = "vehicle"
 CONF_REPORT_REQUEST = "report_request"
 CONF_REPORT_SCAN_INTERVAL = "report_scan_interval"
 
+UPDATE_CALLBACK = "update_callback"
 DATA = "data"
 UNDO_UPDATE_LISTENER = "undo_update_listener"
 

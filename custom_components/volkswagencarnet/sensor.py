@@ -40,7 +40,12 @@ class VolkswagenSensor(VolkswagenEntity):
     @property
     def state(self):
         """Return the state of the sensor."""
-        _LOGGER.debug("Getting state of %s" % self.instrument.attr)
+        if self.instrument is not None:
+            _LOGGER.debug("Getting state of %s" % self.instrument.attr)
+        else:
+            _LOGGER.debug("Getting state of of a broken entity?")
+            return ""
+
         return self.instrument.state
 
     @property

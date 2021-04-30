@@ -4,13 +4,13 @@ import logging
 from datetime import datetime, timedelta
 from typing import Union
 
-from homeassistant.config_entries import ConfigEntry
+from homeassistant.config_entries import ConfigEntry, SOURCE_REAUTH
 from homeassistant.const import (
     CONF_NAME,
     CONF_PASSWORD,
     CONF_RESOURCES,
     CONF_SCAN_INTERVAL,
-    CONF_USERNAME,
+    CONF_USERNAME, EVENT_HOMEASSISTANT_STOP,
 )
 from homeassistant.core import HomeAssistant
 from homeassistant.exceptions import ConfigEntryNotReady
@@ -18,7 +18,7 @@ from homeassistant.helpers.aiohttp_client import async_get_clientsession
 from homeassistant.helpers.dispatcher import async_dispatcher_connect
 from homeassistant.helpers.entity import Entity
 from homeassistant.helpers.icon import icon_for_battery_level
-from homeassistant.helpers.update_coordinator import DataUpdateCoordinator
+from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
 from volkswagencarnet import Connection, Vehicle
 
 from .const import (
@@ -39,7 +39,7 @@ from .const import (
     MIN_UPDATE_INTERVAL,
     RESOURCES_DICT,
     SIGNAL_STATE_UPDATED,
-    UNDO_UPDATE_LISTENER,
+    UNDO_UPDATE_LISTENER, UPDATE_CALLBACK,
 )
 
 _LOGGER = logging.getLogger(__name__)
@@ -54,6 +54,17 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
         update_interval = timedelta(minutes=DEFAULT_UPDATE_INTERVAL)
 
     coordinator = VolkswagenCoordinator(hass, entry, update_interval)
+
+    if not await coordinator.async_login():
+        await hass.config_entries.flow.async_init(
+            DOMAIN,
+            context={"source": SOURCE_REAUTH},
+            data=entry,
+        )
+        return False
+
+    hass.bus.async_listen_once(EVENT_HOMEASSISTANT_STOP, coordinator.async_logout)
+
     await coordinator.async_refresh()
     if not coordinator.last_update_success:
         raise ConfigEntryNotReady
@@ -81,11 +92,19 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
         )
 
     hass.data[DOMAIN][entry.entry_id] = {
+        UPDATE_CALLBACK: update_callback,
         DATA: data,
         UNDO_UPDATE_LISTENER: entry.add_update_listener(_async_update_listener),
     }
 
     return True
+
+
+def update_callback(hass, coordinator):
+    _LOGGER.debug("CALLBACK!")
+    hass.async_create_task(
+        coordinator.async_request_refresh()
+    )
 
 
 async def async_setup(hass: HomeAssistant, config: dict):
@@ -168,13 +187,20 @@ class VolkswagenData:
 class VolkswagenEntity(Entity):
     """Base class for all Volkswagen entities."""
 
-    def __init__(self, data, vin, component, attribute):
+    def __init__(self, data, vin, component, attribute, callback=None):
         """Initialize the entity."""
+
+        def update_callbacks():
+            if callback is not None:
+                callback(self.hass, data.coordinator)
+
         self.data = data
         self.vin = vin
         self.component = component
         self.attribute = attribute
         self.coordinator = data.coordinator
+        self.instrument.callback = update_callbacks
+        self.callback = callback
 
     async def async_update(self) -> None:
         """Update the entity.
@@ -290,22 +316,21 @@ class VolkswagenCoordinator(DataUpdateCoordinator):
         self.entry = entry
         self.platforms = []
         self.report_last_updated = None
+        self.connection = Connection(
+            session=async_get_clientsession(hass),
+            username=self.entry.data[CONF_USERNAME],
+            password=self.entry.data[CONF_PASSWORD],
+            fulldebug=True
+        )
 
         super().__init__(hass, _LOGGER, name=DOMAIN, update_interval=update_interval)
 
     async def _async_update_data(self):
         """Update data via library."""
-        self.connection = Connection(
-            session=async_get_clientsession(self.hass),
-            username=self.entry.data[CONF_USERNAME],
-            password=self.entry.data[CONF_PASSWORD],
-        )
-
         vehicle = await self.update()
 
         if not vehicle:
-            _LOGGER.warning("Could not query update from volkswagen WeConnect")
-            raise Exception
+            raise UpdateFailed("Failed to update WeConnect. Need to accept EULA? Try logging in to the portal: https://www.portal.volkswagen-we.com/")
 
         if self.entry.options.get(CONF_REPORT_REQUEST, False):
             await self.report_request(vehicle)
@@ -318,17 +343,31 @@ class VolkswagenCoordinator(DataUpdateCoordinator):
 
         return dashboard.instruments
 
-    async def update(self) -> Union[bool, Vehicle]:
-        """Update status from Volkswagen WeConnect"""
+    async def async_logout(self):
+        """Logout from Volkswagen WeConnect"""
+        try:
+            if self.connection.logged_in:
+                await self.connection.logout()
+        except Exception as ex:
+            _LOGGER.error("Could not log out from WeConnect, %s", ex)
+            return False
+        return True
 
+    async def async_login(self):
+        """Login to Volkswagen WeConnect"""
         # check if we can login
         if not self.connection.logged_in:
-            await self.connection._login()
+            await self.connection.doLogin()
             if not self.connection.logged_in:
                 _LOGGER.warning(
                     "Could not login to volkswagen WeConnect, please check your credentials and verify that the service is working"
                 )
                 return False
+
+        return True
+
+    async def update(self) -> Union[bool, Vehicle]:
+        """Update status from Volkswagen WeConnect"""
 
         # update vehicles
         if not await self.connection.update():

@@ -1,4 +1,5 @@
 import logging
+from typing import Any
 
 import homeassistant.helpers.config_validation as cv
 import voluptuous as vol
@@ -48,9 +49,11 @@ class VolkswagenCarnetConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
     task_login = None
     task_update = None
     task_finish = None
+    entry = None
 
     def __init__(self):
         """Initialize."""
+        self._entry = None
         self._init_info = {}
         self._errors = {}
         self._connection = None
@@ -69,9 +72,9 @@ class VolkswagenCarnetConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                 session=async_get_clientsession(self.hass),
                 username=self._init_info[CONF_USERNAME],
                 password=self._init_info[CONF_PASSWORD],
+                fulldebug=True
             )
 
-            # if await self._async_retrieve_vehicles():
             return await self.async_step_login()
 
         return self.async_show_form(
@@ -79,7 +82,10 @@ class VolkswagenCarnetConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         )
 
     async def _async_task_login(self):
-        await self._connection._login()
+        try:
+            await self._connection.doLogin()
+        except:
+            self._errors["base"] = "cannot_connect"
 
         if not self._connection.logged_in:
             self._errors["base"] = "cannot_connect"
@@ -91,8 +97,8 @@ class VolkswagenCarnetConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
     async def _async_task_update(self):
         _LOGGER.debug("UPDATE STARTED!")
 
-        if not await self._connection.update():
-            self._errors["base"] = "cannot_update"
+        # if not await self._connection.update():
+        #     self._errors["base"] = "cannot_update"
 
         _LOGGER.debug("UPDATE DONE!")
 
@@ -150,9 +156,7 @@ class VolkswagenCarnetConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                 self.task_login = self.hass.async_create_task(self._async_task_login())
                 progress_action = "task_login"
             else:
-                self.task_update = self.hass.async_create_task(
-                    self._async_task_update()
-                )
+                self.task_update = self.hass.async_create_task(self._async_task_update())
                 progress_action = "task_update"
 
             return self.async_show_progress(
@@ -160,10 +164,18 @@ class VolkswagenCarnetConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                 progress_action=progress_action,
             )
 
+        # noinspection PyBroadException
+        try:
+            if not await self._connection.validate_login:
+                return self.async_abort(reason="Unable to login to WeConnect. Need to accept a new EULA? Try logging in to the portal: https://www.portal.volkswagen-we.com/")
+        except Exception:
+            return self.async_abort(reason="Failed to connect to WeConnect")
+
+        # noinspection PyBroadException
         try:
             await self.task_update
-        except InvalidURL:
-            return self.async_abort("Failed to connect to WeConnect")
+        except Exception:
+            return self.async_abort(reason="Failed to connect to WeConnect")
 
         if self._errors:
             return self.async_show_progress_done(next_step_id="user")
@@ -178,6 +190,60 @@ class VolkswagenCarnetConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         }
 
         return self.async_show_progress_done(next_step_id="select_vehicle")
+
+    async def async_step_reauth(self, entry) -> dict:
+        """Handle initiation of re-authentication with WeConnect."""
+        self.entry = entry
+        return await self.async_step_reauth_confirm()
+
+    async def async_step_reauth_confirm(self, user_input: dict = None) -> dict:
+        """Handle re-authentication with WeConnect."""
+        errors: dict = {}
+
+        if user_input is not None:
+            _LOGGER.debug("Creating connection to volkswagen WeConnect")
+            self._connection = Connection(
+                session=async_get_clientsession(self.hass),
+                username=user_input[CONF_USERNAME],
+                password=user_input[CONF_PASSWORD],
+                fulldebug=True
+            )
+
+            await self._connection.doLogin()
+
+            # noinspection PyBroadException
+            try:
+                if not await self._connection.validate_login:
+                    _LOGGER.debug("Unable to login to WeConnect. Need to accept a new EULA? Try logging in to the portal: https://www.portal.volkswagen-we.com/")
+                    errors["base"] = "cannot_connect"
+                else:
+                    data = self.entry.data.copy()
+                    self.hass.config_entries.async_update_entry(
+                        self.entry,
+                        data={
+                            **data,
+                            CONF_USERNAME: user_input[CONF_USERNAME],
+                            CONF_PASSWORD: user_input[CONF_PASSWORD],
+                        },
+                    )
+                    self.hass.async_create_task(
+                        self.hass.config_entries.async_reload(self.entry.entry_id)
+                    )
+
+                    return self.async_abort(reason="reauth_successful")
+            except Exception:
+                return self.async_abort(reason="Failed to connect to WeConnect")
+
+        return self.async_show_form(
+            step_id="reauth_confirm",
+            data_schema=vol.Schema(
+                {
+                    vol.Required(CONF_USERNAME, default=self.entry.data[CONF_USERNAME]): str,
+                    vol.Required(CONF_PASSWORD): str,
+                }
+            ),
+            errors=errors,
+        )
 
     @staticmethod
     @callback
