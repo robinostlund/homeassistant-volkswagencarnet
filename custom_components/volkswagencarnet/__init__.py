@@ -19,8 +19,7 @@ from homeassistant.helpers.dispatcher import async_dispatcher_connect
 from homeassistant.helpers.entity import Entity
 from homeassistant.helpers.icon import icon_for_battery_level
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
-from pyweconnect.connection import Connection
-from pyweconnect.vehicle import Vehicle
+from volkswagencarnet import Connection, Vehicle
 
 from .const import (
     COMPONENTS,
