@@ -15,7 +15,7 @@ from homeassistant.const import (
 )
 from homeassistant.core import callback
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
-from volkswagencarnet import Connection
+from vw_connection import Connection
 
 from .const import (
     CONF_MUTABLE,
