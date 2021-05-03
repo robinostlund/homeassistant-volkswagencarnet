@@ -8,7 +8,7 @@
 
 [![buy me a coffee](https://www.buymeacoffee.com/assets/img/custom_images/yellow_img.png)](https://www.buymeacoffee.com/robinostlund)
 
-## Login issues with some countries are regions - Please help us!
+## Login issues with some countries and regions - Please help us!
 Please see information here: https://github.com/robinostlund/homeassistant-volkswagencarnet/issues/284
 
 ### Confirmed working regions and countries
