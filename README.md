@@ -260,6 +260,26 @@ Save these automations in your automations file `<config dir>/automations.yaml`
         message: "My Lord, the car is unlocked. Please attend this this issue at your earliest inconvenience!"
 ```
 
+## Custom sensors
+
+### Total electric consumption
+
+This integration may only report the electrical engine consumption, recuperation and auxillary consumer consumption, but no combined total. This example template sensor implements the missing sensor. Add to configuration.yaml and replace [ID] by your car's name.
+
+```yaml
+sensor:
+  - platform: template
+    sensors:
+      [ID]_last_trip_total_electric_consumption:
+        value_template: >-
+          {{ (   states('sensor.[ID]_last_trip_average_electric_engine_consumption') | float
+               + states('sensor.[ID]_last_trip_average_auxillary_consumer_consumption') | float
+               - states('sensor.[ID]_last_trip_average_recuperation') | float
+             ) | round(1) }}
+        unit_of_measurement: 'kWh/100km'
+        friendly_name: '[ID] Last trip total electric consumption'
+```
+
 ## Enable debug logging
 ```yaml
 logger:
