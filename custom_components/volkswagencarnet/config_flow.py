@@ -28,7 +28,7 @@ from .const import (
     DEFAULT_REGION,
     DEFAULT_REPORT_UPDATE_INTERVAL,
     DEFAULT_UPDATE_INTERVAL,
-    DOMAIN,
+    DOMAIN, CONF_DEBUG, DEFAULT_DEBUG,
 )
 
 _LOGGER = logging.getLogger(__name__)
@@ -41,13 +41,13 @@ DATA_SCHEMA = {
     vol.Optional(CONF_REGION, default=DEFAULT_REGION): str,
     vol.Optional(CONF_MUTABLE, default=True): cv.boolean,
     vol.Optional(CONF_SCANDINAVIAN_MILES, default=False): cv.boolean,
+    vol.Optional(CONF_DEBUG, default=DEFAULT_DEBUG): cv.boolean,
 }
 
 
 class VolkswagenCarnetConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
     VERSION = 1
     task_login = None
-    task_update = None
     task_finish = None
     entry = None
 
@@ -72,7 +72,8 @@ class VolkswagenCarnetConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                 session=async_get_clientsession(self.hass),
                 username=self._init_info[CONF_USERNAME],
                 password=self._init_info[CONF_PASSWORD],
-                fulldebug=True
+                fulldebug=self._init_info.get(CONF_DEBUG, DEFAULT_DEBUG),
+                country=self._init_info[CONF_REGION]
             )
 
             return await self.async_step_login()
@@ -81,26 +82,16 @@ class VolkswagenCarnetConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
             step_id="user", data_schema=vol.Schema(DATA_SCHEMA), errors=self._errors
         )
 
+    # noinspection PyBroadException
     async def _async_task_login(self):
         try:
             await self._connection.doLogin()
-        except:
+        except Exception as e:
+            _LOGGER.error("Failed to login due to error: %s", str(e))
             self._errors["base"] = "cannot_connect"
 
         if not self._connection.logged_in:
             self._errors["base"] = "cannot_connect"
-
-        self.hass.async_create_task(
-            self.hass.config_entries.flow.async_configure(flow_id=self.flow_id)
-        )
-
-    async def _async_task_update(self):
-        _LOGGER.debug("UPDATE STARTED!")
-
-        # if not await self._connection.update():
-        #     self._errors["base"] = "cannot_update"
-
-        _LOGGER.debug("UPDATE DONE!")
 
         self.hass.async_create_task(
             self.hass.config_entries.flow.async_configure(flow_id=self.flow_id)
@@ -151,36 +142,23 @@ class VolkswagenCarnetConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         )
 
     async def async_step_login(self, user_input=None):
-        if not self.task_login or not self.task_update:
-            if not self.task_login and not self._connection.logged_in:
-                self.task_login = self.hass.async_create_task(self._async_task_login())
-                progress_action = "task_login"
-            else:
-                self.task_update = self.hass.async_create_task(self._async_task_update())
-                progress_action = "task_update"
+        if not self.task_login:
+            self.task_login = self.hass.async_create_task(self._async_task_login())
 
             return self.async_show_progress(
                 step_id="login",
-                progress_action=progress_action,
+                progress_action="task_login",
             )
 
         # noinspection PyBroadException
         try:
-            if not await self._connection.validate_login:
-                return self.async_abort(reason="Unable to login to WeConnect. Need to accept a new EULA? Try logging in to the portal: https://www.portal.volkswagen-we.com/")
-        except Exception:
-            return self.async_abort(reason="Failed to connect to WeConnect")
-
-        # noinspection PyBroadException
-        try:
-            await self.task_update
+            await self.task_login
         except Exception:
             return self.async_abort(reason="Failed to connect to WeConnect")
 
         if self._errors:
             return self.async_show_progress_done(next_step_id="user")
 
-        _LOGGER.debug("Updating data from volkswagen WeConnect")
         for vehicle in self._connection.vehicles:
             _LOGGER.info(f"Found data for VIN: {vehicle.vin} from WeConnect")
 
@@ -206,13 +184,14 @@ class VolkswagenCarnetConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                 session=async_get_clientsession(self.hass),
                 username=user_input[CONF_USERNAME],
                 password=user_input[CONF_PASSWORD],
-                fulldebug=True
+                fulldebug=self.entry.options.get(CONF_DEBUG, self.entry.data[CONF_DEBUG]),
+                country=self.entry.options.get(CONF_REGION, self.entry.data[CONF_REGION]),
             )
-
-            await self._connection.doLogin()
 
             # noinspection PyBroadException
             try:
+                await self._connection.doLogin()
+
                 if not await self._connection.validate_login:
                     _LOGGER.debug("Unable to login to WeConnect. Need to accept a new EULA? Try logging in to the portal: https://www.portal.volkswagen-we.com/")
                     errors["base"] = "cannot_connect"
@@ -231,7 +210,8 @@ class VolkswagenCarnetConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                     )
 
                     return self.async_abort(reason="reauth_successful")
-            except Exception:
+            except Exception as e:
+                _LOGGER.error("Failed to login due to error: %s", str(e))
                 return self.async_abort(reason="Failed to connect to WeConnect")
 
         return self.async_show_form(
@@ -281,6 +261,12 @@ class VolkswagenCarnetOptionsFlowHandler(config_entries.OptionsFlow):
                         ),
                     ): cv.boolean,
                     vol.Optional(
+                        CONF_DEBUG,
+                        default=self._config_entry.options.get(
+                            CONF_DEBUG, self._config_entry.data[CONF_DEBUG]
+                        )
+                    ): cv.boolean,
+                    vol.Optional(
                         CONF_REPORT_SCAN_INTERVAL,
                         default=self._config_entry.options.get(
                             CONF_REPORT_SCAN_INTERVAL, DEFAULT_REPORT_UPDATE_INTERVAL
@@ -292,6 +278,12 @@ class VolkswagenCarnetOptionsFlowHandler(config_entries.OptionsFlow):
                             CONF_SCAN_INTERVAL, DEFAULT_UPDATE_INTERVAL
                         ),
                     ): cv.positive_int,
+                    vol.Optional(
+                        CONF_REGION,
+                        default=self._config_entry.options.get(
+                            CONF_REGION, self._config_entry.data[CONF_REGION]
+                        )
+                    ): str
                 }
             ),
         )
