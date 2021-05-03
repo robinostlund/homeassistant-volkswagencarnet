@@ -8,6 +8,12 @@
 
 [![buy me a coffee](https://www.buymeacoffee.com/assets/img/custom_images/yellow_img.png)](https://www.buymeacoffee.com/robinostlund)
 
+## Login issues with some countries are regions - Please help us!
+Please see information here: https://github.com/robinostlund/homeassistant-volkswagencarnet/issues/284
+
+### Confirmed working regions and countries
+EU - Sweden
+
 ## Description
 
 This platform plugin allows you to see some information from volkswagen carnet related to your car that has a valid carnet subscription.
