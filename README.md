@@ -12,7 +12,9 @@
 Please see information here: https://github.com/robinostlund/homeassistant-volkswagencarnet/issues/284
 
 ### Confirmed working regions and countries
-EU - Sweden
+Region | Country
+--- | --- 
+EU | Sweden
 
 ## Description
 
