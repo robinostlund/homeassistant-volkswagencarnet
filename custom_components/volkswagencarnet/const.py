@@ -2,14 +2,18 @@ from datetime import timedelta
 
 DOMAIN = "volkswagencarnet"
 DATA_KEY = DOMAIN
+
+DEFAULT_REGION = "DE"
+DEFAULT_DEBUG = False
+
 CONF_REGION = "region"
-DEFAULT_REGION = "SV"
 CONF_MUTABLE = "mutable"
 CONF_SPIN = "spin"
 CONF_SCANDINAVIAN_MILES = "scandinavian_miles"
 CONF_VEHICLE = "vehicle"
 CONF_REPORT_REQUEST = "report_request"
 CONF_REPORT_SCAN_INTERVAL = "report_scan_interval"
+CONF_DEBUG = "debug"
 
 UPDATE_CALLBACK = "update_callback"
 DATA = "data"

@@ -40,7 +40,7 @@ from .const import (
     MIN_UPDATE_INTERVAL,
     RESOURCES_DICT,
     SIGNAL_STATE_UPDATED,
-    UNDO_UPDATE_LISTENER, UPDATE_CALLBACK,
+    UNDO_UPDATE_LISTENER, UPDATE_CALLBACK, CONF_DEBUG, DEFAULT_DEBUG,
 )
 
 _LOGGER = logging.getLogger(__name__)
@@ -313,7 +313,7 @@ class VolkswagenCoordinator(DataUpdateCoordinator):
     """Class to manage fetching data from the API."""
 
     def __init__(self, hass: HomeAssistant, entry, update_interval: timedelta):
-        self.vin = entry.data[CONF_VEHICLE]
+        self.vin = entry.data[CONF_VEHICLE].upper()
         self.entry = entry
         self.platforms = []
         self.report_last_updated = None
@@ -321,7 +321,8 @@ class VolkswagenCoordinator(DataUpdateCoordinator):
             session=async_get_clientsession(hass),
             username=self.entry.data[CONF_USERNAME],
             password=self.entry.data[CONF_PASSWORD],
-            fulldebug=True
+            fulldebug=self.entry.options.get(CONF_DEBUG, self.entry.data[CONF_DEBUG]),
+            country=self.entry.options.get(CONF_REGION, self.entry.data[CONF_REGION]),
         )
 
         super().__init__(hass, _LOGGER, name=DOMAIN, update_interval=update_interval)
@@ -377,7 +378,7 @@ class VolkswagenCoordinator(DataUpdateCoordinator):
 
         _LOGGER.debug("Updating data from volkswagen WeConnect")
         for vehicle in self.connection.vehicles:
-            if vehicle.vin == self.vin:
+            if vehicle.vin.upper() == self.vin:
                 return vehicle
 
         return False

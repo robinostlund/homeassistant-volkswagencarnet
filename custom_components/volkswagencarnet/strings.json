@@ -12,7 +12,8 @@
           "region": "Region (The country where the car was sold)",
           "spin": "S-PIN",
           "scandinavian_miles": "Enable if you want to change from km to mil on sensors",
-          "name": "Name your car (defaults to VIN number)"
+          "name": "Name your car (defaults to VIN number)",
+          "debug": "Enable full debug logs from API (requires debug logging enabled in config)"
         }
       },
       "select_vehicle": {
@@ -59,7 +60,9 @@
         "data": {
           "report_request": "Enable automatic report request",
           "report_scan_interval": "Report request update interval (days)",
-          "scan_interval": "Sensors update interval (minutes)"
+          "scan_interval": "Sensors update interval (minutes)",
+          "region": "Region (The country where the car was sold)",
+          "debug": "Enable full debug logs from API (requires debug logging enabled in config)"
         }
       }
     }
