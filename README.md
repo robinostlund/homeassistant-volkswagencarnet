@@ -9,12 +9,14 @@
 [![buy me a coffee](https://www.buymeacoffee.com/assets/img/custom_images/yellow_img.png)](https://www.buymeacoffee.com/robinostlund)
 
 ## Login issues with some countries and regions - Please help us!
-Please see information here: https://github.com/robinostlund/homeassistant-volkswagencarnet/issues/284
+Update as of 2021-05-03 - Login issues for EU based accounts has now been resolved with the release of version .41.
+
+We are still looking for server URLs for Asia/Pacific, South and North America. Please see information here: https://github.com/robinostlund/homeassistant-volkswagencarnet/issues/284
 
 ### Confirmed working regions and countries
 Region | Country | Country Code
 --- | --- | ---
-EU | Sweden | SE
+EU | * | DE
 
 ## Description
 
