@@ -1,15 +1,15 @@
 {
-  "title": "Volkswagen WeConnect",
+  "title": "Volkswagen We Connect",
   "config": {
     "step": {
       "user": {
-        "title": "WeConnect Configuration",
-        "description": "Fill in WeConnect information\n\nS-PIN is required for some specific options such as lock/unlock and combustion engine heating start/stop",
+        "title": "We Connect Configuration",
+        "description": "Fill in We Connect information\n\nS-PIN is required for some specific options such as lock/unlock and combustion engine heating start/stop",
         "data": {
           "username": "Email",
           "password": "Password",
-          "mutable": "Disable to remove sensors that can interact with the car",
-          "region": "Region (The country where the car was sold)",
+          "mutable": "Uncheck to make the car 'read only'. Keep checked to interact with the car",
+          "region": "Country code where the car was sold (ISO 3155-1 / Alpha-2)",
           "spin": "S-PIN",
           "scandinavian_miles": "Enable if you want to change from km to mil on sensors",
           "name": "Name your car (defaults to VIN number)",
@@ -43,19 +43,19 @@
       "reauth_successful": "Re-authentication was successful"
     },
     "error": {
-      "cannot_connect": "Could not login to Volkswagen WeConnect, please check your credentials and verify that the service is working",
-      "cannot_update": "Could not query update from Volkswagen WeConnect",
+      "cannot_connect": "Could not login to Volkswagen We Connect, please check your credentials and verify that the service is working",
+      "cannot_update": "Could not query update from Volkswagen We Connect",
       "unknown": "[%key:common::config_flow::error::unknown%]"
     },
     "progress": {
-      "task_login": "Logging in to WeConnect",
+      "task_login": "Logging in to We Connect",
       "task_update": "Fetching vehicles"
     }
   },
   "options": {
     "step": {
       "user": {
-        "title": "Options for WeConnect",
+        "title": "Options for We Connect",
         "description": "Configure update intervals",
         "data": {
           "report_request": "Enable automatic report request",
