@@ -8,7 +8,7 @@
         "data": {
           "username": "[%key:common::config_flow::data::email%]",
           "password": "[%key:common::config_flow::data::password%]",
-          "mutable": "Uncheck to make the car 'read only'. Keep checked to interact with the car"",
+          "mutable": "Uncheck to make the car 'read only'. Keep checked to interact with the car",
           "region": "Region (The country where the car was sold)",
           "spin": "S-PIN",
           "scandinavian_miles": "Enable if you want to change from km to mil on sensors",
