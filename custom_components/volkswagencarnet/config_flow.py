@@ -184,7 +184,7 @@ class VolkswagenCarnetConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                 session=async_get_clientsession(self.hass),
                 username=user_input[CONF_USERNAME],
                 password=user_input[CONF_PASSWORD],
-                fulldebug=self.entry.options.get(CONF_DEBUG, self.entry.data[CONF_DEBUG]),
+                fulldebug=self.entry.options.get(CONF_DEBUG, self.entry.data.get(CONF_DEBUG, DEFAULT_DEBUG)),
                 country=self.entry.options.get(CONF_REGION, self.entry.data[CONF_REGION]),
             )
 
@@ -263,7 +263,9 @@ class VolkswagenCarnetOptionsFlowHandler(config_entries.OptionsFlow):
                     vol.Optional(
                         CONF_DEBUG,
                         default=self._config_entry.options.get(
-                            CONF_DEBUG, self._config_entry.data[CONF_DEBUG]
+                            CONF_DEBUG, self._config_entry.data.get(
+                                CONF_DEBUG, DEFAULT_DEBUG
+                            )
                         )
                     ): cv.boolean,
                     vol.Optional(

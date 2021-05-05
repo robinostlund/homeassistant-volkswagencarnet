@@ -321,7 +321,7 @@ class VolkswagenCoordinator(DataUpdateCoordinator):
             session=async_get_clientsession(hass),
             username=self.entry.data[CONF_USERNAME],
             password=self.entry.data[CONF_PASSWORD],
-            fulldebug=self.entry.options.get(CONF_DEBUG, self.entry.data[CONF_DEBUG]),
+            fulldebug=self.entry.options.get(CONF_DEBUG, self.entry.data.get(CONF_DEBUG, DEFAULT_DEBUG)),
             country=self.entry.options.get(CONF_REGION, self.entry.data[CONF_REGION]),
         )
 
