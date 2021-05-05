@@ -240,6 +240,51 @@ sensor:
         friendly_name: '[ID] Last trip total electric consumption'
 ```
 
+### Templates for converting distance from km to miles
+
+These templates create a new sensor with kilometers converted to miles. Add to your configuration.yaml and replace [ID] with your car's name. Note: these are for a BEV, other models may have different sensor names.
+
+```yaml
+  - platform: template
+    sensors:
+      [ID]_service_inspection_distance_miles:
+        friendly_name: '[ID] Service inspection distance miles'
+        value_template: "{{ (states('sensor.[ID]_service_inspection_distance').split(' ')[0] |int * 0.6213712) | round(0)}}"
+        unique_id: [ID]inspectionmiles
+        unit_of_measurement: mi
+        icon_template: mdi:garage
+      [ID]_combined_range_miles:
+        friendly_name: '[ID] range miles'
+        value_template: "{{ (states('sensor.[ID]_combined_range').split(' ')[0] |int * 0.6213712) | round(0)}}"
+        unique_id: [ID]rangemiles
+        unit_of_measurement: mi
+        icon_template: mdi:car
+      [ID]_odometer_miles:
+        friendly_name: '[ID] Odometer miles'
+        value_template: "{{ (states('sensor.[ID]_odometer').split(' ')[0] |int * 0.6213712) | round(0)}}"
+        unique_id: [ID]odometermiles
+        unit_of_measurement: mi
+        icon_template: mdi:speedometer
+      [ID]_last_trip_average_speed_miles:
+        friendly_name: '[ID] Last trip average speed miles'
+        value_template: "{{ (states('sensor.[ID]_last_trip_average_speed').split(' ')[0] |int * 0.6213712) | round(0)}}"
+        unique_id: [ID]ltaspeedmi
+        unit_of_measurement: mi/h
+        icon_template: mdi:speedometer
+      [ID]_last_trip_length_miles:
+        friendly_name: '[ID] Last trip length miles'
+        value_template: "{{ (states('sensor.[ID]_last_trip_length').split(' ')[0] |int * 0.6213712) | round(0)}}"
+        unique_id: johnny5lasttriplengthmiles
+        unit_of_measurement: mi
+        icon_template: mdi:map-marker-distance
+      [ID]_last_trip_average_electric_engine_consumption_miles:
+        friendly_name: '[ID] Last trip average electric engine consumption miles'
+        value_template: "{{ (states('sensor.[ID]_last_trip_average_electric_engine_consumption').split(' ')[0] |float * 0.6213712) | round(2)}}"
+        unique_id: [ID]avgelectconmiles
+        unit_of_measurement: kWh/100mi
+        icon_template: mdi:car-battery
+```
+
 ## Enable debug logging
 ```yaml
 logger:
