@@ -38,9 +38,9 @@ from .const import (
     DEFAULT_UPDATE_INTERVAL,
     DOMAIN,
     MIN_UPDATE_INTERVAL,
-    RESOURCES_DICT,
     SIGNAL_STATE_UPDATED,
-    UNDO_UPDATE_LISTENER, UPDATE_CALLBACK, CONF_DEBUG, DEFAULT_DEBUG,
+    UNDO_UPDATE_LISTENER, UPDATE_CALLBACK, CONF_DEBUG, DEFAULT_DEBUG, CONF_CONVERT, CONF_NO_CONVERSION,
+    CONF_IMPERIAL_UNITS,
 )
 
 _LOGGER = logging.getLogger(__name__)
@@ -142,6 +142,16 @@ async def async_unload_coordinator(hass: HomeAssistant, entry: ConfigEntry):
 async def _async_update_listener(hass: HomeAssistant, entry: ConfigEntry):
     """Handle options update."""
     await hass.config_entries.async_reload(entry.entry_id)
+
+
+def get_convert_conf(entry: ConfigEntry):
+    return CONF_SCANDINAVIAN_MILES if entry.options.get(
+        CONF_SCANDINAVIAN_MILES,
+        entry.data.get(
+            CONF_SCANDINAVIAN_MILES,
+            False
+        )
+    ) else CONF_NO_CONVERSION
 
 
 class VolkswagenData:
@@ -337,10 +347,22 @@ class VolkswagenCoordinator(DataUpdateCoordinator):
         if self.entry.options.get(CONF_REPORT_REQUEST, False):
             await self.report_request(vehicle)
 
+        # Backward compatibility
+        default_convert_conf = get_convert_conf(self.entry)
+
+        convert_conf = self.entry.options.get(
+            CONF_CONVERT,
+            self.entry.data.get(
+                CONF_CONVERT,
+                default_convert_conf
+            )
+        )
+
         dashboard = vehicle.dashboard(
             mutable=self.entry.data.get(CONF_MUTABLE),
             spin=self.entry.data.get(CONF_SPIN),
-            scandinavian_miles=self.entry.data.get(CONF_SCANDINAVIAN_MILES),
+            miles=convert_conf == CONF_IMPERIAL_UNITS,
+            scandinavian_miles=convert_conf == CONF_SCANDINAVIAN_MILES,
         )
 
         return dashboard.instruments
