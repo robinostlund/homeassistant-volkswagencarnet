@@ -58,8 +58,8 @@ Clone or copy the repository and copy the folder 'homeassistant-volkswagencarnet
 * Region - The country where the car was sold (Required)
 * Mutable - If enabled you can interact with the car, if disabled only data from the car will be presented (Optional)
 * S-PIN - Required for some specific options such as lock/unlock (Optional)
-* Enable "Swedish mil" instead of KM (Optional)
-![image](https://user-images.githubusercontent.com/26795429/109767976-94979500-7bf8-11eb-9c6b-c41f861a927f.png)
+* Distance unit conversion - Select if you wish to use "Swedish mil" or Imperial Miles instead of KM (Optional, default is KM)
+![image](https://user-images.githubusercontent.com/53381142/117341181-b8e24d00-ae99-11eb-84af-7661e9170492.png)
 
 ## Entities
 
@@ -241,6 +241,8 @@ sensor:
 ```
 
 ### Templates for converting distance from km to miles
+As of v4.4.45 the same can be acheived by setting the distance units to Imperial in the integration configuration page.
+![image](https://user-images.githubusercontent.com/53381142/117340592-f5fa0f80-ae98-11eb-9baa-1f5a0ef02848.png)
 
 These templates create a new sensor with kilometers converted to miles. Add to your configuration.yaml and replace [ID] with your car's name. Note: these are for a BEV, other models may have different sensor names.
 
