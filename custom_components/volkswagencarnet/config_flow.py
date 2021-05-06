@@ -269,6 +269,12 @@ class VolkswagenCarnetOptionsFlowHandler(config_entries.OptionsFlow):
                         )
                     ): cv.boolean,
                     vol.Optional(
+                        CONF_SCANDINAVIAN_MILES,
+                        default=self._config_entry.options.get(
+                            CONF_SCANDINAVIAN_MILES, self._config_entry.data[CONF_SCANDINAVIAN_MILES]
+                        )
+                    ): cv.boolean,
+                    vol.Optional(
                         CONF_REPORT_SCAN_INTERVAL,
                         default=self._config_entry.options.get(
                             CONF_REPORT_SCAN_INTERVAL, DEFAULT_REPORT_UPDATE_INTERVAL

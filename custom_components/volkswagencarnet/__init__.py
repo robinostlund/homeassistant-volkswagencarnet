@@ -340,7 +340,7 @@ class VolkswagenCoordinator(DataUpdateCoordinator):
         dashboard = vehicle.dashboard(
             mutable=self.entry.data.get(CONF_MUTABLE),
             spin=self.entry.data.get(CONF_SPIN),
-            scandinavian_miles=self.entry.data.get(CONF_SCANDINAVIAN_MILES),
+            miles=self.entry.options.get(CONF_SCANDINAVIAN_MILES, self.entry.data[CONF_SCANDINAVIAN_MILES]),
         )
 
         return dashboard.instruments
