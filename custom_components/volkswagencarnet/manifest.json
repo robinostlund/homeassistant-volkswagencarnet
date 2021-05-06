@@ -7,6 +7,6 @@
     "dependencies": [],
     "config_flow": true,
     "codeowners": ["@robinostlund"],
-    "requirements": ["volkswagencarnet==4.4.33"],
+    "requirements": ["volkswagencarnet==4.4.34"],
     "version": "v0.0.0"
 }
