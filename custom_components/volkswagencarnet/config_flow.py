@@ -1,9 +1,6 @@
-import logging
-from typing import Any
-
 import homeassistant.helpers.config_validation as cv
+import logging
 import voluptuous as vol
-from aiohttp import InvalidURL
 from homeassistant import config_entries
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import (
@@ -15,20 +12,24 @@ from homeassistant.const import (
 )
 from homeassistant.core import callback
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
-from vw_connection import Connection
 
+from vw_connection import Connection
+from . import get_convert_conf
 from .const import (
+    CONF_CONVERT,
+    CONF_DEBUG,
+    CONVERT_DICT,
     CONF_MUTABLE,
     CONF_REGION,
     CONF_REPORT_REQUEST,
     CONF_REPORT_SCAN_INTERVAL,
-    CONF_SCANDINAVIAN_MILES,
     CONF_SPIN,
     CONF_VEHICLE,
     DEFAULT_REGION,
     DEFAULT_REPORT_UPDATE_INTERVAL,
     DEFAULT_UPDATE_INTERVAL,
-    DOMAIN, CONF_DEBUG, DEFAULT_DEBUG,
+    DOMAIN,
+    DEFAULT_DEBUG
 )
 
 _LOGGER = logging.getLogger(__name__)
@@ -40,7 +41,7 @@ DATA_SCHEMA = {
     vol.Optional(CONF_SPIN, default=""): str,
     vol.Optional(CONF_REGION, default=DEFAULT_REGION): str,
     vol.Optional(CONF_MUTABLE, default=True): cv.boolean,
-    vol.Optional(CONF_SCANDINAVIAN_MILES, default=False): cv.boolean,
+    vol.Optional(CONF_CONVERT, default=None): vol.In(CONVERT_DICT),
     vol.Optional(CONF_DEBUG, default=DEFAULT_DEBUG): cv.boolean,
 }
 
@@ -250,6 +251,9 @@ class VolkswagenCarnetOptionsFlowHandler(config_entries.OptionsFlow):
         if user_input is not None:
             return self.async_create_entry(title="", data=user_input)
 
+        # Backward compatibility
+        default_convert_conf = get_convert_conf(self._config_entry)
+
         return self.async_show_form(
             step_id="user",
             data_schema=vol.Schema(
@@ -269,11 +273,12 @@ class VolkswagenCarnetOptionsFlowHandler(config_entries.OptionsFlow):
                         )
                     ): cv.boolean,
                     vol.Optional(
-                        CONF_SCANDINAVIAN_MILES,
+                        CONF_CONVERT,
                         default=self._config_entry.options.get(
-                            CONF_SCANDINAVIAN_MILES, self._config_entry.data[CONF_SCANDINAVIAN_MILES]
+                            CONF_CONVERT, self._config_entry.data.get(
+                                CONF_CONVERT, default_convert_conf)
                         )
-                    ): cv.boolean,
+                    ): vol.In(CONVERT_DICT),
                     vol.Optional(
                         CONF_REPORT_SCAN_INTERVAL,
                         default=self._config_entry.options.get(

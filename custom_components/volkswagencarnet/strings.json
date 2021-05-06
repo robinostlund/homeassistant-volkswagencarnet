@@ -11,9 +11,9 @@
           "mutable": "Uncheck to make the car 'read only'. Keep checked to interact with the car",
           "region": "Region (The country where the car was sold)",
           "spin": "S-PIN",
-          "scandinavian_miles": "Enable if you want to change from km to mil on sensors",
           "name": "Name your car (defaults to VIN number)",
-          "debug": "Enable full debug logs from API (requires debug logging enabled in config)"
+          "debug": "Enable full debug logs from API (requires debug logging enabled in config)",
+          "convert": "Select if you wan to make any unit conversions"
         }
       },
       "select_vehicle": {
@@ -63,7 +63,7 @@
           "scan_interval": "Sensors update interval (minutes)",
           "region": "Region (The country where the car was sold)",
           "debug": "Enable full debug logs from API (requires debug logging enabled in config)",
-          "scandinavian_miles": "Enable if you want to change from km to mil on sensors"
+          "convert": "Select if you wan to make any unit conversions"
         }
       }
     }
