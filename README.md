@@ -17,6 +17,7 @@ We are still looking for server URLs for Asia/Pacific, South and North America. 
 Region | Country | Country Code
 --- | --- | ---
 EU | * | DE
+EU | Norway | NO
 
 ## Description
 
