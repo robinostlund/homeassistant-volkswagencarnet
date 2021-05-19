@@ -45,7 +45,7 @@
     },
     "error": {
       "cannot_connect": "Nie można zalogować się do Volkswagen We Connect, sprawdź wpisane dane logowania i sprawdź, czy usługa działa",
-      "cannot_update": "Nie można zaktualizować danhch Volkswagen We Connect",
+      "cannot_update": "Nie można zaktualizować danych Volkswagen We Connect",
       "unknown": "[%key:common::config_flow::error::unknown%]"
     },
     "progress": {
