@@ -4,23 +4,32 @@
 ![Downloads](https://img.shields.io/github/downloads/robinostlund/homeassistant-volkswagencarnet/total)
 
 
-# Volkswagen Carnet - An home assistant plugin to add integration with your car
+# Volkswagen We Connect - An Home Assistant custom component to interact with the We Connect service
 
 [![buy me a coffee](https://www.buymeacoffee.com/assets/img/custom_images/yellow_img.png)](https://www.buymeacoffee.com/robinostlund)
 
 ## Login issues with some countries and regions - Please help us!
-Update as of 2021-05-03 - Login issues for EU based accounts has now been resolved with the release of version .41.
-
-We are still looking for server URLs for Asia/Pacific, South and North America. Please see information here: https://github.com/robinostlund/homeassistant-volkswagencarnet/issues/284
+Update as of 2021-05-03 - Login issues for EU/EMEA based accounts has now been resolved with the release of version .41.
 
 ### Confirmed working regions and countries
 Region | Country | Country Code
 --- | --- | ---
-EU | * | DE
+EMEA | All | DE
+
+### To be confirmed regions and countries - we need more info
+We are still looking for server URLs for Asia/Pacific, South and North America. Please see information here: https://github.com/robinostlund/homeassistant-volkswagencarnet/issues/284
+
+Region | Country | Country Code
+--- | --- | ---
+APAC | ? | ?
+LAD | ? | ?
+NA | ? | ?
 
 ## Description
 
-This custom component for Home Assistant allows you to interact with the "non-ID" Volkswagen We Connect cars such as the Passat, Golf, e-Golf, Tiguan etc. It requires you to have an active and working VW online subscription connected to your car. For the new electric vehicles such as the ID series this component does not work. The new ID platform uses another backend system.
+Welcome to Volkswagen We Connect custom component designed for [Home Assistant](https://www.home-assistant.io) with the capability to interact with the Volkswagen We Connect service (your car).
+
+This custom component supports the "non-ID" Volkswagen We Connect cars such as the Passat, Golf, e-Golf, Tiguan etc. It requires you to have an active and working VW online subscription connected to your car. For the new electric vehicles such as the ID series this component does not work. The new ID platform uses another backend system.
 
 Most of the functionality found the "We Connect app" should be available via this integration, this includes options such as auxiliary heater control.
 
