@@ -8,6 +8,6 @@
     "config_flow": true,
     "codeowners": ["@robinostlund"],
     "requirements": ["volkswagencarnet==4.4.34"],
-    "version": "v0.0.0"
+    "version": "v0.0.0",
     "iot_class": "cloud_polling"
 }
