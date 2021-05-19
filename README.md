@@ -4,7 +4,7 @@
 ![Downloads](https://img.shields.io/github/downloads/robinostlund/homeassistant-volkswagencarnet/total)
 
 
-# Volkswagen Carnet - An home assistant plugin to add integration with your car
+# Volkswagen We Connect - An Home Assistant custom component to interact with the We Connect service
 
 [![buy me a coffee](https://www.buymeacoffee.com/assets/img/custom_images/yellow_img.png)](https://www.buymeacoffee.com/robinostlund)
 
@@ -27,7 +27,9 @@ NA | ? | ?
 
 ## Description
 
-This custom component for Home Assistant allows you to interact with the "non-ID" Volkswagen We Connect cars such as the Passat, Golf, e-Golf, Tiguan etc. It requires you to have an active and working VW online subscription connected to your car. For the new electric vehicles such as the ID series this component does not work. The new ID platform uses another backend system.
+Welcome to Volkswagen We Connect custom component designed for [Home Assistant](https://www.home-assistant.io) with the capability to interact with the Volkswagen We Connect service (your car).
+
+This custom component supports the "non-ID" Volkswagen We Connect cars such as the Passat, Golf, e-Golf, Tiguan etc. It requires you to have an active and working VW online subscription connected to your car. For the new electric vehicles such as the ID series this component does not work. The new ID platform uses another backend system.
 
 Most of the functionality found the "We Connect app" should be available via this integration, this includes options such as auxiliary heater control.
 
