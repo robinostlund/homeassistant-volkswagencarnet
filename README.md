@@ -8,8 +8,8 @@
 
 [![buy me a coffee](https://www.buymeacoffee.com/assets/img/custom_images/yellow_img.png)](https://www.buymeacoffee.com/robinostlund)
 
-## Login issues with some countries and regions - Please help us!
-Update as of 2021-05-03 - Login issues for EU/EMEA based accounts has now been resolved with the release of version .41.
+## Login issues - component stopped working
+Volkswagen releases new terms and conditions freqently. If this component halts, please make sure that you login to both https://vwid.vwgroup.io/ and https://www.myvolkswagen.net/ to ensure functionality. Please do not enable MFA and similar options for your account.
 
 ### Confirmed working regions and countries
 Region | Country | Country Code
