@@ -20,6 +20,7 @@ from homeassistant.helpers.entity import Entity
 from homeassistant.helpers.icon import icon_for_battery_level
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
 from vw_connection import Connection, TermsAndConditionError
+from vw_dashboard import TERMS_AND_CONDITION_ATTR
 from vw_vehicle import Vehicle
 
 from .const import (
@@ -73,24 +74,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
     data = VolkswagenData(entry.data, coordinator)
     instruments = coordinator.data
 
-    def is_enabled(attr):
-        """Return true if the user has enabled the resource."""
-        return attr in entry.data.get(CONF_RESOURCES, [attr])
-
-    components = set()
-    for instrument in (
-        instrument
-        for instrument in instruments
-        if instrument.component in COMPONENTS and is_enabled(instrument.slug_attr)
-    ):
-        data.instruments.add(instrument)
-        components.add(COMPONENTS[instrument.component])
-
-    for component in components:
-        coordinator.platforms.append(component)
-        hass.async_create_task(
-            hass.config_entries.async_forward_entry_setup(entry, component)
-        )
+    await _add_entities(coordinator, data, entry, hass, instruments)
 
     hass.data[DOMAIN][entry.entry_id] = {
         DATA: data,
@@ -98,6 +82,28 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
     }
 
     return True
+
+
+async def _add_entities(coordinator, data, entry, hass, instruments):
+    def is_enabled(attr):
+        """Return true if the user has enabled the resource."""
+        return attr in entry.data.get(CONF_RESOURCES, [attr])
+
+    components = set()
+    for instrument in (
+            instrument
+            for instrument in instruments
+            if instrument.component in COMPONENTS and (
+            is_enabled(instrument.slug_attr) or instrument.slug_attr == TERMS_AND_CONDITION_ATTR)
+    ):
+        data.instruments.add(instrument)
+        components.add(COMPONENTS[instrument.component])
+    for component in components:
+        coordinator.platforms.append(component)
+        hass.async_create_task(
+            hass.config_entries.async_forward_entry_setup(entry, component)
+        )
+
 
 async def async_setup(hass: HomeAssistant, config: dict):
     """Set up the Plaato component."""
@@ -339,7 +345,13 @@ class VolkswagenCoordinator(DataUpdateCoordinator):
         except TermsAndConditionError as e:
             vehicle = self.connection.vehicle(self.vin)
             if vehicle is not None:
-                self.data = self.get_instruments(vehicle)
+                self.data = await self.get_instruments(vehicle)
+                toc_sensor = next((instrument for instrument in self.data if instrument.slug_attr == TERMS_AND_CONDITION_ATTR), False)
+                if toc_sensor is not False:
+                    self.hass.async_create_task(
+                        self.hass.config_entries.async_forward_entry_setup(self.entry, toc_sensor.component)
+                    )
+
                 dispatcher_send(self.hass, SIGNAL_STATE_UPDATED)
             raise UpdateFailed("You need to accept Terms and Conditions in the We Connect portal (https://www.portal.volkswagen-we.com/).")
 
@@ -351,7 +363,7 @@ class VolkswagenCoordinator(DataUpdateCoordinator):
 
         return await self.get_instruments(vehicle)
 
-    async def get_instruments(self, vehicle):
+    async def get_instruments(self, vehicle) -> set:
         # Backward compatibility
         default_convert_conf = get_convert_conf(self.entry)
         convert_conf = self.entry.options.get(
