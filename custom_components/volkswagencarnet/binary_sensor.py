@@ -23,7 +23,7 @@ async def async_setup_entry(hass, entry, async_add_devices):
     if coordinator.data is not None:
         async_add_devices(
             VolkswagenBinarySensor(
-                data, coordinator.vin, instrument.component, instrument.attr, hass.data[DOMAIN][entry.entry_id][UPDATE_CALLBACK]
+                data, coordinator.vin, instrument.component, instrument.attr
             )
             for instrument in (
                 instrument

@@ -46,7 +46,8 @@
     "error": {
       "cannot_connect": "Could not login to Volkswagen We Connect, please check your credentials and verify that the service is working",
       "cannot_update": "Could not query update from Volkswagen We Connect",
-      "unknown": "[%key:common::config_flow::error::unknown%]"
+      "unknown": "[%key:common::config_flow::error::unknown%]",
+      "terms_and_condition": "You need to accept Terms and Conditions in the We Connect portal (https://www.portal.volkswagen-we.com/) before proceeding."
     },
     "progress": {
       "task_login": "Logging in to We Connect",

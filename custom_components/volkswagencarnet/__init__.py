@@ -15,11 +15,11 @@ from homeassistant.const import (
 from homeassistant.core import HomeAssistant
 from homeassistant.exceptions import ConfigEntryNotReady
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
-from homeassistant.helpers.dispatcher import async_dispatcher_connect
+from homeassistant.helpers.dispatcher import async_dispatcher_connect, dispatcher_send
 from homeassistant.helpers.entity import Entity
 from homeassistant.helpers.icon import icon_for_battery_level
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
-from vw_connection import Connection
+from vw_connection import Connection, TermsAndConditionError
 from vw_vehicle import Vehicle
 
 from .const import (
@@ -93,20 +93,11 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
         )
 
     hass.data[DOMAIN][entry.entry_id] = {
-        UPDATE_CALLBACK: update_callback,
         DATA: data,
         UNDO_UPDATE_LISTENER: entry.add_update_listener(_async_update_listener),
     }
 
     return True
-
-
-def update_callback(hass, coordinator):
-    _LOGGER.debug("CALLBACK!")
-    hass.async_create_task(
-        coordinator.async_request_refresh()
-    )
-
 
 async def async_setup(hass: HomeAssistant, config: dict):
     """Set up the Plaato component."""
@@ -198,20 +189,14 @@ class VolkswagenData:
 class VolkswagenEntity(Entity):
     """Base class for all Volkswagen entities."""
 
-    def __init__(self, data, vin, component, attribute, callback=None):
+    def __init__(self, data, vin, component, attribute):
         """Initialize the entity."""
-
-        def update_callbacks():
-            if callback is not None:
-                callback(self.hass, data.coordinator)
 
         self.data = data
         self.vin = vin
         self.component = component
         self.attribute = attribute
         self.coordinator = data.coordinator
-        self.instrument.callback = update_callbacks
-        self.callback = callback
 
     async def async_update(self) -> None:
         """Update the entity.
@@ -227,6 +212,10 @@ class VolkswagenEntity(Entity):
 
     async def async_added_to_hass(self):
         """Register update dispatcher."""
+        async_dispatcher_connect(
+            self.hass, SIGNAL_STATE_UPDATED, self.async_write_ha_state
+        )
+
         if self.coordinator is not None:
             self.async_on_remove(
                 self.coordinator.async_add_listener(self.async_write_ha_state)
@@ -337,19 +326,34 @@ class VolkswagenCoordinator(DataUpdateCoordinator):
 
         super().__init__(hass, _LOGGER, name=DOMAIN, update_interval=update_interval)
 
+    def update_callback(self):
+        _LOGGER.debug("CALLBACK!")
+        self.hass.async_create_task(
+            self.async_request_refresh()
+        )
+
     async def _async_update_data(self):
         """Update data via library."""
-        vehicle = await self.update()
+        try:
+            vehicle = await self.update()
+        except TermsAndConditionError as e:
+            vehicle = self.connection.vehicle(self.vin)
+            if vehicle is not None:
+                self.data = self.get_instruments(vehicle)
+                dispatcher_send(self.hass, SIGNAL_STATE_UPDATED)
+            raise UpdateFailed("You need to accept Terms and Conditions in the We Connect portal (https://www.portal.volkswagen-we.com/).")
 
-        if not vehicle:
-            raise UpdateFailed("Failed to update WeConnect. Need to accept EULA? Try logging in to the portal: https://www.portal.volkswagen-we.com/")
+        if vehicle is None:
+            raise UpdateFailed("Failed to update WeConnect")
 
         if self.entry.options.get(CONF_REPORT_REQUEST, False):
             await self.report_request(vehicle)
 
+        return await self.get_instruments(vehicle)
+
+    async def get_instruments(self, vehicle):
         # Backward compatibility
         default_convert_conf = get_convert_conf(self.entry)
-
         convert_conf = self.entry.options.get(
             CONF_CONVERT,
             self.entry.data.get(
@@ -357,14 +361,13 @@ class VolkswagenCoordinator(DataUpdateCoordinator):
                 default_convert_conf
             )
         )
-
         dashboard = vehicle.dashboard(
             mutable=self.entry.data.get(CONF_MUTABLE),
             spin=self.entry.data.get(CONF_SPIN),
             miles=convert_conf == CONF_IMPERIAL_UNITS,
             scandinavian_miles=convert_conf == CONF_SCANDINAVIAN_MILES,
+            update_callback=self.update_callback
         )
-
         return dashboard.instruments
 
     async def async_logout(self):
@@ -393,17 +396,13 @@ class VolkswagenCoordinator(DataUpdateCoordinator):
     async def update(self) -> Union[bool, Vehicle]:
         """Update status from Volkswagen WeConnect"""
 
+        _LOGGER.debug("Updating data from volkswagen WeConnect")
         # update vehicles
         if not await self.connection.update():
             _LOGGER.warning("Could not query update from volkswagen WeConnect")
             return False
 
-        _LOGGER.debug("Updating data from volkswagen WeConnect")
-        for vehicle in self.connection.vehicles:
-            if vehicle.vin.upper() == self.vin:
-                return vehicle
-
-        return False
+        return self.connection.vehicle(self.vin) or False
 
     async def report_request(self, vehicle: Vehicle):
         """Request car to report itself an update to Volkswagen WeConnect"""

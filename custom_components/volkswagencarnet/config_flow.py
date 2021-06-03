@@ -13,7 +13,7 @@ from homeassistant.const import (
 from homeassistant.core import callback
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
 
-from vw_connection import Connection
+from vw_connection import Connection, TermsAndConditionError
 from . import get_convert_conf
 from .const import (
     CONF_CONVERT,
@@ -85,14 +85,19 @@ class VolkswagenCarnetConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
 
     # noinspection PyBroadException
     async def _async_task_login(self):
+        error = "cannot_connect"
+
         try:
             await self._connection.doLogin()
+        except TermsAndConditionError as e:
+            _LOGGER.error("You need to accept Terms and Conditions in the We Connect portal https://www.portal.volkswagen-we.com/ before proceeding.")
+            error = "terms_and_condition"
         except Exception as e:
             _LOGGER.error("Failed to login due to error: %s", str(e))
-            self._errors["base"] = "cannot_connect"
+            error = "cannot_connect"
 
         if not self._connection.logged_in:
-            self._errors["base"] = "cannot_connect"
+            self._errors["base"] = error
 
         self.hass.async_create_task(
             self.hass.config_entries.flow.async_configure(flow_id=self.flow_id)
