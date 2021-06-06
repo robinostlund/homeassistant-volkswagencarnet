@@ -17,6 +17,11 @@ Please check if the bug is already reported and add more information there inste
 
 -->
 
+## Before you post a new issue - you must first check the following (and check the boxes with an "X" below)
+- [ ] 1.) Can you login using the smartphone app We Connect (not We Connect ID or We Connect GO) and interact with your car?
+- [ ] 2.) Please make sure that you can login into https://vwid.vwgroup.io/ and make sure that any "Terms and Conditions" are all checked
+- [ ] 3.) I do not have MFA enabled.
+
 ## Environment
 
 - Volkswagencarnet release with the issue: 
