@@ -4,29 +4,36 @@
 ![Downloads](https://img.shields.io/github/downloads/robinostlund/homeassistant-volkswagencarnet/total)
 
 
-# Volkswagen Carnet - An home assistant plugin to add integration with your car
+# Volkswagen We Connect - An Home Assistant custom component to interact with the We Connect service
 
 [![buy me a coffee](https://www.buymeacoffee.com/assets/img/custom_images/yellow_img.png)](https://www.buymeacoffee.com/robinostlund)
 
-## Login issues with some countries and regions - Please help us!
-Please see information here: https://github.com/robinostlund/homeassistant-volkswagencarnet/issues/284
+## Login issues - component stopped working
+Volkswagen releases new terms and conditions freqently. If this component halts, please make sure that you login to both https://vwid.vwgroup.io/ and https://www.myvolkswagen.net/ to ensure functionality. Please do not enable MFA and similar options for your account.
 
 ### Confirmed working regions and countries
 Region | Country | Country Code
 --- | --- | ---
-EU | Sweden | SE
+EMEA | All | DE
+
+### To be confirmed regions and countries - we need more info
+We are still looking for server URLs for Asia/Pacific, South and North America. Please see information here: https://github.com/robinostlund/homeassistant-volkswagencarnet/issues/284
+
+Region | Country | Country Code
+--- | --- | ---
+APAC | ? | ?
+LAD | ? | ?
+NA | ? | ?
 
 ## Description
 
-This platform plugin allows you to see some information from volkswagen carnet related to your car that has a valid carnet subscription.
+Welcome to Volkswagen We Connect custom component designed for [Home Assistant](https://www.home-assistant.io) with the capability to interact with the Volkswagen We Connect service (your car).
 
-It also allows you to trigger some functions like start climatisation if your car supports that.
+This custom component supports the "non-ID" Volkswagen We Connect cars such as the Passat, Golf, e-Golf, Tiguan etc. It requires you to have an active and working VW online subscription connected to your car. For the new electric vehicles such as the ID series this component does not work. The new ID platform uses another backend system.
 
-Remote engine heating is supported for combustion engine vehicles that use the carnet portal together with a provided S-PIN. Not available for all car models.
+Most of the functionality found the "We Connect app" should be available via this integration, this includes options such as auxiliary heater control.
 
-Note: Some features included in Volkswagen WeConnect 2019 and newer are not fully tested. This custom component should work with any models such as Golf/Passat 8.5/Tiguan etc. But please bear with me and report any fault or error as an issue.
-The current release (2020-06-13) has been tested with a Passat GTE MY2017 and a Passat GTE MY2020 with full functionality.
-Users report success with the e-Up! 2020.
+Note: Some features included in Volkswagen We Connect 2019 and newer are not fully tested. This custom component should work with any models such as Golf/Passat 8.5/Tiguan etc. But please bear with me and report any fault or error as an issue.
 
 Please note that there has only been reports of success with this component for cars sold (and based) in the EU. Please feel free to contribue to make this component work in the US as well, we do not have access to any We Connect accounts to verify at this stage.
 
@@ -42,10 +49,10 @@ Please, before posting an issue make sure that VW´s WeConnect service works for
 * Add the component again as per below (install+configuration)
 
 ### Install with HACS (recommended)
-Do you you have [HACS](https://community.home-assistant.io/t/custom-component-hacs) installed? Just search for Volkswagen We Connect and install it direct from HACS. HACS will keep track of updates and you can easly upgrade volkswagencarnet to latest version.
+Do you you have [HACS](https://community.home-assistant.io/t/custom-component-hacs) installed? Just search for Volkswagen We Connect and install it direct from HACS. HACS will keep track of updates and you can easly upgrade this component to latest version.
 
 ### Install manually
-Make sure you have an account on volkswagen carnet.
+Make sure you have an account on Volkswagen We Connect.
 
 Clone or copy the repository and copy the folder 'homeassistant-volkswagencarnet/custom_component/volkswagencarnet' into '<config dir>/custom_components'
 
@@ -60,50 +67,12 @@ Clone or copy the repository and copy the folder 'homeassistant-volkswagencarnet
 * Region - The country where the car was sold (Required)
 * Mutable - If enabled you can interact with the car, if disabled only data from the car will be presented (Optional)
 * S-PIN - Required for some specific options such as lock/unlock (Optional)
-* Enable "Swedish mil" instead of KM (Optional)
-![image](https://user-images.githubusercontent.com/26795429/109767976-94979500-7bf8-11eb-9c6b-c41f861a927f.png)
+* Distance unit conversion - Select if you wish to use "Swedish mil" or Imperial Miles instead of KM (Optional, default is KM)
+![image](https://user-images.githubusercontent.com/53381142/117341181-b8e24d00-ae99-11eb-84af-7661e9170492.png)
 
 ## Entities
 
-This plugin creates entities in the format `DOMAIN.NAME_ENTITY`. Not all entities are created for all cars, for example pure electric cars will not have entities only applicable to cars with a combustion engine.
-* **device_tracker.NAME_position:** GPS coordinates of the place the car was parked.
-* **sensor.NAME_odometer:** total distance the car has travelled.
-* **climate.NAME_electric_climatisation:** climate control for the car. Turning it on will pre-heat or cool the car. BEVs only.
-* **climate.NAME_combustion_climatisation:** climate control for the car. Turning it on will pre-heat or maybe cool the car. Only for cars with a cumbustion engine. May require optional equipment.
-* **window_heater**
-* **combustion_engine_heating**
-* **switch.NAME_charging:** indicates and controls whether the car is charging. BEVs and PHEVs only.
-* **sensor.NAME_adblue_level:** indicates how full the diesel exhaust fluid tank is. Cars with diesel engines only.
-* **sensor.NAME_battery_level:** state of charge of the traction battery. BEVs and (P)HEVs only.
-* **sensor.NAME_fuel_level:** indicates how full the fuel tank is. Cars with combustion engines only.
-* **sensor.NAME_service_inspection:** days and distance before the next inspection, whichever is reached first.
-* **sensor.NAME_oil_inspection:** days and distance before the next oil change, whichever is reached first. Cars with combustion engines only.
-* **sensor.NAME_last_connected:** timestamp indicating the last time the car was connected to We Connect.
-* **sensor.NAME_charging_time_left:** estimated time until charging has finished. BEVs and PHEVs only.
-* **sensor.NAME_electric_range:** estimated electric range of the car. BEVs and (P)HEVs only.
-* **sensor.NAME_combustion_range:** estimated fuel range of the car. Cars with combustion engines only.
-* **sensor.NAME_combined_range:** estimated total range of the car.
-* **sensor.NAME_charge_max_ampere:** the maximum current the car is configured to draw from AC. BEVs and PHEVs only.
-* **sensor.NAME_climatisation_target_temperature:** the temperature the car will climatise to when climatisation is started.
-* **binary_sensor.NAME_external_power:** whether the car is pluggin into an active charger. BEVs and PHEVs only.
-* **binary_sensor.NAME_parking_light:** whether the parking lights are on.
-* **binary_sensor.NAME_climatisation_without_external_power:** whether the car would pre-heat or cool when not plugged in.
-* **binary_sensor.NAME_doors_locked:** whether the car's doors are locked.
-* **binary_sensor.NAME_trunk_closed:** whether the car's trunk are closed.
-* **lock.NAME_door_locked:** indicates and controls the car's door lock. Requires S-PIN to control.
-* **lock.NAME_trunk_locked:** indicates and controls the car's trunk lock. Requires S-PIN to control.
-* **switch.NAME_request_in_progress:** indicates whether the plugin is currently updating its data from We Connect. Can be turned on to force an update.
-* **binary_sensor.NAME_windows_closed:** whether the car's windows are closed.
-* **binary_sensor.NAME_sunroof_closed:** whether the car's sunroof is closed.
-* **sensor.NAME_last_trip_average_speed:** average speed on the last trip.
-* **sensor.NAME_last_trip_average_fuel_consumption:** average fuel consuption on the last trip.
-* **sensor.NAME_last_trip_average_electric_consumption:** average electric motor consumption on the last trip.
-* **sensor.NAME_last_trip_recuperation:** average electric recuperation on the last trip. BEVs and (P)HEVs only.
-* **sensor.NAME_last_trip_average_auxillary_consumption:** average auxillary consumption by heating, air con... on the last trip. BEVs only.
-* **sensor.NAME_last_trip_total_electric_consumption:** average total electric consumption on the last trip. BEVs and (P)HEVs only.
-* **sensor.NAME_last_trip_duration:** duration of the last trip.
-
-![alt text](https://user-images.githubusercontent.com/12171819/55963464-30216480-5c73-11e9-9b91-3bf06672ef36.png)
+This plugin creates entities in the format `DOMAIN.NAME_ENTITY`. Not all entities are created for all make, year and models, for example pure electric cars will not have entities only applicable to cars with a combustion engine.
 
 ## Automations
 
@@ -280,6 +249,53 @@ sensor:
         friendly_name: '[ID] Last trip total electric consumption'
 ```
 
+### Templates for converting distance from km to miles
+As of v4.4.45 the same can be acheived by setting the distance units to Imperial in the integration configuration page.
+![image](https://user-images.githubusercontent.com/53381142/117340592-f5fa0f80-ae98-11eb-9baa-1f5a0ef02848.png)
+
+These templates create a new sensor with kilometers converted to miles. Add to your configuration.yaml and replace [ID] with your car's name. Note: these are for a BEV, other models may have different sensor names.
+
+```yaml
+  - platform: template
+    sensors:
+      [ID]_service_inspection_distance_miles:
+        friendly_name: '[ID] Service inspection distance miles'
+        value_template: "{{ (states('sensor.[ID]_service_inspection_distance').split(' ')[0] |int * 0.6213712) | round(0)}}"
+        unique_id: [ID]inspectionmiles
+        unit_of_measurement: mi
+        icon_template: mdi:garage
+      [ID]_combined_range_miles:
+        friendly_name: '[ID] range miles'
+        value_template: "{{ (states('sensor.[ID]_combined_range').split(' ')[0] |int * 0.6213712) | round(0)}}"
+        unique_id: [ID]rangemiles
+        unit_of_measurement: mi
+        icon_template: mdi:car
+      [ID]_odometer_miles:
+        friendly_name: '[ID] Odometer miles'
+        value_template: "{{ (states('sensor.[ID]_odometer').split(' ')[0] |int * 0.6213712) | round(0)}}"
+        unique_id: [ID]odometermiles
+        unit_of_measurement: mi
+        icon_template: mdi:speedometer
+      [ID]_last_trip_average_speed_miles:
+        friendly_name: '[ID] Last trip average speed miles'
+        value_template: "{{ (states('sensor.[ID]_last_trip_average_speed').split(' ')[0] |int * 0.6213712) | round(0)}}"
+        unique_id: [ID]ltaspeedmi
+        unit_of_measurement: mi/h
+        icon_template: mdi:speedometer
+      [ID]_last_trip_length_miles:
+        friendly_name: '[ID] Last trip length miles'
+        value_template: "{{ (states('sensor.[ID]_last_trip_length').split(' ')[0] |int * 0.6213712) | round(0)}}"
+        unique_id: johnny5lasttriplengthmiles
+        unit_of_measurement: mi
+        icon_template: mdi:map-marker-distance
+      [ID]_last_trip_average_electric_engine_consumption_miles:
+        friendly_name: '[ID] Last trip average electric engine consumption miles'
+        value_template: "{{ (states('sensor.[ID]_last_trip_average_electric_engine_consumption').split(' ')[0] |float * 0.6213712) | round(2)}}"
+        unique_id: [ID]avgelectconmiles
+        unit_of_measurement: kWh/100mi
+        icon_template: mdi:car-battery
+```
+
 ## Enable debug logging
 ```yaml
 logger:
@@ -302,3 +318,6 @@ Check out this awesome lovelace card by endor
 https://github.com/endor-force/lovelace-carnet
 
 ![alt text](https://user-images.githubusercontent.com/12171819/55963632-7d9dd180-5c73-11e9-9eea-c2b211f6843b.png)
+  
+## Guides
+Tristan created a german video how to setup and use this integration. It also includes some automation in Node-RED. https://youtu.be/91223AtNvVc

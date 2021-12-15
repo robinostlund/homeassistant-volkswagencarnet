@@ -38,9 +38,9 @@ from .const import (
     DEFAULT_UPDATE_INTERVAL,
     DOMAIN,
     MIN_UPDATE_INTERVAL,
-    RESOURCES_DICT,
     SIGNAL_STATE_UPDATED,
-    UNDO_UPDATE_LISTENER, UPDATE_CALLBACK,
+    UNDO_UPDATE_LISTENER, UPDATE_CALLBACK, CONF_DEBUG, DEFAULT_DEBUG, CONF_CONVERT, CONF_NO_CONVERSION,
+    CONF_IMPERIAL_UNITS,
 )
 
 _LOGGER = logging.getLogger(__name__)
@@ -142,6 +142,16 @@ async def async_unload_coordinator(hass: HomeAssistant, entry: ConfigEntry):
 async def _async_update_listener(hass: HomeAssistant, entry: ConfigEntry):
     """Handle options update."""
     await hass.config_entries.async_reload(entry.entry_id)
+
+
+def get_convert_conf(entry: ConfigEntry):
+    return CONF_SCANDINAVIAN_MILES if entry.options.get(
+        CONF_SCANDINAVIAN_MILES,
+        entry.data.get(
+            CONF_SCANDINAVIAN_MILES,
+            False
+        )
+    ) else CONF_NO_CONVERSION
 
 
 class VolkswagenData:
@@ -313,7 +323,7 @@ class VolkswagenCoordinator(DataUpdateCoordinator):
     """Class to manage fetching data from the API."""
 
     def __init__(self, hass: HomeAssistant, entry, update_interval: timedelta):
-        self.vin = entry.data[CONF_VEHICLE]
+        self.vin = entry.data[CONF_VEHICLE].upper()
         self.entry = entry
         self.platforms = []
         self.report_last_updated = None
@@ -321,7 +331,8 @@ class VolkswagenCoordinator(DataUpdateCoordinator):
             session=async_get_clientsession(hass),
             username=self.entry.data[CONF_USERNAME],
             password=self.entry.data[CONF_PASSWORD],
-            fulldebug=True
+            fulldebug=self.entry.options.get(CONF_DEBUG, self.entry.data.get(CONF_DEBUG, DEFAULT_DEBUG)),
+            country=self.entry.options.get(CONF_REGION, self.entry.data[CONF_REGION]),
         )
 
         super().__init__(hass, _LOGGER, name=DOMAIN, update_interval=update_interval)
@@ -336,10 +347,22 @@ class VolkswagenCoordinator(DataUpdateCoordinator):
         if self.entry.options.get(CONF_REPORT_REQUEST, False):
             await self.report_request(vehicle)
 
+        # Backward compatibility
+        default_convert_conf = get_convert_conf(self.entry)
+
+        convert_conf = self.entry.options.get(
+            CONF_CONVERT,
+            self.entry.data.get(
+                CONF_CONVERT,
+                default_convert_conf
+            )
+        )
+
         dashboard = vehicle.dashboard(
             mutable=self.entry.data.get(CONF_MUTABLE),
             spin=self.entry.data.get(CONF_SPIN),
-            scandinavian_miles=self.entry.data.get(CONF_SCANDINAVIAN_MILES),
+            miles=convert_conf == CONF_IMPERIAL_UNITS,
+            scandinavian_miles=convert_conf == CONF_SCANDINAVIAN_MILES,
         )
 
         return dashboard.instruments
@@ -377,7 +400,7 @@ class VolkswagenCoordinator(DataUpdateCoordinator):
 
         _LOGGER.debug("Updating data from volkswagen WeConnect")
         for vehicle in self.connection.vehicles:
-            if vehicle.vin == self.vin:
+            if vehicle.vin.upper() == self.vin:
                 return vehicle
 
         return False
