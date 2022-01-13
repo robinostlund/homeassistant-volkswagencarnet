@@ -14,7 +14,7 @@
           "scandinavian_miles": "Enable if you want to change from km to mil on sensors",
           "name": "Name your car (defaults to VIN number)",
           "debug": "Enable full debug logs from API (requires debug logging enabled in config)",
-          "convert": "Select if you wan to make any distance unit conversions"
+          "convert": "Select if you want to make any distance unit conversions"
         }
       },
       "select_vehicle": {
