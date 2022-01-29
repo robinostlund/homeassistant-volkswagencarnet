@@ -6,7 +6,7 @@
     "dependencies": [],
     "config_flow": true,
     "codeowners": ["@robinostlund"],
-    "requirements": ["volkswagencarnet==4.4.35"],
+    "requirements": ["volkswagencarnet==4.4.36"],
     "version": "v0.0.0",
     "iot_class": "cloud_polling"
 }
