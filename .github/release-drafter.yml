@@ -15,7 +15,8 @@ categories:
       - 'bug'
 
   - title: '🧰 Maintenance'
-    label: 'chore'
+    label:
+      - 'dependencies'
 
 version-resolver:
   major:
