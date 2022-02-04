@@ -16,22 +16,22 @@ from homeassistant.const import (
     TEMP_CELSIUS,
     TEMP_FAHRENHEIT,
 )
-
-SUPPORT_HVAC = [HVAC_MODE_COOL, HVAC_MODE_HEAT, HVAC_MODE_OFF]
+from homeassistant.core import HomeAssistant
 
 from . import DATA, DATA_KEY, DOMAIN, VolkswagenEntity
 
+SUPPORT_HVAC = [HVAC_MODE_COOL, HVAC_MODE_HEAT, HVAC_MODE_OFF]
 _LOGGER = logging.getLogger(__name__)
 
 
-async def async_setup_platform(hass, config, async_add_entities, discovery_info=None):
+async def async_setup_platform(hass: HomeAssistant, config, async_add_entities, discovery_info=None):
     """ Setup the volkswagen climate."""
     if discovery_info is None:
         return
     async_add_entities([VolkswagenClimate(hass.data[DATA_KEY], *discovery_info)])
 
 
-async def async_setup_entry(hass, entry, async_add_devices):
+async def async_setup_entry(hass: HomeAssistant, entry, async_add_devices):
     data = hass.data[DOMAIN][entry.entry_id][DATA]
     coordinator = data.coordinator
     if coordinator.data is not None:
@@ -51,6 +51,41 @@ async def async_setup_entry(hass, entry, async_add_devices):
 
 class VolkswagenClimate(VolkswagenEntity, ClimateEntity):
     """Representation of a Volkswagen WeConnect Climate."""
+
+    def set_temperature(self, **kwargs) -> None:
+        """Set new target temperatures."""
+        _LOGGER.debug("Setting temperature for: %s", self.instrument.attr)
+        temperature = kwargs.get(ATTR_TEMPERATURE)
+        if temperature:
+            self.instrument.set_temperature(temperature)
+        else:
+            _LOGGER.debug("Temperature not defined")
+
+    def set_humidity(self, humidity: int) -> None:
+        super().set_humidity(humidity)
+
+    def set_fan_mode(self, fan_mode: str) -> None:
+        super().set_fan_mode(fan_mode)
+
+    def set_hvac_mode(self, hvac_mode: str) -> None:
+        """Set new target hvac mode."""
+        _LOGGER.debug("Setting mode for: %s", self.instrument.attr)
+        if hvac_mode == HVAC_MODE_OFF:
+            self.instrument.set_hvac_mode(False)
+        elif hvac_mode == HVAC_MODE_HEAT:
+            self.instrument.set_hvac_mode(True)
+
+    def set_swing_mode(self, swing_mode: str) -> None:
+        raise Exception('Not implemented')
+
+    def set_preset_mode(self, preset_mode: str) -> None:
+        super().set_preset_mode(preset_mode)
+
+    def turn_aux_heat_on(self) -> None:
+        super().turn_aux_heat_on()
+
+    def turn_aux_heat_off(self) -> None:
+        super().turn_aux_heat_off()
 
     @property
     def supported_features(self):
@@ -92,16 +127,7 @@ class VolkswagenClimate(VolkswagenEntity, ClimateEntity):
             return STATE_UNKNOWN
 
     async def async_set_temperature(self, **kwargs):
-        """Set new target temperatures."""
-        _LOGGER.debug("Setting temperature for: %s", self.instrument.attr)
-        temperature = kwargs.get(ATTR_TEMPERATURE)
-        if temperature:
-            await self.instrument.set_temperature(temperature)
+        await super().async_set_temperature(**kwargs)
 
     async def async_set_hvac_mode(self, hvac_mode):
-        """Set new target hvac mode."""
-        _LOGGER.debug("Setting mode for: %s", self.instrument.attr)
-        if hvac_mode == HVAC_MODE_OFF:
-            await self.instrument.set_hvac_mode(False)
-        elif hvac_mode == HVAC_MODE_HEAT:
-            await self.instrument.set_hvac_mode(True)
+        await super().async_set_hvac_mode(hvac_mode)

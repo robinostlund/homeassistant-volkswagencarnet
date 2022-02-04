@@ -4,13 +4,14 @@ Support for Volkswagen WeConnect.
 import logging
 
 from homeassistant.components.binary_sensor import DEVICE_CLASSES, BinarySensorEntity
+from homeassistant.core import HomeAssistant
 
 from . import UPDATE_CALLBACK, DATA, DATA_KEY, DOMAIN, VolkswagenEntity
 
 _LOGGER = logging.getLogger(__name__)
 
 
-async def async_setup_platform(hass, config, async_add_entities, discovery_info=None):
+async def async_setup_platform(hass: HomeAssistant, config, async_add_entities, discovery_info=None):
     """Set up the Volkswagen binary sensors."""
     if discovery_info is None:
         return

@@ -2,8 +2,10 @@
 Support for Volkswagen WeConnect Platform
 """
 import logging
+from typing import Any
 
 from homeassistant.components.lock import LockEntity
+from homeassistant.core import HomeAssistant
 
 from . import DATA, DATA_KEY, DOMAIN, VolkswagenEntity
 
@@ -18,7 +20,7 @@ async def async_setup_platform(hass, config, async_add_entities, discovery_info=
     async_add_entities([VolkswagenLock(hass.data[DATA_KEY], *discovery_info)])
 
 
-async def async_setup_entry(hass, entry, async_add_devices):
+async def async_setup_entry(hass: HomeAssistant, entry, async_add_devices):
     data = hass.data[DOMAIN][entry.entry_id][DATA]
     coordinator = data.coordinator
     if coordinator.data is not None:
@@ -37,6 +39,17 @@ async def async_setup_entry(hass, entry, async_add_devices):
 class VolkswagenLock(VolkswagenEntity, LockEntity):
     """Represents a Volkswagen WeConnect Lock."""
 
+    def lock(self, **kwargs: Any) -> None:
+        """Lock the car."""
+        self.instrument.lock()
+
+    def unlock(self, **kwargs: Any) -> None:
+        """Unlock the car."""
+        self.instrument.unlock()
+
+    def open(self, **kwargs: Any) -> None:
+        super().open(**kwargs)
+
     @property
     def is_locked(self):
         """Return true if lock is locked."""
@@ -44,9 +57,7 @@ class VolkswagenLock(VolkswagenEntity, LockEntity):
         return self.instrument.is_locked
 
     async def async_lock(self, **kwargs):
-        """Lock the car."""
-        await self.instrument.lock()
+        await super().async_lock(**kwargs)
 
     async def async_unlock(self, **kwargs):
-        """Unlock the car."""
-        await self.instrument.unlock()
+        await super().async_unlock(**kwargs)

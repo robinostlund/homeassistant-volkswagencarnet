@@ -4,6 +4,7 @@ Support for Volkswagen WeConnect Platform
 import logging
 from typing import Any, Dict, Optional
 
+from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity import ToggleEntity
 
 from . import DATA, DATA_KEY, DOMAIN, VolkswagenEntity, UPDATE_CALLBACK
@@ -18,7 +19,7 @@ async def async_setup_platform(hass, config, async_add_entities, discovery_info=
     async_add_entities([VolkswagenSwitch(hass.data[DATA_KEY], *discovery_info)])
 
 
-async def async_setup_entry(hass, entry, async_add_devices):
+async def async_setup_entry(hass: HomeAssistant, entry, async_add_devices):
     data = hass.data[DOMAIN][entry.entry_id][DATA]
     coordinator = data.coordinator
     if coordinator.data is not None:
@@ -39,6 +40,19 @@ async def async_setup_entry(hass, entry, async_add_devices):
 class VolkswagenSwitch(VolkswagenEntity, ToggleEntity):
     """Representation of a Volkswagen WeConnect Switch."""
 
+    def turn_on(self, **kwargs: Any) -> None:
+        """Turn the switch on."""
+        _LOGGER.debug("Turning ON %s." % self.instrument.attr)
+        self.instrument.turn_on()
+
+    def turn_off(self, **kwargs: Any) -> None:
+        """Turn the switch off."""
+        _LOGGER.debug("Turning OFF %s." % self.instrument.attr)
+        self.instrument.turn_off()
+
+    def __str__(self):
+        pass
+
     @property
     def is_on(self):
         """Return true if switch is on."""
@@ -46,15 +60,11 @@ class VolkswagenSwitch(VolkswagenEntity, ToggleEntity):
         return self.instrument.state
 
     async def async_turn_on(self, **kwargs):
-        """Turn the switch on."""
-        _LOGGER.debug("Turning ON %s." % self.instrument.attr)
-        await self.instrument.turn_on()
+        await super().async_turn_on(**kwargs)
         self.async_write_ha_state()
 
     async def async_turn_off(self, **kwargs):
-        """Turn the switch off."""
-        _LOGGER.debug("Turning OFF %s." % self.instrument.attr)
-        await self.instrument.turn_off()
+        await super().async_turn_off(**kwargs)
         self.async_write_ha_state()
 
     @property
