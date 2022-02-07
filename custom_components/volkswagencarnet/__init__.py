@@ -19,8 +19,9 @@ from homeassistant.helpers.dispatcher import async_dispatcher_connect
 from homeassistant.helpers.entity import Entity
 from homeassistant.helpers.icon import icon_for_battery_level
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
-from vw_connection import Connection
-from vw_vehicle import Vehicle
+from volkswagencarnet.vw_connection import Connection
+from volkswagencarnet.vw_dashboard import Instrument, Climate, BinarySensor, Sensor, Switch
+from volkswagencarnet.vw_vehicle import Vehicle
 
 from .const import (
     COMPONENTS,
