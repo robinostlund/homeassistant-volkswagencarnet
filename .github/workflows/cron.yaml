@@ -11,6 +11,10 @@ jobs:
       - name: Check out repository
         uses: actions/checkout@v2
 
+      - name: "Update manifest.json"
+        run: |
+          python3 ${{ github.workspace }}/manage/update_manifest.py
+
       - name: Hassfest validation
         uses: home-assistant/actions/hassfest@master
 
@@ -20,6 +24,10 @@ jobs:
     steps:
       - name: Check out repository
         uses: actions/checkout@v2
+
+      - name: "Update manifest.json"
+        run: |
+          python3 ${{ github.workspace }}/manage/update_manifest.py
 
       - name: HACS Validation
         uses: hacs/action@main
