@@ -31,5 +31,10 @@ def update_manifest():
     ) as manifestfile:
         manifestfile.write(json.dumps(manifest, indent=4, sort_keys=True))
 
+    # print output
+    print("# generated manifest.json")
+    for key, value in manifest.items():
+        print(f"{key}: {value}")
+
 
 update_manifest()
