@@ -4,6 +4,7 @@ Support for Volkswagen WeConnect Platform
 import logging
 from typing import Any, Dict, Optional
 
+from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity import ToggleEntity
 
 from . import DATA, DATA_KEY, DOMAIN, VolkswagenEntity, UPDATE_CALLBACK
@@ -11,14 +12,14 @@ from . import DATA, DATA_KEY, DOMAIN, VolkswagenEntity, UPDATE_CALLBACK
 _LOGGER = logging.getLogger(__name__)
 
 
-async def async_setup_platform(hass, config, async_add_entities, discovery_info=None):
+async def async_setup_platform(hass: HomeAssistant, config, async_add_entities, discovery_info=None):
     """ Setup the volkswagen switch."""
     if discovery_info is None:
         return
     async_add_entities([VolkswagenSwitch(hass.data[DATA_KEY], *discovery_info)])
 
 
-async def async_setup_entry(hass, entry, async_add_devices):
+async def async_setup_entry(hass: HomeAssistant, entry, async_add_devices):
     data = hass.data[DOMAIN][entry.entry_id][DATA]
     coordinator = data.coordinator
     if coordinator.data is not None:
@@ -38,6 +39,12 @@ async def async_setup_entry(hass, entry, async_add_devices):
 
 class VolkswagenSwitch(VolkswagenEntity, ToggleEntity):
     """Representation of a Volkswagen WeConnect Switch."""
+
+    def turn_on(self, **kwargs: Any) -> None:
+        raise NotImplementedError
+
+    def turn_off(self, **kwargs: Any) -> None:
+        raise NotImplementedError
 
     @property
     def is_on(self):
