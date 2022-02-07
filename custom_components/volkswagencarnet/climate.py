@@ -14,13 +14,11 @@ from homeassistant.const import (
     ATTR_TEMPERATURE,
     STATE_UNKNOWN,
     TEMP_CELSIUS,
-    TEMP_FAHRENHEIT,
 )
-
-SUPPORT_HVAC = [HVAC_MODE_COOL, HVAC_MODE_HEAT, HVAC_MODE_OFF]
 
 from . import DATA, DATA_KEY, DOMAIN, VolkswagenEntity
 
+SUPPORT_HVAC = [HVAC_MODE_COOL, HVAC_MODE_HEAT, HVAC_MODE_OFF]
 _LOGGER = logging.getLogger(__name__)
 
 
@@ -51,6 +49,30 @@ async def async_setup_entry(hass, entry, async_add_devices):
 
 class VolkswagenClimate(VolkswagenEntity, ClimateEntity):
     """Representation of a Volkswagen WeConnect Climate."""
+
+    def set_temperature(self, **kwargs) -> None:
+        raise NotImplementedError("Use async_set_temperature instead")
+
+    def set_humidity(self, humidity: int) -> None:
+        raise NotImplementedError
+
+    def set_fan_mode(self, fan_mode: str) -> None:
+        raise NotImplementedError
+
+    def set_hvac_mode(self, hvac_mode: str) -> None:
+        raise NotImplementedError("Use async_set_hvac_mode instead")
+
+    def set_swing_mode(self, swing_mode: str) -> None:
+        raise NotImplementedError
+
+    def set_preset_mode(self, preset_mode: str) -> None:
+        raise NotImplementedError
+
+    def turn_aux_heat_on(self) -> None:
+        raise NotImplementedError
+
+    def turn_aux_heat_off(self) -> None:
+        raise NotImplementedError
 
     @property
     def supported_features(self):
