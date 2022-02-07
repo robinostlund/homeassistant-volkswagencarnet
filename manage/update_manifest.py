@@ -6,7 +6,7 @@ import os
 
 def update_manifest():
     """Update the manifest file."""
-    version = "0.0.0"
+    version = "v0.0.0"
     for index, value in enumerate(sys.argv):
         if value in ["--version", "-V"]:
             version = sys.argv[index + 1]
