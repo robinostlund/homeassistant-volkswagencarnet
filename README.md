@@ -2,6 +2,8 @@
 ![Version](https://img.shields.io/github/v/release/robinostlund/homeassistant-volkswagencarnet)
 ![PyPi](https://img.shields.io/pypi/v/volkswagencarnet?label=latest%20pypi)
 ![Downloads](https://img.shields.io/github/downloads/robinostlund/homeassistant-volkswagencarnet/total)
+![CodeStyle](https://img.shields.io/badge/code%20style-black-black)
+[![CodeQL](https://github.com/robinostlund/homeassistant-volkswagencarnet/actions/workflows/codeql-analysis.yml/badge.svg)](https://github.com/robinostlund/homeassistant-volkswagencarnet/actions/workflows/codeql-analysis.yml)
 
 
 # Volkswagen We Connect - An Home Assistant custom component to interact with the We Connect service
