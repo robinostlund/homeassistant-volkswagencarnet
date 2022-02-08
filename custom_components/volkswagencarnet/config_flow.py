@@ -29,7 +29,7 @@ from .const import (
     DEFAULT_REPORT_UPDATE_INTERVAL,
     DEFAULT_UPDATE_INTERVAL,
     DOMAIN,
-    DEFAULT_DEBUG
+    DEFAULT_DEBUG,
 )
 
 _LOGGER = logging.getLogger(__name__)
@@ -74,14 +74,12 @@ class VolkswagenCarnetConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                 username=self._init_info[CONF_USERNAME],
                 password=self._init_info[CONF_PASSWORD],
                 fulldebug=self._init_info.get(CONF_DEBUG, DEFAULT_DEBUG),
-                country=self._init_info[CONF_REGION]
+                country=self._init_info[CONF_REGION],
             )
 
             return await self.async_step_login()
 
-        return self.async_show_form(
-            step_id="user", data_schema=vol.Schema(DATA_SCHEMA), errors=self._errors
-        )
+        return self.async_show_form(step_id="user", data_schema=vol.Schema(DATA_SCHEMA), errors=self._errors)
 
     # noinspection PyBroadException
     async def _async_task_login(self):
@@ -94,9 +92,7 @@ class VolkswagenCarnetConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         if not self._connection.logged_in:
             self._errors["base"] = "cannot_connect"
 
-        self.hass.async_create_task(
-            self.hass.config_entries.flow.async_configure(flow_id=self.flow_id)
-        )
+        self.hass.async_create_task(self.hass.config_entries.flow.async_configure(flow_id=self.flow_id))
 
     async def async_step_select_vehicle(self, user_input=None):
         if user_input is not None:
@@ -122,23 +118,15 @@ class VolkswagenCarnetConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
             await self.async_set_unique_id(self._init_info[CONF_VEHICLE])
             self._abort_if_unique_id_configured()
 
-            return self.async_create_entry(
-                title=self._init_info[CONF_NAME], data=self._init_info
-            )
+            return self.async_create_entry(title=self._init_info[CONF_NAME], data=self._init_info)
 
         instruments = self._init_info["CONF_VEHICLES"][self._init_info[CONF_VEHICLE]]
-        instruments_dict = {
-            instrument.attr: instrument.name for instrument in instruments
-        }
+        instruments_dict = {instrument.attr: instrument.name for instrument in instruments}
         return self.async_show_form(
             step_id="select_instruments",
             errors=self._errors,
             data_schema=vol.Schema(
-                {
-                    vol.Optional(
-                        CONF_RESOURCES, default=list(instruments_dict.keys())
-                    ): cv.multi_select(instruments_dict)
-                }
+                {vol.Optional(CONF_RESOURCES, default=list(instruments_dict.keys())): cv.multi_select(instruments_dict)}
             ),
         )
 
@@ -164,8 +152,7 @@ class VolkswagenCarnetConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
             _LOGGER.info(f"Found data for VIN: {vehicle.vin} from WeConnect")
 
         self._init_info["CONF_VEHICLES"] = {
-            vehicle.vin: vehicle.dashboard().instruments
-            for vehicle in self._connection.vehicles
+            vehicle.vin: vehicle.dashboard().instruments for vehicle in self._connection.vehicles
         }
 
         return self.async_show_progress_done(next_step_id="select_vehicle")
@@ -194,7 +181,9 @@ class VolkswagenCarnetConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                 await self._connection.doLogin()
 
                 if not await self._connection.validate_login:
-                    _LOGGER.debug("Unable to login to WeConnect. Need to accept a new EULA? Try logging in to the portal: https://www.portal.volkswagen-we.com/")
+                    _LOGGER.debug(
+                        "Unable to login to WeConnect. Need to accept a new EULA? Try logging in to the portal: https://www.portal.volkswagen-we.com/"
+                    )
                     errors["base"] = "cannot_connect"
                 else:
                     data = self.entry.data.copy()
@@ -206,9 +195,7 @@ class VolkswagenCarnetConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                             CONF_PASSWORD: user_input[CONF_PASSWORD],
                         },
                     )
-                    self.hass.async_create_task(
-                        self.hass.config_entries.async_reload(self.entry.entry_id)
-                    )
+                    self.hass.async_create_task(self.hass.config_entries.async_reload(self.entry.entry_id))
 
                     return self.async_abort(reason="reauth_successful")
             except Exception as e:
@@ -260,24 +247,19 @@ class VolkswagenCarnetOptionsFlowHandler(config_entries.OptionsFlow):
                 {
                     vol.Optional(
                         CONF_REPORT_REQUEST,
-                        default=self._config_entry.options.get(
-                            CONF_REPORT_REQUEST, False
-                        ),
+                        default=self._config_entry.options.get(CONF_REPORT_REQUEST, False),
                     ): cv.boolean,
                     vol.Optional(
                         CONF_DEBUG,
                         default=self._config_entry.options.get(
-                            CONF_DEBUG, self._config_entry.data.get(
-                                CONF_DEBUG, DEFAULT_DEBUG
-                            )
-                        )
+                            CONF_DEBUG, self._config_entry.data.get(CONF_DEBUG, DEFAULT_DEBUG)
+                        ),
                     ): cv.boolean,
                     vol.Optional(
                         CONF_CONVERT,
                         default=self._config_entry.options.get(
-                            CONF_CONVERT, self._config_entry.data.get(
-                                CONF_CONVERT, default_convert_conf)
-                        )
+                            CONF_CONVERT, self._config_entry.data.get(CONF_CONVERT, default_convert_conf)
+                        ),
                     ): vol.In(CONVERT_DICT),
                     vol.Optional(
                         CONF_REPORT_SCAN_INTERVAL,
@@ -287,16 +269,12 @@ class VolkswagenCarnetOptionsFlowHandler(config_entries.OptionsFlow):
                     ): cv.positive_int,
                     vol.Optional(
                         CONF_SCAN_INTERVAL,
-                        default=self._config_entry.options.get(
-                            CONF_SCAN_INTERVAL, DEFAULT_UPDATE_INTERVAL
-                        ),
+                        default=self._config_entry.options.get(CONF_SCAN_INTERVAL, DEFAULT_UPDATE_INTERVAL),
                     ): cv.positive_int,
                     vol.Optional(
                         CONF_REGION,
-                        default=self._config_entry.options.get(
-                            CONF_REGION, self._config_entry.data[CONF_REGION]
-                        )
-                    ): str
+                        default=self._config_entry.options.get(CONF_REGION, self._config_entry.data[CONF_REGION]),
+                    ): str,
                 }
             ),
         )

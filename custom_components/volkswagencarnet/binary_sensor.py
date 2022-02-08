@@ -23,20 +23,20 @@ async def async_setup_entry(hass, entry, async_add_devices):
     if coordinator.data is not None:
         async_add_devices(
             VolkswagenBinarySensor(
-                data, coordinator.vin, instrument.component, instrument.attr, hass.data[DOMAIN][entry.entry_id][UPDATE_CALLBACK]
+                data,
+                coordinator.vin,
+                instrument.component,
+                instrument.attr,
+                hass.data[DOMAIN][entry.entry_id][UPDATE_CALLBACK],
             )
-            for instrument in (
-                instrument
-                for instrument in data.instruments
-                if instrument.component == "binary_sensor"
-            )
+            for instrument in (instrument for instrument in data.instruments if instrument.component == "binary_sensor")
         )
 
     return True
 
 
 class VolkswagenBinarySensor(VolkswagenEntity, BinarySensorEntity):
-    """Representation of a Volkswagen Binary Sensor """
+    """Representation of a Volkswagen Binary Sensor"""
 
     @property
     def is_on(self):
