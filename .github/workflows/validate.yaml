@@ -30,8 +30,6 @@ jobs:
         run: |
           black --check --diff --color --line-length=120 .
 
-    
-
   validate-hassfest:
     name: With hassfest
     runs-on: ubuntu-latest
