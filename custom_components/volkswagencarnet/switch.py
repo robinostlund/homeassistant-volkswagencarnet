@@ -13,7 +13,7 @@ _LOGGER = logging.getLogger(__name__)
 
 
 async def async_setup_platform(hass: HomeAssistant, config, async_add_entities, discovery_info=None):
-    """ Setup the volkswagen switch."""
+    """Setup the volkswagen switch."""
     if discovery_info is None:
         return
     async_add_entities([VolkswagenSwitch(hass.data[DATA_KEY], *discovery_info)])
@@ -25,13 +25,13 @@ async def async_setup_entry(hass: HomeAssistant, entry, async_add_devices):
     if coordinator.data is not None:
         async_add_devices(
             VolkswagenSwitch(
-                data, coordinator.vin, instrument.component, instrument.attr, hass.data[DOMAIN][entry.entry_id][UPDATE_CALLBACK]
+                data,
+                coordinator.vin,
+                instrument.component,
+                instrument.attr,
+                hass.data[DOMAIN][entry.entry_id][UPDATE_CALLBACK],
             )
-            for instrument in (
-                instrument
-                for instrument in data.instruments
-                if instrument.component == "switch"
-            )
+            for instrument in (instrument for instrument in data.instruments if instrument.component == "switch")
         )
 
     return True

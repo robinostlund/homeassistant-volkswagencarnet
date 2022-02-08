@@ -23,7 +23,7 @@ _LOGGER = logging.getLogger(__name__)
 
 
 async def async_setup_platform(hass, config, async_add_entities, discovery_info=None):
-    """ Setup the volkswagen climate."""
+    """Setup the volkswagen climate."""
     if discovery_info is None:
         return
     async_add_entities([VolkswagenClimate(hass.data[DATA_KEY], *discovery_info)])
@@ -34,14 +34,8 @@ async def async_setup_entry(hass, entry, async_add_devices):
     coordinator = data.coordinator
     if coordinator.data is not None:
         async_add_devices(
-            VolkswagenClimate(
-                data, coordinator.vin, instrument.component, instrument.attr
-            )
-            for instrument in (
-                instrument
-                for instrument in data.instruments
-                if instrument.component == "climate"
-            )
+            VolkswagenClimate(data, coordinator.vin, instrument.component, instrument.attr)
+            for instrument in (instrument for instrument in data.instruments if instrument.component == "climate")
         )
 
     return True
