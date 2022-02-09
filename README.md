@@ -10,28 +10,11 @@
 
 [![buy me a coffee](https://www.buymeacoffee.com/assets/img/custom_images/yellow_img.png)](https://www.buymeacoffee.com/robinostlund)
 
-## Login issues - component stopped working
-Volkswagen releases new terms and conditions freqently. If this component halts, please make sure that you login to both https://vwid.vwgroup.io/ and https://www.myvolkswagen.net/ to ensure functionality. Please do not enable MFA and similar options for your account.
-
-### Confirmed working regions and countries
-Region | Country | Country Code
---- | --- | ---
-EMEA | All | DE
-
-### To be confirmed regions and countries - we need more info
-We are still looking for server URLs for Asia/Pacific, South and North America. Please see information here: https://github.com/robinostlund/homeassistant-volkswagencarnet/issues/284
-
-Region | Country | Country Code
---- | --- | ---
-APAC | ? | ?
-LAD | ? | ?
-NA | ? | ?
-
 ## Description
 
 Welcome to Volkswagen We Connect custom component designed for [Home Assistant](https://www.home-assistant.io) with the capability to interact with the Volkswagen We Connect service (your car).
 
-This custom component supports the "non-ID" Volkswagen We Connect cars such as the Passat, Golf, e-Golf, Tiguan etc. It requires you to have an active and working VW online subscription connected to your car. For the new electric vehicles such as the ID series this component does not work. The new ID platform uses another backend system.
+This custom component supports the "**non-ID" Volkswagen We Connect cars** such as the Passat, Golf, e-Golf, Tiguan etc. It requires you to have an active and working VW online subscription connected to your car. For the new electric vehicles such as the ID series this component does not work. The new ID platform uses another backend system.
 
 Most of the functionality found the "We Connect app" should be available via this integration, this includes options such as auxiliary heater control.
 
