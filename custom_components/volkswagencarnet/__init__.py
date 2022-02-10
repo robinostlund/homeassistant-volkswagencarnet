@@ -366,7 +366,7 @@ class VolkswagenCoordinator(DataUpdateCoordinator):
         """Login to Volkswagen WeConnect"""
         # check if we can login
         if not self.connection.logged_in:
-            await self.connection.doLogin()
+            await self.connection.doLogin(3)
             if not self.connection.logged_in:
                 _LOGGER.warning(
                     "Could not login to volkswagen WeConnect, please check your credentials and verify that the service is working"
