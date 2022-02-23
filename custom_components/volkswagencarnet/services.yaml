@@ -4,8 +4,7 @@ set_timer_basic_settings:
     Set the target temperature and minimum limit that the car will immediately 
     charge to when a departure timer is active. This minimum limit overrides
     most other settings, including off-peak times.
-    Provide at least one of 'min_limit' or one of the temperature entries.
-    If both Fahrenheit and Celsius are specified, Celsius takes precedence.
+    Provide at least one of the properties.
   fields:
     device_id:
       name: Vehicle
@@ -24,27 +23,15 @@ set_timer_basic_settings:
           min: 0
           max: 100
           step: 10
-          unit_of_measurement: percent
-    #FIXME
-    target_temperature_celsius:
+          unit_of_measurement: "%"
+    target_temperature:
       name: Temperature
-      description: Climatisation target temperature in Celsius
+      description: Climatisation target temperature in system temperature unit (°C/°F)
       example: 24.5
       required: false
       selector:
         number:
-          min: 16
-          max: 26
+          #min: 16
+          #max: 26
           step: 0.5
-          unit_of_measurement: "°C"
-    target_temperature_fahrenheit:
-      name: Temperature
-      description: Climatisation target temperature in Fahrenheit
-      example: 75
-      required: false
-      selector:
-        number:
-          min: 61
-          max: 79
-          step: 1
-          unit_of_measurement: "°F"
+          unit_of_measurement: "C/F"

@@ -1,6 +1,7 @@
 import asyncio
 from asyncio import Future
 from datetime import timedelta
+from types import MappingProxyType
 from unittest.mock import patch, MagicMock
 
 import homeassistant.config_entries
@@ -11,8 +12,10 @@ from homeassistant.const import (
 from homeassistant.core import HomeAssistant, ServiceCall
 from homeassistant.helpers import device_registry
 from homeassistant.loader import Integration
+from homeassistant.util.unit_system import METRIC_SYSTEM
 from volkswagencarnet.vw_timer import TimerData, TimerAndProfiles, TimerProfileList, TimerProfile, Timer, TimerList, \
     BasicSettings
+from volkswagencarnet.vw_vehicle import Vehicle
 
 from custom_components.volkswagencarnet import DOMAIN, SERVICE_SET_TIMER_BASIC_SETTINGS, VolkswagenCoordinator, \
     CONF_VEHICLE, CONF_REGION, CONF_DEBUG, SERVICE_SET_TIMER_BASIC_SETTINGS_SCHEMA, SchedulerService
@@ -40,11 +43,9 @@ async def test_get_coordinator(hass: HomeAssistant):
         flow.return_value = f
         config_entry = MockConfigEntry(
             domain=DOMAIN,
-            entry_id="foobar",
             data=config
         )
 
-        # FIXME: make async_setup a mock that returns true
         await hass.config_entries. async_add(config_entry)
 
     registry = device_registry.async_get(hass)
@@ -60,8 +61,8 @@ async def test_get_coordinator(hass: HomeAssistant):
     service_call = ServiceCall(
         DOMAIN,
         SERVICE_SET_TIMER_BASIC_SETTINGS, {
-        "device_id": dev_entry.id,
-    })
+            "device_id": dev_entry.id,
+        })
 
     res = await SchedulerService.get_coordinator(self=service, service_call=service_call)
     assert m_coord == res
@@ -75,9 +76,15 @@ async def test_call_service(conn: MagicMock, hass: HomeAssistant):
         CONF_PASSWORD: "",
         CONF_DEBUG: True,
         CONF_REGION: "ZZ"
-    }, unique_id="12345678901234567890123456789012")
+    })
 
     c: VolkswagenCoordinator = VolkswagenCoordinator(hass=hass, entry=e, update_interval=timedelta(minutes=10))
+    c.connection.vehicles = [MagicMock(Vehicle)]
+    c.connection.vehicles[0].vin = "XYZ"
+
+    tmpdata = e.as_dict()['data']
+    tmpdata["coordinator"] = c
+    e.data = MappingProxyType(tmpdata)
 
     s = SchedulerService(hass=hass)
 
@@ -90,14 +97,15 @@ async def test_call_service(conn: MagicMock, hass: HomeAssistant):
 
     assert hass.services.has_service(DOMAIN, SERVICE_SET_TIMER_BASIC_SETTINGS)
 
+    hass.config.units = METRIC_SYSTEM
+    target_temp = 24.5
     data = {
         "device_id": e.entry_id,
-        "target_temperature_celsius": 24.5
+        "target_temperature": target_temp
     }
 
     with patch.object(s, "get_coordinator") as m,\
-            patch.object(c.connection, "getTimers") as get_timers, \
-            patch.object(c.connection, "setTimersAndProfiles") as set_timers:
+            patch.object(c.connection, "getTimers") as get_timers:
         m.return_value = c
         timer_profiles = [
             TimerProfile(
@@ -145,10 +153,9 @@ async def test_call_service(conn: MagicMock, hass: HomeAssistant):
             limit=15
         )
 
-        set_timers.assert_called_once()
-        used_args = set_timers.call_args_list[0].args[0]
-        assert isinstance(used_args, TimerData)
+        c.connection.vehicles[0].set_climatisation_temp.assert_called_once()
+        used_args = c.connection.vehicles[0].set_climatisation_temp.call_args_list[0].args[0]
         # check that the correct VW temperature unit was set
-        assert 2975 == used_args.timersAndProfiles.timerBasicSetting.targetTemperature
+        assert 2975 == used_args
 
     assert res is True

@@ -1,13 +1,15 @@
 """
 """
 import logging
+from typing import Optional
 
 from homeassistant.core import HomeAssistant, ServiceCall
 from homeassistant.helpers import device_registry
 from homeassistant.helpers.device_registry import DeviceEntry, DeviceRegistry
+from volkswagencarnet.vw_vehicle import Vehicle
 
+from .const import DOMAIN
 from .error import ServiceError
-from .const import DOMAIN, DATA_KEY
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -20,26 +22,35 @@ class SchedulerService:
         # find VIN
         c = await self.get_coordinator(service_call)
         _LOGGER.debug(F"Found VIN {c.vin}")
-        # get timers
-        t = await c.connection.getTimers(c.vin)
         # parse service call
-        tc = service_call.data.get("target_temperature_celsius", None)
-        tf = service_call.data.get("target_temperature_fahrenheit", None)
+        tt = service_call.data.get("target_temperature", None)
         ml = service_call.data.get("min_level", None)
+        res = True
+
+        v: Optional[Vehicle] = None
+        for vehicle in c.connection.vehicles:
+            if vehicle.vin.upper() == c.vin:
+                v = vehicle
+                break
+        if v is None:
+            raise Exception("Vehicle not found")
+
         # update timers accordingly
-        if tc is not None:
-            _LOGGER.debug(f"Setting target temperature to {tc} C")
-            t.timersAndProfiles.timerBasicSetting.set_target_temperature_celsius(float(tc))
-        elif tf is not None:
-            _LOGGER.debug(f"Setting target temperature to {tf} F")
-            t.timersAndProfiles.timerBasicSetting.set_target_temperature_fahrenheit(int(tf))
-        if tc is not None or tf is not None:
+        if tt is not None:
+            # get timers
+            t = await c.connection.getTimers(c.vin)
+            _LOGGER.debug(f"Setting target temperature to {tt} {self.hass.config.units.temperature_unit}")
+            if self.hass.config.units.is_metric:
+                t.timersAndProfiles.timerBasicSetting.set_target_temperature_celsius(float(tt))
+            else:
+                t.timersAndProfiles.timerBasicSetting.set_target_temperature_fahrenheit(int(tt))
             # send command to volkswagencarnet
-            c.connection.setTimersAndProfiles(t)
+            res = await v.set_climatisation_temp(t.timersAndProfiles.timerBasicSetting.targetTemperature)
         if ml is not None:
             _LOGGER.debug(f"Setting minimum charge level to {ml}%")
             # send charge limit command to volkswagencarnet
-            c.connection.setChargeMinLevel(c.vin, ml)
+            res = res and await v.set_charge_min_level(ml)
+        return res
 
     async def get_coordinator(self, service_call: ServiceCall):
         """Find VIN for device."""
@@ -50,11 +61,11 @@ class SchedulerService:
         config_entry = self.hass.config_entries.async_get_entry(list(dev_entry.config_entries)[0])
         if config_entry.domain != DOMAIN:
             raise ServiceError("Unknown entity")
-        coordinator = config_entry.data.get('coordinator')
+        coordinator = config_entry.data.get(
+            'coordinator',
+        )
+        if coordinator is None:
+            coordinator = self.hass.data[DOMAIN][config_entry.entry_id]['data'].coordinator
         if coordinator is None:
             raise ServiceError("Unknown entity")
         return coordinator
-
-    async def get_vehicle(self, vin: str):
-        # return coordinator.conection.vehicle(vin)
-        pass
