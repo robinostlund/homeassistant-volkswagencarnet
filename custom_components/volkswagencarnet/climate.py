@@ -16,7 +16,8 @@ from homeassistant.const import (
     TEMP_CELSIUS,
 )
 
-from . import DATA, DATA_KEY, DOMAIN, VolkswagenEntity
+from . import VolkswagenEntity
+from .const import DATA_KEY, DATA, DOMAIN
 
 SUPPORT_HVAC = [HVAC_MODE_COOL, HVAC_MODE_HEAT, HVAC_MODE_OFF]
 _LOGGER = logging.getLogger(__name__)

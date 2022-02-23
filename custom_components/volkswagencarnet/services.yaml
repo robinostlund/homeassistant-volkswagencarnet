@@ -1,0 +1,50 @@
+set_timer_basic_settings:
+  name: Set the basic departure timer settings
+  description: >
+    Set the target temperature and minimum limit that the car will immediately 
+    charge to when a departure timer is active. This minimum limit overrides
+    most other settings, including off-peak times.
+    Provide at least one of 'min_limit' or one of the temperature entries.
+    If both Fahrenheit and Celsius are specified, Celsius takes precedence.
+  fields:
+    device_id:
+      name: Vehicle
+      description: The vehicle to set charge limit for
+      required: true
+      selector:
+        device:
+          integration: volkswagencarnet
+    min_level:
+      name: Charge minimum level
+      description: The minimum charge level (0-100%)
+      example: 50
+      required: false
+      selector:
+        number:
+          min: 0
+          max: 100
+          step: 10
+          unit_of_measurement: percent
+    #FIXME
+    target_temperature_celsius:
+      name: Temperature
+      description: Climatisation target temperature in Celsius
+      example: 24.5
+      required: false
+      selector:
+        number:
+          min: 16
+          max: 26
+          step: 0.5
+          unit_of_measurement: "°C"
+    target_temperature_fahrenheit:
+      name: Temperature
+      description: Climatisation target temperature in Fahrenheit
+      example: 75
+      required: false
+      selector:
+        number:
+          min: 61
+          max: 79
+          step: 1
+          unit_of_measurement: "°F"

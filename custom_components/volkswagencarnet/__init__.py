@@ -4,6 +4,7 @@ import logging
 from datetime import datetime, timedelta
 from typing import Optional, Any, Union
 
+import voluptuous as vol
 from homeassistant.config_entries import ConfigEntry, SOURCE_REAUTH
 from homeassistant.const import (
     CONF_NAME,
@@ -15,6 +16,7 @@ from homeassistant.const import (
 )
 from homeassistant.core import HomeAssistant, Event
 from homeassistant.exceptions import ConfigEntryNotReady
+from homeassistant.helpers import config_validation as cv
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
 from homeassistant.helpers.dispatcher import async_dispatcher_connect
 from homeassistant.helpers.entity import Entity
@@ -24,6 +26,7 @@ from volkswagencarnet.vw_connection import Connection
 from volkswagencarnet.vw_dashboard import Instrument, Climate, BinarySensor, Sensor, Switch
 from volkswagencarnet.vw_vehicle import Vehicle
 
+from custom_components.volkswagencarnet.services import SchedulerService
 from .const import (
     COMPONENTS,
     CONF_MUTABLE,
@@ -34,12 +37,9 @@ from .const import (
     CONF_SPIN,
     CONF_VEHICLE,
     DATA,
-    DATA_KEY,
-    DEFAULT_REGION,
     DEFAULT_REPORT_UPDATE_INTERVAL,
     DEFAULT_UPDATE_INTERVAL,
     DOMAIN,
-    MIN_UPDATE_INTERVAL,
     SIGNAL_STATE_UPDATED,
     UNDO_UPDATE_LISTENER,
     UPDATE_CALLBACK,
@@ -48,13 +48,38 @@ from .const import (
     CONF_CONVERT,
     CONF_NO_CONVERSION,
     CONF_IMPERIAL_UNITS,
+    SERVICE_SET_TIMER_BASIC_SETTINGS,
+)
+
+SERVICE_SET_TIMER_BASIC_SETTINGS_SCHEMA = vol.Schema(
+    {
+        vol.Optional("device_id"): vol.All(cv.string, vol.Length(min=32, max=32)),
+        vol.Optional("min_level"): vol.In([0, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100]),
+        #vol.Optional("target_temperature"): vol.All(float, vol.Range(min_included=289, max_included=299))
+        vol.Optional("target_temperature_celsius"): vol.Any(cv.string, cv.positive_int),
+        vol.Optional("target_temperature_fahrenheit"): vol.Any(cv.string, cv.positive_int)
+    },
+    extra=vol.ALLOW_EXTRA
 )
 
 _LOGGER = logging.getLogger(__name__)
 
 
+def unload_services(hass: HomeAssistant):
+    hass.services.async_remove(DOMAIN, SERVICE_SET_TIMER_BASIC_SETTINGS)
+
+
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     """Setup Volkswagen WeConnect component"""
+
+    def register_services(hass: HomeAssistant):
+        s = SchedulerService(hass)
+        hass.services.async_register(
+            domain=DOMAIN,
+            service=SERVICE_SET_TIMER_BASIC_SETTINGS,
+            service_func=s.set_timer_basic_settings,
+            schema = SERVICE_SET_TIMER_BASIC_SETTINGS_SCHEMA
+        )
 
     if entry.options.get(CONF_SCAN_INTERVAL):
         update_interval = timedelta(minutes=entry.options[CONF_SCAN_INTERVAL])
@@ -77,7 +102,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     if not coordinator.last_update_success:
         raise ConfigEntryNotReady
 
-    data = VolkswagenData(entry.data, coordinator)
+    data: VolkswagenData = VolkswagenData(entry.data, coordinator)
     instruments = coordinator.data
 
     def is_enabled(attr):
@@ -103,6 +128,8 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         UNDO_UPDATE_LISTENER: entry.add_update_listener(_async_update_listener),
     }
 
+    register_services(hass)
+
     return True
 
 
@@ -112,13 +139,16 @@ def update_callback(hass: HomeAssistant, coordinator: DataUpdateCoordinator) -> 
 
 
 async def async_setup(hass: HomeAssistant, config: dict) -> bool:
-    """Set up the Plaato component."""
+    """Set up the component."""
     hass.data.setdefault(DOMAIN, {})
     return True
 
 
 async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry):
     """Unload a config entry."""
+    _LOGGER.debug("Removing services")
+    unload_services(hass)
+    _LOGGER.debug("Removing update listener")
     hass.data[DOMAIN][entry.entry_id][UNDO_UPDATE_LISTENER]()
 
     return await async_unload_coordinator(hass, entry)
@@ -421,3 +451,5 @@ class VolkswagenCoordinator(DataUpdateCoordinator):
         except:
             # This is actually not critical so...
             pass
+
+

@@ -14,8 +14,9 @@ from homeassistant.core import callback
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
 
 from volkswagencarnet.vw_connection import Connection
-from . import get_convert_conf
-from .const import (
+
+import custom_components
+from custom_components.volkswagencarnet.const import (
     CONF_CONVERT,
     CONF_DEBUG,
     CONVERT_DICT,
@@ -236,10 +237,11 @@ class VolkswagenCarnetOptionsFlowHandler(config_entries.OptionsFlow):
     async def async_step_user(self, user_input=None):
         """Manage the options."""
         if user_input is not None:
-            return self.async_create_entry(title="", data=user_input)
+            # return self.async_create_entry(title="", data=user_input)
+            await self.async_step_select_instruments()
 
         # Backward compatibility
-        default_convert_conf = get_convert_conf(self._config_entry)
+        default_convert_conf = custom_components.volkswagencarnet.get_convert_conf(self._config_entry)
 
         return self.async_show_form(
             step_id="user",
