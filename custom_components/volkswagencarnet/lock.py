@@ -6,7 +6,8 @@ from typing import Any
 
 from homeassistant.components.lock import LockEntity
 
-from . import DATA, DATA_KEY, DOMAIN, VolkswagenEntity
+from . import VolkswagenEntity
+from .const import DATA_KEY, DATA, DOMAIN
 
 _LOGGER = logging.getLogger(__name__)
 

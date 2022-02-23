@@ -42,3 +42,5 @@ COMPONENTS = {
     "switch": "switch",
     "climate": "climate",
 }
+
+SERVICE_SET_TIMER_BASIC_SETTINGS = "set_timer_basic_settings"
