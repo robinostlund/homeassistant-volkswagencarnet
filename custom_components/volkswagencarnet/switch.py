@@ -1,13 +1,15 @@
 """
 Support for Volkswagen WeConnect Platform
 """
+import asyncio
 import logging
-from typing import Any, Dict, Optional
+from typing import Any, Dict, Optional, Union
 
 from homeassistant.core import HomeAssistant
-from homeassistant.helpers.entity import ToggleEntity
+from homeassistant.helpers.entity import ToggleEntity, EntityCategory
 
-from . import DATA, DATA_KEY, DOMAIN, VolkswagenEntity, UPDATE_CALLBACK
+from . import VolkswagenEntity, VolkswagenData
+from .const import DATA, DATA_KEY, DOMAIN, UPDATE_CALLBACK
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -31,7 +33,17 @@ async def async_setup_entry(hass: HomeAssistant, entry, async_add_devices):
                 instrument.attr,
                 hass.data[DOMAIN][entry.entry_id][UPDATE_CALLBACK],
             )
-            for instrument in (instrument for instrument in data.instruments if instrument.component == "switch")
+            for instrument in (instrument for instrument in data.instruments if instrument.component == "switch" and not instrument.attr.startswith("departure_timer"))
+        )
+        async_add_devices(
+            VolkswagenDepartureTimer(
+                data,
+                coordinator.vin,
+                instrument.component,
+                instrument.attr,
+                hass.data[DOMAIN][entry.entry_id][UPDATE_CALLBACK],
+            )
+            for instrument in (instrument for instrument in data.instruments if instrument.component == "switch" and instrument.attr.startswith("departure_timer"))
         )
 
     return True
@@ -39,6 +51,9 @@ async def async_setup_entry(hass: HomeAssistant, entry, async_add_devices):
 
 class VolkswagenSwitch(VolkswagenEntity, ToggleEntity):
     """Representation of a Volkswagen WeConnect Switch."""
+
+    def __init__(self, data: VolkswagenData, vin: str, component: str, attribute: str, callback=None):
+        super().__init__(data, vin, component, attribute, callback)
 
     def turn_on(self, **kwargs: Any) -> None:
         raise NotImplementedError
@@ -69,5 +84,31 @@ class VolkswagenSwitch(VolkswagenEntity, ToggleEntity):
         return self.instrument.assumed_state
 
     @property
-    def state_attributes(self) -> Optional[Dict[str, Any]]:
-        return self.instrument.attributes
+    def extra_state_attributes(self) -> Optional[Dict[str, Any]]:
+        return {**super().extra_state_attributes, **self.instrument.attributes}
+
+
+class VolkswagenDepartureTimer(VolkswagenSwitch):
+
+    def turn_on(self, **kwargs: Any) -> None:
+        super(VolkswagenDepartureTimer, self).turn_on()
+
+    def turn_off(self, **kwargs: Any) -> None:
+        super(VolkswagenDepartureTimer, self).turn_off()
+
+    def __init__(self, data: VolkswagenData, vin: str, component: str, attribute: str, callback=None):
+        super().__init__(data, vin, component, attribute, callback)
+        _LOGGER.debug("Departure Timer initialized")
+
+    async def set_frequency(self, frequency: str) -> None:
+        """FIXME. This is just testing."""
+        _LOGGER.debug(f"Setting frequency of {self.name} to {frequency}.")
+        await asyncio.sleep(5)
+
+    @property
+    def device_class(self) -> str:
+        return "departure_timer"
+
+    @property
+    def entity_category(self) -> Union[EntityCategory, str, None]:
+        return EntityCategory.CONFIG
