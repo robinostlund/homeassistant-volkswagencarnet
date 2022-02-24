@@ -67,7 +67,7 @@ SERVICE_UPDATE_SCHEDULE_SCHEMA = vol.Schema(
         vol.Required("device_id"): vol.All(cv.string, vol.Length(min=32, max=32)),
         vol.Required("timer_id"): vol.In([1, 2, 3]),
         vol.Optional("charging_profile"): vol.In([1, 2, 3, 4, 5, 6, 7, 8, 9, 10]),
-        vol.Optional("timer_enabled"): vol.All(cv.boolean),
+        vol.Optional("enabled"): vol.All(cv.boolean),
         vol.Optional("frequency"): vol.In(["cyclic", "single"]),
         vol.Optional("departure_time"): vol.All(cv.string),
         vol.Optional("departure_datetime"): vol.All(cv.string),

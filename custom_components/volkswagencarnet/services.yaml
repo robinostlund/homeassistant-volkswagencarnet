@@ -97,7 +97,7 @@ update_schedule:
       example: "2022-02-22T06:45:00+0200"
       required: false
       selector:
-        datetime:
+        text:
     weekday_mask:
       name: Weekday mask
       description: Weekdays to apply the cyclic timer
