@@ -31,7 +31,77 @@ set_timer_basic_settings:
       required: false
       selector:
         number:
-          #min: 16
-          #max: 26
+          mode: box
           step: 0.5
           unit_of_measurement: "C/F"
+
+update_schedule:
+  name: Update departure schedule
+  description: >
+    Update a departure schedule
+  fields:
+    device_id:
+      name: Vehicle
+      description: The vehicle device
+      required: true
+      selector:
+        device:
+          integration: volkswagencarnet
+    timer_id:
+      name: Timer id
+      description: The timer id (1, 2 or 3)
+      example: 1
+      required: true
+      selector:
+        number:
+          min: 1
+          max: 3
+          step: 1
+    profile_id:
+      name: Charging profile
+      description: The charging profile id (1..10) to use
+      example: 3
+      required: false
+      selector:
+        number:
+          min: 1
+          max: 10
+          step: 1
+    enabled:
+      name: Timer enabled
+      description: Enable this timer
+      example: 3
+      required: false
+      selector:
+        boolean:
+    frequency:
+      name: Timer frequency
+      description: cyclic / single
+      example: "cyclic"
+      required: false
+      selector:
+        select:
+          options:
+            - "cyclic"
+            - "single"
+    departure_time:
+      name: Departure time
+      description: "hh:mm for cyclic frequency"
+      example: "06:45"
+      required: false
+      selector:
+        time:
+    departure_datetime:
+      name: Departure time
+      description: "timestamp for single"
+      example: "2022-02-22T06:45:00+0200"
+      required: false
+      selector:
+        datetime:
+    weekday_mask:
+      name: Weekday mask
+      description: Weekdays to apply the cyclic timer
+      example: "yyyyynn"
+      required: false
+      selector:
+        text:

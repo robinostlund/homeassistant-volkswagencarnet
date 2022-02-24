@@ -1,11 +1,13 @@
 """
 """
 import logging
-from typing import Optional
+from datetime import datetime
+from typing import Optional, Dict
 
 from homeassistant.core import HomeAssistant, ServiceCall
 from homeassistant.helpers import device_registry
 from homeassistant.helpers.device_registry import DeviceEntry, DeviceRegistry
+from volkswagencarnet.vw_timer import Timer, TimerData
 from volkswagencarnet.vw_vehicle import Vehicle
 
 from .const import DOMAIN
@@ -50,6 +52,67 @@ class SchedulerService:
             _LOGGER.debug(f"Setting minimum charge level to {ml}%")
             # send charge limit command to volkswagencarnet
             res = res and await v.set_charge_min_level(ml)
+        return res
+
+    async def update_schedule(self, service_call: ServiceCall):
+        # find VIN
+        c = await self.get_coordinator(service_call)
+        _LOGGER.debug(F"Found VIN {c.vin}")
+        # parse service call
+
+        res = True
+
+        v: Optional[Vehicle] = None
+        for vehicle in c.connection.vehicles:
+            if vehicle.vin.upper() == c.vin:
+                v = vehicle
+                break
+        if v is None:
+            raise Exception("Vehicle not found")
+        data: TimerData = await c.connection.getTimers(c.vin)
+        if data is None:
+            raise Exception("No timers found")
+
+        timer_id = int(service_call.data.get("timer_id", -1))
+        charging_profile = service_call.data.get("charging_profile", None)
+        enabled = service_call.data.get("timer_enabled", None)
+        frequency = service_call.data.get("frequency", None)
+        departure_time = service_call.data.get("departure_time", None)
+        weekday_mask = service_call.data.get("weekday_mask", None)
+
+        timers: Dict[int, Timer] = {
+            1: data.get_schedule(1),
+            2: data.get_schedule(2),
+            3: data.get_schedule(3)
+        }
+        if frequency is not None:
+            timers[timer_id].timerFrequency = frequency
+            if frequency == "single":
+                if isinstance(departure_time, int):
+                    time = datetime.fromtimestamp(departure_time)
+                elif isinstance(departure_time, str):
+                    time = datetime.fromisoformat(departure_time)
+                else:
+                    time = departure_time
+                timers[timer_id].departureDateTime = time
+                timers[timer_id].departureTimeOfDay = time.strftime("%H:%M")
+                timers[timer_id].departureWeekdayMask = weekday_mask
+            elif frequency == "cyclic":
+                # TODO: check format? hh:mm
+                timers[timer_id].departureDateTime = None
+                timers[timer_id].departureTimeOfDay = departure_time
+            else:
+                raise Exception(f"Invalid frequency: {frequency}")
+
+        if charging_profile is not None:
+            timers[timer_id].profileID = charging_profile
+
+        if enabled is not None:
+            timers[timer_id].timerProgrammedStatus = "programmed" if enabled else "notProgrammed"
+
+        _LOGGER.debug(f"Updating timer {timers[timer_id].json_updated['timer']}")
+        data.timersAndProfiles.timerList.timer = [timers[1], timers[2], timers[3]]
+        res = v.set_schedule(data)
         return res
 
     async def get_coordinator(self, service_call: ServiceCall):
