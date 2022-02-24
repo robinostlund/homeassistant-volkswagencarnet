@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 import asyncio
 import logging
 from datetime import datetime, timedelta
@@ -23,7 +22,13 @@ from homeassistant.helpers.entity import Entity
 from homeassistant.helpers.icon import icon_for_battery_level
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
 from volkswagencarnet.vw_connection import Connection
-from volkswagencarnet.vw_dashboard import Instrument, Climate, BinarySensor, Sensor, Switch
+from volkswagencarnet.vw_dashboard import (
+    Instrument,
+    Climate,
+    BinarySensor,
+    Sensor,
+    Switch,
+)
 from volkswagencarnet.vw_vehicle import Vehicle
 
 from custom_components.volkswagencarnet.services import SchedulerService
@@ -48,18 +53,18 @@ from .const import (
     CONF_CONVERT,
     CONF_NO_CONVERSION,
     CONF_IMPERIAL_UNITS,
-    SERVICE_SET_TIMER_BASIC_SETTINGS, SERVICE_UPDATE_SCHEDULE,
+    SERVICE_SET_TIMER_BASIC_SETTINGS,
+    SERVICE_UPDATE_SCHEDULE,
 )
 
 SERVICE_SET_TIMER_BASIC_SETTINGS_SCHEMA = vol.Schema(
     {
         vol.Optional("device_id"): vol.All(cv.string, vol.Length(min=32, max=32)),
         vol.Optional("min_level"): vol.In([0, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100]),
-        #vol.Optional("target_temperature"): vol.All(float, vol.Range(min_included=289, max_included=299))
         vol.Optional("target_temperature_celsius"): vol.Any(cv.string, cv.positive_int),
-        vol.Optional("target_temperature_fahrenheit"): vol.Any(cv.string, cv.positive_int)
+        vol.Optional("target_temperature_fahrenheit"): vol.Any(cv.string, cv.positive_int),
     },
-    extra=vol.ALLOW_EXTRA  # FIXME, should not be needed
+    extra=vol.ALLOW_EXTRA,  # FIXME, should not be needed
 )
 
 SERVICE_UPDATE_SCHEDULE_SCHEMA = vol.Schema(
@@ -73,7 +78,7 @@ SERVICE_UPDATE_SCHEDULE_SCHEMA = vol.Schema(
         vol.Optional("departure_datetime"): vol.All(cv.string),
         vol.Optional("weekday_mask"): vol.All(cv.string, vol.Length(min=7, max=7)),
     },
-    extra=vol.ALLOW_EXTRA  # FIXME, should not be needed
+    extra=vol.ALLOW_EXTRA,  # FIXME, should not be needed
 )
 
 _LOGGER = logging.getLogger(__name__)
@@ -92,13 +97,13 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
             domain=DOMAIN,
             service=SERVICE_SET_TIMER_BASIC_SETTINGS,
             service_func=s.set_timer_basic_settings,
-            schema=SERVICE_SET_TIMER_BASIC_SETTINGS_SCHEMA
+            schema=SERVICE_SET_TIMER_BASIC_SETTINGS_SCHEMA,
         )
         hass.services.async_register(
             domain=DOMAIN,
             service=SERVICE_UPDATE_SCHEDULE,
             service_func=s.update_schedule,
-            schema=SERVICE_UPDATE_SCHEDULE_SCHEMA
+            schema=SERVICE_UPDATE_SCHEDULE_SCHEMA,
         )
 
     if entry.options.get(CONF_SCAN_INTERVAL):
@@ -243,7 +248,14 @@ class VolkswagenData:
 class VolkswagenEntity(Entity):
     """Base class for all Volkswagen entities."""
 
-    def __init__(self, data: VolkswagenData, vin: str, component: str, attribute: str, callback=None):
+    def __init__(
+        self,
+        data: VolkswagenData,
+        vin: str,
+        component: str,
+        attribute: str,
+        callback=None,
+    ):
         """Initialize the entity."""
 
         def update_callbacks() -> None:
@@ -278,7 +290,9 @@ class VolkswagenEntity(Entity):
             self.async_on_remove(async_dispatcher_connect(self.hass, SIGNAL_STATE_UPDATED, self.async_write_ha_state))
 
     @property
-    def instrument(self) -> Union[BinarySensor, Climate, Sensor, Switch, Instrument, None]:
+    def instrument(
+        self,
+    ) -> Union[BinarySensor, Climate, Sensor, Switch, Instrument, None]:
         """Return corresponding instrument."""
         return self.data.instrument(self.vin, self.component, self.attribute)
 
@@ -471,5 +485,3 @@ class VolkswagenCoordinator(DataUpdateCoordinator):
         except:
             # This is actually not critical so...
             pass
-
-

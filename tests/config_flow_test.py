@@ -41,5 +41,3 @@ async def test_flow_user_init_auth_fails(m_connection, hass: HomeAssistant):
         )
     # Flow should go back to user details if login fails
     assert "user" == result["step_id"]
-
-
