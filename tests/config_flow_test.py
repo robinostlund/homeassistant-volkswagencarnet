@@ -1,4 +1,4 @@
-from unittest.mock import patch, AsyncMock, MagicMock
+from unittest.mock import patch, MagicMock
 
 from homeassistant.const import (
     CONF_PASSWORD,
@@ -19,17 +19,11 @@ async def test_flow_user_init_auth_fails(m_connection, hass: HomeAssistant):
     # m_conn.doLogin = AsyncMock()
     m_conn.doLogin.side_effect = Exception
 
-    _result: FlowResult = await hass.config_entries.flow.async_init(
-        config_flow.DOMAIN, context={"source": "user"}
-    )
+    _result: FlowResult = await hass.config_entries.flow.async_init(config_flow.DOMAIN, context={"source": "user"})
 
     result = await hass.config_entries.flow.async_configure(
-        _result["flow_id"], user_input={
-            CONF_USERNAME: "unit tester",
-            CONF_PASSWORD: "password123",
-            CONF_DEBUG: True,
-            CONF_REGION: "XX"
-        }
+        _result["flow_id"],
+        user_input={CONF_USERNAME: "unit tester", CONF_PASSWORD: "password123", CONF_DEBUG: True, CONF_REGION: "XX"},
     )
 
     flow: VolkswagenCarnetConfigFlow = hass.config_entries.flow._progress[result["flow_id"]]

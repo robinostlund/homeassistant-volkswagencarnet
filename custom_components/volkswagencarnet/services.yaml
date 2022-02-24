@@ -1,7 +1,7 @@
 set_timer_basic_settings:
   name: Set the basic departure timer settings
   description: >
-    Set the target temperature and minimum limit that the car will immediately 
+    Set the target temperature and minimum limit that the car will immediately
     charge to when a departure timer is active. This minimum limit overrides
     most other settings, including off-peak times.
     Provide at least one of the properties.
@@ -32,6 +32,8 @@ set_timer_basic_settings:
       selector:
         number:
           mode: box
+          min: 15
+          max: 87
           step: 0.5
           unit_of_measurement: "C/F"
 
