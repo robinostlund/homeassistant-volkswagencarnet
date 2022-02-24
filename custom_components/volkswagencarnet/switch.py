@@ -88,17 +88,17 @@ class VolkswagenSwitch(VolkswagenEntity, ToggleEntity):
         return self.instrument.assumed_state
 
     @property
-    def extra_state_attributes(self) -> Optional[Dict[str, Any]]:
+    def extra_state_attributes(self) -> Optional[dict[str, Any]]:
         return {**super().extra_state_attributes, **self.instrument.attributes}
 
 
 class VolkswagenDepartureTimer(VolkswagenSwitch):
 
     def turn_on(self, **kwargs: Any) -> None:
-        super(VolkswagenDepartureTimer, self).turn_on()
+        super().turn_on()
 
     def turn_off(self, **kwargs: Any) -> None:
-        super(VolkswagenDepartureTimer, self).turn_off()
+        super().turn_off()
 
     def __init__(self, data: VolkswagenData, vin: str, component: str, attribute: str, callback=None):
         super().__init__(data, vin, component, attribute, callback)
@@ -113,10 +113,10 @@ class VolkswagenDepartureTimer(VolkswagenSwitch):
         return EntityCategory.CONFIG
 
     @property
-    def extra_state_attributes(self) -> Optional[Dict[str, Any]]:
+    def extra_state_attributes(self) -> Optional[dict[str, Any]]:
         attribs = super(VolkswagenSwitch, self).extra_state_attributes
         if "departure_time" in attribs:
-            if re.match("^\d\d:\d\d$", attribs["departure_time"]):
+            if re.match(r"^\d\d:\d\d$", attribs["departure_time"]):
                 d = datetime.now()
                 d = d.replace(
                     hour=int(attribs["departure_time"][0:2]),
