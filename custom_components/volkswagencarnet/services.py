@@ -24,7 +24,7 @@ class SchedulerService:
     async def set_timer_basic_settings(self, service_call: ServiceCall):
         # find VIN
         c = await self.get_coordinator(service_call)
-        _LOGGER.debug(F"Found VIN {c.vin}")
+        _LOGGER.debug(f"Found VIN {c.vin}")
         # parse service call
         tt = service_call.data.get("target_temperature", None)
         ml = service_call.data.get("min_level", None)
@@ -58,7 +58,7 @@ class SchedulerService:
     async def update_schedule(self, service_call: ServiceCall):
         # find VIN
         c = await self.get_coordinator(service_call)
-        _LOGGER.debug(F"Found VIN {c.vin}")
+        _LOGGER.debug(f"Found VIN {c.vin}")
         # parse service call
 
         res = True
@@ -82,11 +82,7 @@ class SchedulerService:
         departure_datetime = service_call.data.get("departure_datetime", None)
         weekday_mask = service_call.data.get("weekday_mask", None)
 
-        timers: Dict[int, Timer] = {
-            1: data.get_schedule(1),
-            2: data.get_schedule(2),
-            3: data.get_schedule(3)
-        }
+        timers: dict[int, Timer] = {1: data.get_schedule(1), 2: data.get_schedule(2), 3: data.get_schedule(3)}
         if frequency is not None:
             timers[timer_id].timerFrequency = frequency
             if frequency == "single":
@@ -102,9 +98,15 @@ class SchedulerService:
                 timers[timer_id].departureDateTime = time.strftime("%Y-%m-%dT%H:%M")
                 timers[timer_id].departureTimeOfDay = time.strftime("%H:%M")
             elif frequency == "cyclic":
-                d = datetime.now()\
-                    .replace(hour=int(departure_time[0:2]), minute=int(departure_time[3:5]), tzinfo=pytz.timezone(self.hass.config.time_zone))\
+                d = (
+                    datetime.now()
+                    .replace(
+                        hour=int(departure_time[0:2]),
+                        minute=int(departure_time[3:5]),
+                        tzinfo=pytz.timezone(self.hass.config.time_zone),
+                    )
                     .astimezone(timezone.utc)
+                )
                 timers[timer_id].departureDateTime = None
                 timers[timer_id].departureTimeOfDay = d.strftime("%H:%M")
                 timers[timer_id].departureWeekdayMask = weekday_mask
@@ -132,10 +134,10 @@ class SchedulerService:
         if config_entry.domain != DOMAIN:
             raise ServiceError("Unknown entity")
         coordinator = config_entry.data.get(
-            'coordinator',
+            "coordinator",
         )
         if coordinator is None:
-            coordinator = self.hass.data[DOMAIN][config_entry.entry_id]['data'].coordinator
+            coordinator = self.hass.data[DOMAIN][config_entry.entry_id]["data"].coordinator
         if coordinator is None:
             raise ServiceError("Unknown entity")
         return coordinator
