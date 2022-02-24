@@ -1,3 +1,6 @@
+black
+flake8
 homeassistant>=2022.02.9
 pytest-homeassistant-custom-component>=0.6.15
+types-pytz
 #volkswagencarnet
