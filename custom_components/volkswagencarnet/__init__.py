@@ -48,7 +48,7 @@ from .const import (
     CONF_CONVERT,
     CONF_NO_CONVERSION,
     CONF_IMPERIAL_UNITS,
-    SERVICE_SET_TIMER_BASIC_SETTINGS,
+    SERVICE_SET_TIMER_BASIC_SETTINGS, SERVICE_UPDATE_SCHEDULE,
 )
 
 SERVICE_SET_TIMER_BASIC_SETTINGS_SCHEMA = vol.Schema(
@@ -59,7 +59,21 @@ SERVICE_SET_TIMER_BASIC_SETTINGS_SCHEMA = vol.Schema(
         vol.Optional("target_temperature_celsius"): vol.Any(cv.string, cv.positive_int),
         vol.Optional("target_temperature_fahrenheit"): vol.Any(cv.string, cv.positive_int)
     },
-    extra=vol.ALLOW_EXTRA
+    extra=vol.ALLOW_EXTRA  # FIXME, should not be needed
+)
+
+SERVICE_UPDATE_SCHEDULE_SCHEMA = vol.Schema(
+    {
+        vol.Required("device_id"): vol.All(cv.string, vol.Length(min=32, max=32)),
+        vol.Required("timer_id"): vol.In([1, 2, 3]),
+        vol.Optional("charging_profile"): vol.In([1, 2, 3, 4, 5, 6, 7, 8, 9, 10]),
+        vol.Optional("timer_enabled"): vol.All(cv.boolean),
+        vol.Optional("frequency"): vol.In(["cyclic", "single"]),
+        vol.Optional("departure_time"): vol.All(cv.string),
+        vol.Optional("departure_datetime"): vol.All(cv.string),
+        vol.Optional("weekday_mask"): vol.All(cv.string, vol.Length(min=7, max=7)),
+    },
+    extra=vol.ALLOW_EXTRA  # FIXME, should not be needed
 )
 
 _LOGGER = logging.getLogger(__name__)
@@ -78,7 +92,13 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
             domain=DOMAIN,
             service=SERVICE_SET_TIMER_BASIC_SETTINGS,
             service_func=s.set_timer_basic_settings,
-            schema = SERVICE_SET_TIMER_BASIC_SETTINGS_SCHEMA
+            schema=SERVICE_SET_TIMER_BASIC_SETTINGS_SCHEMA
+        )
+        hass.services.async_register(
+            domain=DOMAIN,
+            service=SERVICE_UPDATE_SCHEDULE,
+            service_func=s.update_schedule,
+            schema=SERVICE_UPDATE_SCHEDULE_SCHEMA
         )
 
     if entry.options.get(CONF_SCAN_INTERVAL):
