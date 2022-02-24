@@ -1,14 +1,10 @@
-"""
-Support for Volkswagen WeConnect Platform
-"""
-import asyncio
+"""Support for Volkswagen WeConnect Platform."""
 import logging
 import re
 from datetime import datetime, timezone
-from typing import Any, Dict, Optional, Union
+from typing import Any, Optional, Union
 
 import pytz
-
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity import ToggleEntity, EntityCategory
 
@@ -37,7 +33,11 @@ async def async_setup_entry(hass: HomeAssistant, entry, async_add_devices):
                 instrument.attr,
                 hass.data[DOMAIN][entry.entry_id][UPDATE_CALLBACK],
             )
-            for instrument in (instrument for instrument in data.instruments if instrument.component == "switch" and not instrument.attr.startswith("departure_timer"))
+            for instrument in (
+                instrument
+                for instrument in data.instruments
+                if instrument.component == "switch" and not instrument.attr.startswith("departure_timer")
+            )
         )
         async_add_devices(
             VolkswagenDepartureTimer(
@@ -47,7 +47,11 @@ async def async_setup_entry(hass: HomeAssistant, entry, async_add_devices):
                 instrument.attr,
                 hass.data[DOMAIN][entry.entry_id][UPDATE_CALLBACK],
             )
-            for instrument in (instrument for instrument in data.instruments if instrument.component == "switch" and instrument.attr.startswith("departure_timer"))
+            for instrument in (
+                instrument
+                for instrument in data.instruments
+                if instrument.component == "switch" and instrument.attr.startswith("departure_timer")
+            )
         )
 
     return True
@@ -93,7 +97,6 @@ class VolkswagenSwitch(VolkswagenEntity, ToggleEntity):
 
 
 class VolkswagenDepartureTimer(VolkswagenSwitch):
-
     def turn_on(self, **kwargs: Any) -> None:
         super().turn_on()
 
@@ -123,11 +126,12 @@ class VolkswagenDepartureTimer(VolkswagenSwitch):
                     minute=int(attribs["departure_time"][3:5]),
                     second=0,
                     microsecond=0,
-                    tzinfo=timezone.utc
+                    tzinfo=timezone.utc,
                 ).astimezone(pytz.timezone(self.hass.config.time_zone))
                 attribs["departure_time"] = d.strftime("%H:%M")
             else:
-                d = datetime.strptime(attribs["departure_time"], "%Y-%m-%dT%H:%M")\
-                    .replace(tzinfo=timezone.utc, second=0, microsecond=0)
+                d = datetime.strptime(attribs["departure_time"], "%Y-%m-%dT%H:%M").replace(
+                    tzinfo=timezone.utc, second=0, microsecond=0
+                )
                 attribs["departure_time"] = d
         return attribs
