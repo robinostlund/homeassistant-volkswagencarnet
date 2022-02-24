@@ -3,7 +3,11 @@ Support for Volkswagen WeConnect Platform
 """
 import asyncio
 import logging
+import re
+from datetime import datetime, timezone
 from typing import Any, Dict, Optional, Union
+
+import pytz
 
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity import ToggleEntity, EntityCategory
@@ -100,11 +104,6 @@ class VolkswagenDepartureTimer(VolkswagenSwitch):
         super().__init__(data, vin, component, attribute, callback)
         _LOGGER.debug("Departure Timer initialized")
 
-    async def set_frequency(self, frequency: str) -> None:
-        """FIXME. This is just testing."""
-        _LOGGER.debug(f"Setting frequency of {self.name} to {frequency}.")
-        await asyncio.sleep(5)
-
     @property
     def device_class(self) -> str:
         return "departure_timer"
@@ -112,3 +111,23 @@ class VolkswagenDepartureTimer(VolkswagenSwitch):
     @property
     def entity_category(self) -> Union[EntityCategory, str, None]:
         return EntityCategory.CONFIG
+
+    @property
+    def extra_state_attributes(self) -> Optional[Dict[str, Any]]:
+        attribs = super(VolkswagenSwitch, self).extra_state_attributes
+        if "departure_time" in attribs:
+            if re.match("^\d\d:\d\d$", attribs["departure_time"]):
+                d = datetime.now()
+                d = d.replace(
+                    hour=int(attribs["departure_time"][0:2]),
+                    minute=int(attribs["departure_time"][3:5]),
+                    second=0,
+                    microsecond=0,
+                    tzinfo=timezone.utc
+                ).astimezone(pytz.timezone(self.hass.config.time_zone))
+                attribs["departure_time"] = d.strftime("%H:%M")
+            else:
+                d = datetime.strptime(attribs["departure_time"], "%Y-%m-%dT%H:%M")\
+                    .replace(tzinfo=timezone.utc, second=0, microsecond=0)
+                attribs["departure_time"] = d
+        return attribs

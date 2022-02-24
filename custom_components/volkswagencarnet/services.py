@@ -1,9 +1,10 @@
 """
 """
 import logging
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Optional, Dict
 
+import pytz
 from homeassistant.core import HomeAssistant, ServiceCall
 from homeassistant.helpers import device_registry
 from homeassistant.helpers.device_registry import DeviceEntry, DeviceRegistry
@@ -75,9 +76,10 @@ class SchedulerService:
 
         timer_id = int(service_call.data.get("timer_id", -1))
         charging_profile = service_call.data.get("charging_profile", None)
-        enabled = service_call.data.get("timer_enabled", None)
+        enabled = service_call.data.get("enabled", None)
         frequency = service_call.data.get("frequency", None)
         departure_time = service_call.data.get("departure_time", None)
+        departure_datetime = service_call.data.get("departure_datetime", None)
         weekday_mask = service_call.data.get("weekday_mask", None)
 
         timers: Dict[int, Timer] = {
@@ -88,19 +90,24 @@ class SchedulerService:
         if frequency is not None:
             timers[timer_id].timerFrequency = frequency
             if frequency == "single":
-                if isinstance(departure_time, int):
-                    time = datetime.fromtimestamp(departure_time)
-                elif isinstance(departure_time, str):
-                    time = datetime.fromisoformat(departure_time)
+                if isinstance(departure_datetime, int):
+                    time = datetime.fromtimestamp(departure_datetime)
+                elif isinstance(departure_datetime, str):
+                    time = datetime.fromisoformat(departure_datetime)
                 else:
-                    time = departure_time
-                timers[timer_id].departureDateTime = time
+                    time = departure_datetime
+                if time.tzinfo is None:
+                    time.replace(tzinfo=pytz.timezone(self.hass.config.time_zone))
+                time = time.astimezone(timezone.utc)
+                timers[timer_id].departureDateTime = time.strftime("%Y-%m-%dT%H:%M")
                 timers[timer_id].departureTimeOfDay = time.strftime("%H:%M")
-                timers[timer_id].departureWeekdayMask = weekday_mask
             elif frequency == "cyclic":
-                # TODO: check format? hh:mm
+                d = datetime.now()\
+                    .replace(hour=int(departure_time[0:2]), minute=int(departure_time[3:5]), tzinfo=pytz.timezone(self.hass.config.time_zone))\
+                    .astimezone(timezone.utc)
                 timers[timer_id].departureDateTime = None
-                timers[timer_id].departureTimeOfDay = departure_time
+                timers[timer_id].departureTimeOfDay = d.strftime("%H:%M")
+                timers[timer_id].departureWeekdayMask = weekday_mask
             else:
                 raise Exception(f"Invalid frequency: {frequency}")
 
@@ -112,7 +119,7 @@ class SchedulerService:
 
         _LOGGER.debug(f"Updating timer {timers[timer_id].json_updated['timer']}")
         data.timersAndProfiles.timerList.timer = [timers[1], timers[2], timers[3]]
-        res = v.set_schedule(data)
+        res = await v.set_schedule(data)
         return res
 
     async def get_coordinator(self, service_call: ServiceCall):
