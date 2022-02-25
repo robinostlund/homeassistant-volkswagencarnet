@@ -5,7 +5,7 @@ jobs:
     name: "Snyk"
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout repository 
+      - name: Checkout repository
         uses: actions/checkout@master
 
       - name: Run Snyk to check for vulnerabilities

@@ -305,6 +305,6 @@ Check out this awesome lovelace card by endor
 https://github.com/endor-force/lovelace-carnet
 
 ![alt text](https://user-images.githubusercontent.com/12171819/55963632-7d9dd180-5c73-11e9-9eea-c2b211f6843b.png)
-  
+
 ## Guides
 Tristan created a german video how to setup and use this integration. It also includes some automation in Node-RED. https://youtu.be/91223AtNvVc

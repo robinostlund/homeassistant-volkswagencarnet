@@ -24,11 +24,11 @@ Please check if the bug is already reported and add more information there inste
 
 ## Environment
 
-- Volkswagencarnet release with the issue: 
-- Last working homeassistant-volkswagencarnet release (if known): 
-- Home Assistant Core release with the issue: 
-- Operating environment (Home Assistant OS/Supervised/Container/Core/venv): 
-- Car model and year: 
+- Volkswagencarnet release with the issue:
+- Last working homeassistant-volkswagencarnet release (if known):
+- Home Assistant Core release with the issue:
+- Operating environment (Home Assistant OS/Supervised/Container/Core/venv):
+- Car model and year:
 - Country where the car was bought:
 - Valid We Connect subscription:
 - Have you verified that the We Connect service works via VW´s portal?:
@@ -46,13 +46,13 @@ Please check if the bug is already reported and add more information there inste
 
 
 ## Expected behavior
-<!-- 
+<!--
   Insert a brief description of the expected behavior is
 -->
 
 
 ## Screenshots
-<!-- 
+<!--
   If applicable, add screenshots to help explain your problem.
 -->
 
