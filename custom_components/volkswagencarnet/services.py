@@ -1,8 +1,7 @@
-"""
-"""
+"""Services exposed to Home Assistant."""
 import logging
 from datetime import datetime, timezone
-from typing import Optional, Dict
+from typing import Optional
 
 import pytz
 from homeassistant.core import HomeAssistant, ServiceCall
@@ -18,25 +17,21 @@ _LOGGER = logging.getLogger(__name__)
 
 
 class SchedulerService:
+    """Schedule services class."""
+
     def __init__(self, hass: HomeAssistant):
+        """Init."""
         self.hass: HomeAssistant = hass
 
     async def set_timer_basic_settings(self, service_call: ServiceCall):
-        # find VIN
+        """Service for configuring basic settings."""
         c = await self.get_coordinator(service_call)
+        v = self.get_vehicle(c)
         _LOGGER.debug(f"Found VIN {c.vin}")
         # parse service call
         tt = service_call.data.get("target_temperature", None)
         ml = service_call.data.get("min_level", None)
         res = True
-
-        v: Optional[Vehicle] = None
-        for vehicle in c.connection.vehicles:
-            if vehicle.vin.upper() == c.vin:
-                v = vehicle
-                break
-        if v is None:
-            raise Exception("Vehicle not found")
 
         # update timers accordingly
         if tt is not None:
@@ -52,24 +47,14 @@ class SchedulerService:
         if ml is not None:
             _LOGGER.debug(f"Setting minimum charge level to {ml}%")
             # send charge limit command to volkswagencarnet
-            res = res and await v.set_charge_min_level(ml)
+            res = res and await v.set_charge_min_level(int(ml))
         return res
 
     async def update_schedule(self, service_call: ServiceCall):
-        # find VIN
+        """Service for updating departure schedules."""
         c = await self.get_coordinator(service_call)
-        _LOGGER.debug(f"Found VIN {c.vin}")
-        # parse service call
+        v = self.get_vehicle(c)
 
-        res = True
-
-        v: Optional[Vehicle] = None
-        for vehicle in c.connection.vehicles:
-            if vehicle.vin.upper() == c.vin:
-                v = vehicle
-                break
-        if v is None:
-            raise Exception("Vehicle not found")
         data: TimerData = await c.connection.getTimers(c.vin)
         if data is None:
             raise Exception("No timers found")
@@ -98,17 +83,8 @@ class SchedulerService:
                 timers[timer_id].departureDateTime = time.strftime("%Y-%m-%dT%H:%M")
                 timers[timer_id].departureTimeOfDay = time.strftime("%H:%M")
             elif frequency == "cyclic":
-                d = (
-                    datetime.now()
-                    .replace(
-                        hour=int(departure_time[0:2]),
-                        minute=int(departure_time[3:5]),
-                        tzinfo=pytz.timezone(self.hass.config.time_zone),
-                    )
-                    .astimezone(timezone.utc)
-                )
                 timers[timer_id].departureDateTime = None
-                timers[timer_id].departureTimeOfDay = d.strftime("%H:%M")
+                timers[timer_id].departureTimeOfDay = self.time_to_utc(departure_time)
                 timers[timer_id].departureWeekdayMask = weekday_mask
             else:
                 raise Exception(f"Invalid frequency: {frequency}")
@@ -124,8 +100,44 @@ class SchedulerService:
         res = await v.set_schedule(data)
         return res
 
+    async def update_profile(self, service_call: ServiceCall):
+        """Service for updating charging profiles (locations)."""
+        c = await self.get_coordinator(service_call)
+        v = self.get_vehicle(coordinator=c)
+
+        data: TimerData = await c.connection.getTimers(c.vin)
+        if data is None:
+            raise Exception("No timers found")
+
+        profile_id = int(service_call.data.get("profile_id", -1))
+        profile_name = int(service_call.data.get("profile_name", None))
+        charging = service_call.data.get("charging", None)
+        charge_max_current = service_call.data.get("charge_max_current", None)
+        climatisation = service_call.data.get("climatisation", None)
+        target_level = service_call.data.get("target_level", None)
+        night_rate = service_call.data.get("night_rate", None)
+        night_rate_start = service_call.data.get("night_rate_start", None)
+        night_rate_end = service_call.data.get("night_rate_end", None)
+
+        profile = data.get_profile(profile_id)
+        profile.profileName = profile_name if profile_name is not None else profile.profileName
+        profile.operationCharging = charging if charging is not None else profile.operationCharging
+        profile.chargeMaxCurrent = charge_max_current if charge_max_current is not None else profile.chargeMaxCurrent
+        profile.operationClimatisation = climatisation if climatisation is not None else profile.operationClimatisation
+        profile.targetChargeLevel = target_level if target_level is not None else profile.targetChargeLevel
+        profile.nightRateActive = night_rate if night_rate is not None else profile.nightRateActive
+
+        if night_rate_start is not None:
+            profile.nightRateTimeStart = self.time_to_utc(night_rate_start)
+        if night_rate_end is not None:
+            profile.nightRateTimeEnd = self.time_to_utc(night_rate_end)
+
+        _LOGGER.debug(f"Updating profile {profile}")
+        res = await v.set_schedule(data)
+        return res
+
     async def get_coordinator(self, service_call: ServiceCall):
-        """Find VIN for device."""
+        """Get the VolkswagenCoordinator."""
         registry: DeviceRegistry = device_registry.async_get(self.hass)
         dev_entry: DeviceEntry = registry.async_get(service_call.data.get("device_id"))
 
@@ -141,3 +153,27 @@ class SchedulerService:
         if coordinator is None:
             raise ServiceError("Unknown entity")
         return coordinator
+
+    def get_vehicle(self, coordinator) -> Vehicle:
+        """Find requested vehicle."""
+        # find VIN
+        _LOGGER.debug(f"Found VIN {coordinator.vin}")
+        # parse service call
+
+        v: Optional[Vehicle] = None
+        for vehicle in coordinator.connection.vehicles:
+            if vehicle.vin.upper() == coordinator.vin:
+                v = vehicle
+                break
+        if v is None:
+            raise Exception("Vehicle not found")
+        return v
+
+    def time_to_utc(self, time_string: str) -> str:
+        """Convert a local time string to UTC equivalent."""
+        tz = pytz.timezone(self.hass.config.time_zone)
+        target = tz.normalize(datetime.now().replace(tzinfo=tz)).replace(
+            hour=int(time_string[0:2]), minute=int(time_string[3:5])
+        )
+        ret = target.astimezone(pytz.utc)
+        return ret.strftime("%H:%M")

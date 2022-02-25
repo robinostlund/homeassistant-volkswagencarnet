@@ -1,3 +1,4 @@
+"""Common constants."""
 from datetime import timedelta
 
 DOMAIN = "volkswagencarnet"
@@ -45,3 +46,4 @@ COMPONENTS = {
 
 SERVICE_SET_TIMER_BASIC_SETTINGS = "set_timer_basic_settings"
 SERVICE_UPDATE_SCHEDULE = "update_schedule"
+SERVICE_UPDATE_PROFILE = "update_profile"
