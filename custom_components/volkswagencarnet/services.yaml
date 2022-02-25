@@ -225,7 +225,7 @@ update_profile:
     target_level:
       name: Battery target level %
       description: Charge battery to this level
-      example: 70
+      example: '70'
       required: false
       selector:
         select:
