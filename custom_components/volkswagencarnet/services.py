@@ -16,6 +16,16 @@ from .error import ServiceError
 _LOGGER = logging.getLogger(__name__)
 
 
+def validate_charge_max_current(charge_max_current: Optional[int]):
+    """
+    Dummy implementation.
+
+    Maybe there is a way to actually check which values the car supports?
+    """
+    return charge_max_current is None or charge_max_current in [0, 5, 10, 13, 16, 32]
+    pass
+
+
 class SchedulerService:
     """Schedule services class."""
 
@@ -118,6 +128,8 @@ class SchedulerService:
         night_rate = service_call.data.get("night_rate", None)
         night_rate_start = service_call.data.get("night_rate_start", None)
         night_rate_end = service_call.data.get("night_rate_end", None)
+
+        validate_charge_max_current(charge_max_current)
 
         profile = data.get_profile(profile_id)
         profile.profileName = profile_name if profile_name is not None else profile.profileName
