@@ -159,7 +159,7 @@ class SchedulerService:
             raise Exception("No profiles found")
 
         profile_id = int(service_call.data.get("profile_id", -1))
-        profile_name = int(service_call.data.get("profile_name", None))
+        profile_name = service_call.data.get("profile_name", None)
         charging = service_call.data.get("charging", None)
         charge_max_current = service_call.data.get("charge_max_current", None)
         climatisation = service_call.data.get("climatisation", None)
