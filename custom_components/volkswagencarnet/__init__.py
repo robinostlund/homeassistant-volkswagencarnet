@@ -55,7 +55,8 @@ from .const import (
     CONF_IMPERIAL_UNITS,
     SERVICE_SET_TIMER_BASIC_SETTINGS,
     SERVICE_UPDATE_SCHEDULE,
-    SERVICE_UPDATE_PROFILE, SERVICE_SET_CHARGER_MAX_CURRENT,
+    SERVICE_UPDATE_PROFILE,
+    SERVICE_SET_CHARGER_MAX_CURRENT,
 )
 
 SERVICE_SET_TIMER_BASIC_SETTINGS_SCHEMA = vol.Schema(
@@ -256,7 +257,7 @@ class VolkswagenData:
 
     def __init__(self, config: dict, coordinator: Optional[DataUpdateCoordinator] = None):
         """Initialize the component state."""
-        self.vehicles: Set[Vehicle] = set()
+        self.vehicles: set[Vehicle] = set()
         self.instruments = set()
         self.config = config.get(DOMAIN, config)
         self.names = self.config.get(CONF_NAME, None)
