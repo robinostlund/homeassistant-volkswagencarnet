@@ -1,9 +1,11 @@
+"""Timer services tests."""
 import asyncio
 from asyncio import Future
 from datetime import timedelta
 from types import MappingProxyType
 from unittest.mock import patch, MagicMock
 
+import freezegun
 import homeassistant.config_entries
 from homeassistant.const import (
     CONF_PASSWORD,
@@ -14,7 +16,7 @@ from homeassistant.helpers import device_registry
 from homeassistant.util.unit_system import METRIC_SYSTEM
 from volkswagencarnet.vw_timer import (
     TimerData,
-    TimerAndProfiles,
+    TimersAndProfiles,
     TimerProfileList,
     TimerProfile,
     Timer,
@@ -37,6 +39,7 @@ from .hass_mocks import MockConfigEntry
 
 
 async def test_get_coordinator(hass: HomeAssistant):
+    """Test that we can find the coordinator."""
     dev_id: str = "xyz"
     service = SchedulerService(hass=hass)
 
@@ -54,7 +57,7 @@ async def test_get_coordinator(hass: HomeAssistant):
     with patch.object(homeassistant.config_entries.ConfigEntries, "async_setup") as flow, patch.object(
         homeassistant.config_entries.ConfigEntries, "_async_schedule_save"
     ):
-        f = Future()
+        f: Future = Future()
         f.set_result(True)
         flow.return_value = f
         config_entry = MockConfigEntry(domain=DOMAIN, data=config)
@@ -63,8 +66,7 @@ async def test_get_coordinator(hass: HomeAssistant):
 
     registry = device_registry.async_get(hass)
 
-    # noinspection PyTypeChecker
-    identifiers: set[tuple[str, str]] = {tuple(["volkswagencarnet", dev_id])}
+    identifiers: set[tuple[str, str]] = {tuple(["volkswagencarnet", dev_id])}  # type: ignore
 
     dev_entry = registry.async_get_or_create(config_entry_id=config_entry.entry_id, identifiers=identifiers)
 
@@ -82,6 +84,7 @@ async def test_get_coordinator(hass: HomeAssistant):
 
 @patch("custom_components.volkswagencarnet.Connection")
 async def test_call_service(conn: MagicMock, hass: HomeAssistant):
+    """Test service call."""
     e = MockConfigEntry(
         data={CONF_VEHICLE: "xyz", CONF_USERNAME: "", CONF_PASSWORD: "", CONF_DEBUG: True, CONF_REGION: "ZZ"}
     )
@@ -139,9 +142,9 @@ async def test_call_service(conn: MagicMock, hass: HomeAssistant):
         ]
         basic_settings = BasicSettings(timestamp="2022-02-22T20:22:00Z", targetTemperature=2965, chargeMinLimit=20)
         tpl = TimerProfileList(timer_profiles)
-        tp = TimerAndProfiles(timerProfileList=tpl, timerList=TimerList(timer_list), timerBasicSetting=basic_settings)
+        tp = TimersAndProfiles(timerProfileList=tpl, timerList=TimerList(timer_list), timerBasicSetting=basic_settings)
 
-        future = asyncio.Future()
+        future: Future = asyncio.Future()
         future.set_result(TimerData(timersAndProfiles=tp, status={}))
         get_timers.return_value = future
 
@@ -155,3 +158,15 @@ async def test_call_service(conn: MagicMock, hass: HomeAssistant):
         assert 2975 == used_args
 
     assert res is True
+
+
+@freezegun.freeze_time("2022-02-22T12:20:22Z")
+def test_time_to_utc(hass: HomeAssistant):
+    """Test time conversion."""
+    s = SchedulerService(hass=hass)
+
+    with patch.object(hass.config, "time_zone", "America/Anchorage"):
+        assert s.time_to_utc("16:00:34") == "01:00"
+
+    with patch.object(hass.config, "time_zone", "Europe/Helsinki"):
+        assert s.time_to_utc("15:00:34") == "13:00"

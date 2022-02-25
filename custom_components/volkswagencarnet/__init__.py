@@ -1,7 +1,7 @@
 import asyncio
 import logging
 from datetime import datetime, timedelta
-from typing import Optional, Any, Union
+from typing import Optional, Any, Union, List, Set
 
 import voluptuous as vol
 from homeassistant.config_entries import ConfigEntry, SOURCE_REAUTH
@@ -31,7 +31,7 @@ from volkswagencarnet.vw_dashboard import (
 )
 from volkswagencarnet.vw_vehicle import Vehicle
 
-from custom_components.volkswagencarnet.services import SchedulerService
+from .services import SchedulerService
 from .const import (
     COMPONENTS,
     CONF_MUTABLE,
@@ -55,6 +55,7 @@ from .const import (
     CONF_IMPERIAL_UNITS,
     SERVICE_SET_TIMER_BASIC_SETTINGS,
     SERVICE_UPDATE_SCHEDULE,
+    SERVICE_UPDATE_PROFILE,
 )
 
 SERVICE_SET_TIMER_BASIC_SETTINGS_SCHEMA = vol.Schema(
@@ -71,7 +72,7 @@ SERVICE_UPDATE_SCHEDULE_SCHEMA = vol.Schema(
     {
         vol.Required("device_id"): vol.All(cv.string, vol.Length(min=32, max=32)),
         vol.Required("timer_id"): vol.In([1, 2, 3]),
-        vol.Optional("charging_profile"): vol.In([1, 2, 3, 4, 5, 6, 7, 8, 9, 10]),
+        vol.Optional("charging_profile"): vol.All(cv.positive_int, vol.Range(min_included=1, max_included=10)),
         vol.Optional("enabled"): vol.All(cv.boolean),
         vol.Optional("frequency"): vol.In(["cyclic", "single"]),
         vol.Optional("departure_time"): vol.All(cv.string),
@@ -81,17 +82,35 @@ SERVICE_UPDATE_SCHEDULE_SCHEMA = vol.Schema(
     extra=vol.ALLOW_EXTRA,  # FIXME, should not be needed
 )
 
+SERVICE_UPDATE_PROFILE_SCHEMA = vol.Schema(
+    {
+        vol.Required("device_id"): vol.All(cv.string, vol.Length(min=32, max=32)),
+        vol.Required("profile_id"): vol.All(cv.positive_int, vol.Range(min_included=1, max_included=10)),
+        vol.Required("profile_name"): vol.All(cv.string),
+        vol.Optional("charging"): vol.All(cv.boolean),
+        vol.Optional("climatisation"): vol.All(cv.boolean),
+        vol.Optional("target_level"): vol.In([0, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100]),
+        vol.Optional("charge_max_current"): vol.In([0, 5, 10, 16, 32]),  # Can there be other values?
+        vol.Optional("night_rate"): vol.All(cv.boolean),
+        vol.Optional("night_rate_start"): vol.All(cv.string),
+        vol.Optional("night_rate_end"): vol.All(cv.string),
+    },
+    extra=vol.ALLOW_EXTRA,  # FIXME, should not be needed
+)
+
 _LOGGER = logging.getLogger(__name__)
 
 
 def unload_services(hass: HomeAssistant):
     hass.services.async_remove(DOMAIN, SERVICE_SET_TIMER_BASIC_SETTINGS)
+    hass.services.async_remove(DOMAIN, SERVICE_UPDATE_SCHEDULE)
+    hass.services.async_remove(DOMAIN, SERVICE_UPDATE_PROFILE)
 
 
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     """Setup Volkswagen WeConnect component"""
 
-    def register_services(hass: HomeAssistant):
+    def register_services():
         s = SchedulerService(hass)
         hass.services.async_register(
             domain=DOMAIN,
@@ -104,6 +123,12 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
             service=SERVICE_UPDATE_SCHEDULE,
             service_func=s.update_schedule,
             schema=SERVICE_UPDATE_SCHEDULE_SCHEMA,
+        )
+        hass.services.async_register(
+            domain=DOMAIN,
+            service=SERVICE_UPDATE_PROFILE,
+            service_func=s.update_profile,
+            schema=SERVICE_UPDATE_PROFILE_SCHEMA,
         )
 
     if entry.options.get(CONF_SCAN_INTERVAL):
@@ -153,7 +178,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         UNDO_UPDATE_LISTENER: entry.add_update_listener(_async_update_listener),
     }
 
-    register_services(hass)
+    register_services()
 
     return True
 
@@ -215,7 +240,7 @@ class VolkswagenData:
 
     def __init__(self, config: dict, coordinator: Optional[DataUpdateCoordinator] = None):
         """Initialize the component state."""
-        self.vehicles = set()
+        self.vehicles: Set[Vehicle] = set()
         self.instruments = set()
         self.config = config.get(DOMAIN, config)
         self.names = self.config.get(CONF_NAME, None)
@@ -376,8 +401,8 @@ class VolkswagenCoordinator(DataUpdateCoordinator):
     def __init__(self, hass: HomeAssistant, entry: ConfigEntry, update_interval: timedelta):
         self.vin = entry.data[CONF_VEHICLE].upper()
         self.entry = entry
-        self.platforms = []
-        self.report_last_updated = None
+        self.platforms: list[str] = []
+        self.report_last_updated: Optional[datetime] = None
         self.connection = Connection(
             session=async_get_clientsession(hass),
             username=self.entry.data[CONF_USERNAME],
