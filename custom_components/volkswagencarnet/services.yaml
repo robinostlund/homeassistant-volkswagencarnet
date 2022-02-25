@@ -1,3 +1,31 @@
+set_charger_max_current:
+  name: Set the maximum charging current
+  description: >
+    Set the maximum charging current for manually started slow (AC) charges.
+  fields:
+    device_id:
+      name: Vehicle
+      description:
+      required: true
+      selector:
+        device:
+          integration: volkswagencarnet
+    max_current:
+      name: Charger max current (A)
+      description:
+      example: 13
+      required: true
+      selector:
+        select:
+          options:
+            - '0'
+            - '5'
+            - '10'
+            - '13'
+            - '16'
+            - '32'
+            - 'max'
+
 set_timer_basic_settings:
   name: Set the basic departure timer settings
   description: >
@@ -146,12 +174,14 @@ update_profile:
         text:
     charging:
       name: Enable charging
+      description:
       example: true
       required: false
       selector:
         boolean:
     climatisation:
       name: Enable climatisation
+      description:
       example: true
       required: false
       selector:
@@ -193,6 +223,7 @@ update_profile:
             - '32'
     target_level:
       name: Battery target level %
+      description:
       example: 70
       required: false
       selector:

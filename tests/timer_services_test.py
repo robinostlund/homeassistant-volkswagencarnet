@@ -178,3 +178,5 @@ def test_validate_charge_amps():
     assert validate_charge_max_current(3) is False
     assert validate_charge_max_current(32) is True
     assert validate_charge_max_current("10") is True
+    assert validate_charge_max_current("max") is True
+    assert validate_charge_max_current("foo") is False
