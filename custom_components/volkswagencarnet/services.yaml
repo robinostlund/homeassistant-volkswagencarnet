@@ -168,6 +168,7 @@ update_profile:
             - '10'
     profile_name:
       name: Name
+      description: A descriptive name
       example: Garage at night
       required: false
       selector:
