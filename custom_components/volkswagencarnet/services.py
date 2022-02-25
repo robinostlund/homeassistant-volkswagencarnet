@@ -22,8 +22,43 @@ def validate_charge_max_current(charge_max_current: Optional[Union[int, str]]):
 
     Maybe there is a way to actually check which values the car supports?
     """
-    return charge_max_current is None or int(charge_max_current) in [0, 5, 10, 13, 16, 32]
+    return charge_max_current is None or charge_max_current == "max" or str(charge_max_current) in ["0", "5", "10", "13", "16", "32"]
     pass
+
+
+async def get_coordinator(hass: HomeAssistant, service_call: ServiceCall):
+    """Get the VolkswagenCoordinator."""
+    registry: DeviceRegistry = device_registry.async_get(hass)
+    dev_entry: DeviceEntry = registry.async_get(service_call.data.get("device_id"))
+
+    # Get coordinator handling the device entry
+    config_entry = hass.config_entries.async_get_entry(list(dev_entry.config_entries)[0])
+    if config_entry.domain != DOMAIN:
+        raise ServiceError("Unknown entity")
+    coordinator = config_entry.data.get(
+        "coordinator",
+    )
+    if coordinator is None:
+        coordinator = hass.data[DOMAIN][config_entry.entry_id]["data"].coordinator
+    if coordinator is None:
+        raise ServiceError("Unknown entity")
+    return coordinator
+
+
+def get_vehicle(coordinator) -> Vehicle:
+    """Find requested vehicle."""
+    # find VIN
+    _LOGGER.debug(f"Found VIN {coordinator.vin}")
+    # parse service call
+
+    v: Optional[Vehicle] = None
+    for vehicle in coordinator.connection.vehicles:
+        if vehicle.vin.upper() == coordinator.vin:
+            v = vehicle
+            break
+    if v is None:
+        raise Exception("Vehicle not found")
+    return v
 
 
 class SchedulerService:
@@ -35,9 +70,9 @@ class SchedulerService:
 
     async def set_timer_basic_settings(self, service_call: ServiceCall):
         """Service for configuring basic settings."""
-        c = await self.get_coordinator(service_call)
-        v = self.get_vehicle(c)
-        _LOGGER.debug(f"Found VIN {c.vin}")
+        c = await get_coordinator(self.hass, service_call)
+        v = get_vehicle(c)
+
         # parse service call
         tt = service_call.data.get("target_temperature", None)
         ml = service_call.data.get("min_level", None)
@@ -62,8 +97,8 @@ class SchedulerService:
 
     async def update_schedule(self, service_call: ServiceCall):
         """Service for updating departure schedules."""
-        c = await self.get_coordinator(service_call)
-        v = self.get_vehicle(c)
+        c = await get_coordinator(self.hass, service_call)
+        v = get_vehicle(c)
 
         data: TimerData = await c.connection.getTimers(c.vin)
         if data is None:
@@ -112,12 +147,12 @@ class SchedulerService:
 
     async def update_profile(self, service_call: ServiceCall):
         """Service for updating charging profiles (locations)."""
-        c = await self.get_coordinator(service_call)
-        v = self.get_vehicle(coordinator=c)
+        c = await get_coordinator(self.hass, service_call)
+        v = get_vehicle(coordinator=c)
 
         data: TimerData = await c.connection.getTimers(c.vin)
         if data is None:
-            raise Exception("No timers found")
+            raise Exception("No profiles found")
 
         profile_id = int(service_call.data.get("profile_id", -1))
         profile_name = int(service_call.data.get("profile_name", None))
@@ -148,39 +183,6 @@ class SchedulerService:
         res = await v.set_schedule(data)
         return res
 
-    async def get_coordinator(self, service_call: ServiceCall):
-        """Get the VolkswagenCoordinator."""
-        registry: DeviceRegistry = device_registry.async_get(self.hass)
-        dev_entry: DeviceEntry = registry.async_get(service_call.data.get("device_id"))
-
-        # Get coordinator handling the device entry
-        config_entry = self.hass.config_entries.async_get_entry(list(dev_entry.config_entries)[0])
-        if config_entry.domain != DOMAIN:
-            raise ServiceError("Unknown entity")
-        coordinator = config_entry.data.get(
-            "coordinator",
-        )
-        if coordinator is None:
-            coordinator = self.hass.data[DOMAIN][config_entry.entry_id]["data"].coordinator
-        if coordinator is None:
-            raise ServiceError("Unknown entity")
-        return coordinator
-
-    def get_vehicle(self, coordinator) -> Vehicle:
-        """Find requested vehicle."""
-        # find VIN
-        _LOGGER.debug(f"Found VIN {coordinator.vin}")
-        # parse service call
-
-        v: Optional[Vehicle] = None
-        for vehicle in coordinator.connection.vehicles:
-            if vehicle.vin.upper() == coordinator.vin:
-                v = vehicle
-                break
-        if v is None:
-            raise Exception("Vehicle not found")
-        return v
-
     def time_to_utc(self, time_string: str) -> str:
         """Convert a local time string to UTC equivalent."""
         tz = pytz.timezone(self.hass.config.time_zone)
@@ -189,3 +191,22 @@ class SchedulerService:
         )
         ret = target.astimezone(pytz.utc)
         return ret.strftime("%H:%M")
+
+
+class ChargerService:
+    """Charger services class."""
+
+    def __init__(self, hass: HomeAssistant):
+        """Init."""
+        self.hass: HomeAssistant = hass
+
+    async def set_charger_max_current(self, service_call: ServiceCall):
+        """Service for setting max charging current."""
+        c = await get_coordinator(self.hass, service_call)
+        v = get_vehicle(c)
+
+        # parse service call
+        level = service_call.data.get("max_current", None)
+
+        # Apply
+        return await v.set_charger_current(level)
