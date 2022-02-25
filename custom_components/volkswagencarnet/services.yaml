@@ -5,14 +5,14 @@ set_charger_max_current:
   fields:
     device_id:
       name: Vehicle
-      description:
+      description: Vehicle device id
       required: true
       selector:
         device:
           integration: volkswagencarnet
     max_current:
-      name: Charger max current (A)
-      description:
+      name: Max current
+      description: Charger max current (A)
       example: 13
       required: true
       selector:
@@ -168,20 +168,21 @@ update_profile:
             - '10'
     profile_name:
       name: Name
+      description: A descriptive name
       example: Garage at night
       required: false
       selector:
         text:
     charging:
-      name: Enable charging
-      description:
+      name: Charging
+      description: Enable battery charging
       example: true
       required: false
       selector:
         boolean:
     climatisation:
-      name: Enable climatisation
-      description:
+      name: Climatisation
+      description: Enable climatisation
       example: true
       required: false
       selector:
@@ -223,7 +224,7 @@ update_profile:
             - '32'
     target_level:
       name: Battery target level %
-      description:
+      description: Charge battery to this level
       example: 70
       required: false
       selector:
