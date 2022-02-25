@@ -31,7 +31,7 @@ from volkswagencarnet.vw_dashboard import (
 )
 from volkswagencarnet.vw_vehicle import Vehicle
 
-from .services import SchedulerService
+from .services import SchedulerService, ChargerService
 from .const import (
     COMPONENTS,
     CONF_MUTABLE,
@@ -55,7 +55,7 @@ from .const import (
     CONF_IMPERIAL_UNITS,
     SERVICE_SET_TIMER_BASIC_SETTINGS,
     SERVICE_UPDATE_SCHEDULE,
-    SERVICE_UPDATE_PROFILE,
+    SERVICE_UPDATE_PROFILE, SERVICE_SET_CHARGER_MAX_CURRENT,
 )
 
 SERVICE_SET_TIMER_BASIC_SETTINGS_SCHEMA = vol.Schema(
@@ -64,6 +64,14 @@ SERVICE_SET_TIMER_BASIC_SETTINGS_SCHEMA = vol.Schema(
         vol.Optional("min_level"): vol.In([0, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100]),
         vol.Optional("target_temperature_celsius"): vol.Any(cv.string, cv.positive_int),
         vol.Optional("target_temperature_fahrenheit"): vol.Any(cv.string, cv.positive_int),
+    },
+    extra=vol.ALLOW_EXTRA,  # FIXME, should not be needed
+)
+
+SERVICE_SET_CHARGER_MAX_CURRENT_SCHEMA = vol.Schema(
+    {
+        vol.Optional("device_id"): vol.All(cv.string, vol.Length(min=32, max=32)),
+        vol.Optional("max_current"): vol.In([0, 5, 10, 13, 16, 32, "0", "5", "10", "13", "16", "32", "max"]),
     },
     extra=vol.ALLOW_EXTRA,  # FIXME, should not be needed
 )
@@ -90,7 +98,7 @@ SERVICE_UPDATE_PROFILE_SCHEMA = vol.Schema(
         vol.Optional("charging"): vol.All(cv.boolean),
         vol.Optional("climatisation"): vol.All(cv.boolean),
         vol.Optional("target_level"): vol.In([0, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100]),
-        vol.Optional("charge_max_current"): vol.In([0, 5, 10, 16, 32]),  # Can there be other values?
+        vol.Optional("charge_max_current"): vol.In([0, 5, 10, 13, 16, 32, "0", "5", "10", "13", "16", "32"]),
         vol.Optional("night_rate"): vol.All(cv.boolean),
         vol.Optional("night_rate_start"): vol.All(cv.string),
         vol.Optional("night_rate_end"): vol.All(cv.string),
@@ -105,30 +113,38 @@ def unload_services(hass: HomeAssistant):
     hass.services.async_remove(DOMAIN, SERVICE_SET_TIMER_BASIC_SETTINGS)
     hass.services.async_remove(DOMAIN, SERVICE_UPDATE_SCHEDULE)
     hass.services.async_remove(DOMAIN, SERVICE_UPDATE_PROFILE)
+    hass.services.async_remove(DOMAIN, SERVICE_SET_CHARGER_MAX_CURRENT)
 
 
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     """Setup Volkswagen WeConnect component"""
 
     def register_services():
-        s = SchedulerService(hass)
+        cs = ChargerService(hass)
+        ss = SchedulerService(hass)
         hass.services.async_register(
             domain=DOMAIN,
             service=SERVICE_SET_TIMER_BASIC_SETTINGS,
-            service_func=s.set_timer_basic_settings,
+            service_func=ss.set_timer_basic_settings,
             schema=SERVICE_SET_TIMER_BASIC_SETTINGS_SCHEMA,
         )
         hass.services.async_register(
             domain=DOMAIN,
             service=SERVICE_UPDATE_SCHEDULE,
-            service_func=s.update_schedule,
+            service_func=ss.update_schedule,
             schema=SERVICE_UPDATE_SCHEDULE_SCHEMA,
         )
         hass.services.async_register(
             domain=DOMAIN,
             service=SERVICE_UPDATE_PROFILE,
-            service_func=s.update_profile,
+            service_func=ss.update_profile,
             schema=SERVICE_UPDATE_PROFILE_SCHEMA,
+        )
+        hass.services.async_register(
+            domain=DOMAIN,
+            service=SERVICE_SET_CHARGER_MAX_CURRENT,
+            service_func=cs.set_charger_max_current,
+            schema=SERVICE_SET_CHARGER_MAX_CURRENT_SCHEMA,
         )
 
     if entry.options.get(CONF_SCAN_INTERVAL):
