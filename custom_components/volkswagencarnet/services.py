@@ -22,7 +22,11 @@ def validate_charge_max_current(charge_max_current: Optional[Union[int, str]]):
 
     Maybe there is a way to actually check which values the car supports?
     """
-    return charge_max_current is None or charge_max_current == "max" or str(charge_max_current) in ["0", "5", "10", "13", "16", "32"]
+    return (
+        charge_max_current is None
+        or charge_max_current == "max"
+        or str(charge_max_current) in ["0", "5", "10", "13", "16", "32"]
+    )
     pass
 
 
