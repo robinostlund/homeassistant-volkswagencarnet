@@ -1,7 +1,7 @@
 """Services exposed to Home Assistant."""
 import logging
 from datetime import datetime, timezone
-from typing import Optional
+from typing import Optional, Union
 
 import pytz
 from homeassistant.core import HomeAssistant, ServiceCall
@@ -16,13 +16,13 @@ from .error import ServiceError
 _LOGGER = logging.getLogger(__name__)
 
 
-def validate_charge_max_current(charge_max_current: Optional[int]):
+def validate_charge_max_current(charge_max_current: Optional[Union[int, str]]):
     """
     Dummy implementation.
 
     Maybe there is a way to actually check which values the car supports?
     """
-    return charge_max_current is None or charge_max_current in [0, 5, 10, 13, 16, 32]
+    return charge_max_current is None or int(charge_max_current) in [0, 5, 10, 13, 16, 32]
     pass
 
 
