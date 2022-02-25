@@ -140,7 +140,7 @@ update_profile:
             - '10'
     profile_name:
       name: Name
-      eample: Garage at night
+      example: Garage at night
       required: false
       selector:
         text:
