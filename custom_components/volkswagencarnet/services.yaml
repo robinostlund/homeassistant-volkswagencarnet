@@ -107,3 +107,104 @@ update_schedule:
       required: false
       selector:
         text:
+
+update_profile:
+  name: Update charging profile
+  description: >
+    Update a charging profile
+  fields:
+    device_id:
+      name: Vehicle
+      description: The vehicle device
+      required: true
+      selector:
+        device:
+          integration: volkswagencarnet
+    profile_id:
+      name: Charging profile
+      description: The charging profile id (1..10) to update
+      example: 3
+      required: true
+      selector:
+        select:
+          options:
+            - 1
+            - 2
+            - 3
+            - 4
+            - 5
+            - 6
+            - 7
+            - 8
+            - 9
+            - 10
+    profile_name:
+      name: Name
+      eample: Garage at night
+      required: false
+      selector:
+        text:
+    charging:
+      name: Enable charging
+      example: true
+      required: false
+      selector:
+        boolean:
+    climatisation:
+      name: Enable climatisation
+      example: true
+      required: false
+      selector:
+        boolean:
+    night_rate:
+      name: Night rate
+      description: Enable off-peak charging
+      example: true
+      required: false
+      selector:
+        boolean:
+    night_rate_start:
+      name: Night rate start time
+      description: "hh:mm (24h format)"
+      example: "21:45"
+      required: false
+      selector:
+        time:
+    night_rate_end:
+      name: Night rate end time
+      description: "hh:mm (24h format)"
+      example: "06:00"
+      required: false
+      selector:
+        time:
+    charge_max_current:
+      name: Max charge current
+      description: 0 = max, else 5/10/16/other car supported value. No idea what happens for wrong values...
+      example: 16
+      required: false
+      selector:
+        select:
+          options:
+            - 0
+            - 5
+            - 10
+            - 16
+            - 32
+    target_level:
+      name: Battery target level %
+      example: 70
+      required: false
+      selector:
+        select:
+          options:
+            - 0
+            - 10
+            - 20
+            - 30
+            - 40
+            - 50
+            - 60
+            - 70
+            - 80
+            - 90
+            - 100

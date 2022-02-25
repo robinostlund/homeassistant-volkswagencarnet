@@ -92,7 +92,7 @@ class VolkswagenSwitch(VolkswagenEntity, ToggleEntity):
         return self.instrument.assumed_state
 
     @property
-    def extra_state_attributes(self) -> Optional[dict[str, Any]]:
+    def extra_state_attributes(self) -> dict[str, Any]:
         return {**super().extra_state_attributes, **self.instrument.attributes}
 
 

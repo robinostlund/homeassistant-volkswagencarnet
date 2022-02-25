@@ -1,3 +1,5 @@
+from typing import Optional
+
 import homeassistant.helpers.config_validation as cv
 import logging
 import voluptuous as vol
@@ -55,7 +57,7 @@ class VolkswagenCarnetConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
 
     def __init__(self):
         """Initialize."""
-        self._entry = None
+        self._entry: Optional[ConfigEntry] = None
         self._init_info = {}
         self._errors = {}
         self._connection = None
