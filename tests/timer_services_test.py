@@ -170,3 +170,10 @@ def test_time_to_utc(hass: HomeAssistant):
 
     with patch.object(hass.config, "time_zone", "Europe/Helsinki"):
         assert s.time_to_utc("15:00:34") == "13:00"
+
+
+def test_validate_charge_amps():
+    from custom_components.volkswagencarnet.services import validate_charge_max_current
+
+    assert validate_charge_max_current(3) is False
+    assert validate_charge_max_current(32) is True
