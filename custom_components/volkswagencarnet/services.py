@@ -18,16 +18,17 @@ _LOGGER = logging.getLogger(__name__)
 
 def validate_charge_max_current(charge_max_current: Optional[Union[int, str]]):
     """
-    Dummy implementation.
+    Validate value against known valid ones.
 
     Maybe there is a way to actually check which values the car supports?
     """
-    return (
+    if (
         charge_max_current is None
-        or charge_max_current == "max"
-        or str(charge_max_current) in ["0", "5", "10", "13", "16", "32"]
-    )
-    pass
+        #  not working # or charge_max_current == "max"
+        or str(charge_max_current) in ["5", "10", "13", "16", "32"]
+    ):
+        return
+    raise ValueError(f"{charge_max_current} looks to be an invalid value")
 
 
 async def get_coordinator(hass: HomeAssistant, service_call: ServiceCall):
@@ -211,6 +212,7 @@ class ChargerService:
 
         # parse service call
         level = service_call.data.get("max_current", None)
+        validate_charge_max_current(level)
 
         # Apply
         return await v.set_charger_current(level)
