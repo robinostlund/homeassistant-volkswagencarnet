@@ -1,7 +1,7 @@
 import asyncio
 import logging
 from datetime import datetime, timedelta
-from typing import Optional, Any, Union, List, Set
+from typing import Optional, Any, Union
 
 import voluptuous as vol
 from homeassistant.config_entries import ConfigEntry, SOURCE_REAUTH
@@ -31,7 +31,6 @@ from volkswagencarnet.vw_dashboard import (
 )
 from volkswagencarnet.vw_vehicle import Vehicle
 
-from .services import SchedulerService, ChargerService
 from .const import (
     COMPONENTS,
     CONF_MUTABLE,
@@ -58,6 +57,7 @@ from .const import (
     SERVICE_UPDATE_PROFILE,
     SERVICE_SET_CHARGER_MAX_CURRENT,
 )
+from .services import SchedulerService, ChargerService
 
 SERVICE_SET_TIMER_BASIC_SETTINGS_SCHEMA = vol.Schema(
     {
@@ -72,7 +72,7 @@ SERVICE_SET_TIMER_BASIC_SETTINGS_SCHEMA = vol.Schema(
 SERVICE_SET_CHARGER_MAX_CURRENT_SCHEMA = vol.Schema(
     {
         vol.Optional("device_id"): vol.All(cv.string, vol.Length(min=32, max=32)),
-        vol.Optional("max_current"): vol.In([0, 5, 10, 13, 16, 32, "0", "5", "10", "13", "16", "32", "max"]),
+        vol.Optional("max_current"): vol.In([5, 10, 13, 16, 32, "5", "10", "13", "16", "32"]),
     },
     extra=vol.ALLOW_EXTRA,  # FIXME, should not be needed
 )
@@ -124,7 +124,7 @@ SERVICE_UPDATE_PROFILE_SCHEMA = vol.Schema(
                 "100",
             ]
         ),
-        vol.Optional("charge_max_current"): vol.In([0, 5, 10, 13, 16, 32, "0", "5", "10", "13", "16", "32"]),
+        vol.Optional("charge_max_current"): vol.In([5, 10, 13, 16, 32, "5", "10", "13", "16", "32"]),
         vol.Optional("night_rate"): vol.All(cv.boolean),
         vol.Optional("night_rate_start"): vol.All(cv.string),
         vol.Optional("night_rate_end"): vol.All(cv.string),
