@@ -18,13 +18,11 @@ set_charger_max_current:
       selector:
         select:
           options:
-            - '0'
             - '5'
             - '10'
             - '13'
             - '16'
             - '32'
-            - 'max'
 
 set_timer_basic_settings:
   name: Set the basic departure timer settings
@@ -216,7 +214,6 @@ update_profile:
       selector:
         select:
           options:
-            - '0'
             - '5'
             - '10'
             - '13'
