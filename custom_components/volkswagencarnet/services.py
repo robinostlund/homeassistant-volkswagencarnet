@@ -251,7 +251,9 @@ class SchedulerService:
         night_rate = service_call.data.get("night_rate", None)
         night_rate_start = service_call.data.get("night_rate_start", None)
         night_rate_end = service_call.data.get("night_rate_end", None)
+        heater_source = service_call.data.get("heater_source", None)
 
+        # update timers accordingly
         charge_max_current = validate_charge_max_current(charge_max_current)
 
         profile = data.get_profile(profile_id)
@@ -266,6 +268,8 @@ class SchedulerService:
             profile.nightRateTimeStart = self.time_to_utc(night_rate_start)
         if night_rate_end is not None:
             profile.nightRateTimeEnd = self.time_to_utc(night_rate_end)
+        if heater_source is not None:
+            data.timersAndProfiles.timerBasicSetting.set_heater_source(heater_source)
 
         _LOGGER.debug(f"Updating profile {profile}")
         res = await v.set_schedule(data)
