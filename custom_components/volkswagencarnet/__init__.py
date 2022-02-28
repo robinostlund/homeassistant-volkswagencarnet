@@ -3,7 +3,6 @@ import logging
 from datetime import datetime, timedelta
 from typing import Optional, Any, Union
 
-import voluptuous as vol
 from homeassistant.config_entries import ConfigEntry, SOURCE_REAUTH
 from homeassistant.const import (
     CONF_NAME,
@@ -15,7 +14,6 @@ from homeassistant.const import (
 )
 from homeassistant.core import HomeAssistant, Event
 from homeassistant.exceptions import ConfigEntryNotReady
-from homeassistant.helpers import config_validation as cv
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
 from homeassistant.helpers.dispatcher import async_dispatcher_connect
 from homeassistant.helpers.entity import Entity
@@ -57,79 +55,13 @@ from .const import (
     SERVICE_UPDATE_PROFILE,
     SERVICE_SET_CHARGER_MAX_CURRENT,
 )
-from .services import SchedulerService, ChargerService
-
-SERVICE_SET_TIMER_BASIC_SETTINGS_SCHEMA = vol.Schema(
-    {
-        vol.Optional("device_id"): vol.All(cv.string, vol.Length(min=32, max=32)),
-        vol.Optional("min_level"): vol.In([0, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100]),
-        vol.Optional("target_temperature_celsius"): vol.Any(cv.string, cv.positive_int),
-        vol.Optional("target_temperature_fahrenheit"): vol.Any(cv.string, cv.positive_int),
-    },
-    extra=vol.ALLOW_EXTRA,  # FIXME, should not be needed
-)
-
-SERVICE_SET_CHARGER_MAX_CURRENT_SCHEMA = vol.Schema(
-    {
-        vol.Optional("device_id"): vol.All(cv.string, vol.Length(min=32, max=32)),
-        vol.Optional("max_current"): vol.In([5, 10, 13, 16, 32, "5", "10", "13", "16", "32"]),
-    },
-    extra=vol.ALLOW_EXTRA,  # FIXME, should not be needed
-)
-
-SERVICE_UPDATE_SCHEDULE_SCHEMA = vol.Schema(
-    {
-        vol.Required("device_id"): vol.All(cv.string, vol.Length(min=32, max=32)),
-        vol.Required("timer_id"): vol.In([1, 2, 3]),
-        vol.Optional("charging_profile"): vol.All(cv.positive_int, vol.Range(min_included=1, max_included=10)),
-        vol.Optional("enabled"): vol.All(cv.boolean),
-        vol.Optional("frequency"): vol.In(["cyclic", "single"]),
-        vol.Optional("departure_time"): vol.All(cv.string),
-        vol.Optional("departure_datetime"): vol.All(cv.string),
-        vol.Optional("weekday_mask"): vol.All(cv.string, vol.Length(min=7, max=7)),
-    },
-    extra=vol.ALLOW_EXTRA,  # FIXME, should not be needed
-)
-
-SERVICE_UPDATE_PROFILE_SCHEMA = vol.Schema(
-    {
-        vol.Required("device_id"): vol.All(cv.string, vol.Length(min=32, max=32)),
-        vol.Required("profile_id"): vol.All(cv.positive_int, vol.Range(min_included=1, max_included=10)),
-        vol.Optional("profile_name"): vol.All(cv.string),
-        vol.Optional("charging"): vol.All(cv.boolean),
-        vol.Optional("climatisation"): vol.All(cv.boolean),
-        vol.Optional("target_level"): vol.In(
-            [
-                0,
-                10,
-                20,
-                30,
-                40,
-                50,
-                60,
-                70,
-                80,
-                90,
-                100,
-                "0",
-                "10",
-                "20",
-                "30",
-                "40",
-                "50",
-                "60",
-                "70",
-                "80",
-                "90",
-                "100",
-            ]
-        ),
-        vol.Optional("charge_max_current"): vol.In([5, 10, 13, 16, 32, "5", "10", "13", "16", "32"]),
-        vol.Optional("night_rate"): vol.All(cv.boolean),
-        vol.Optional("night_rate_start"): vol.All(cv.string),
-        vol.Optional("night_rate_end"): vol.All(cv.string),
-    },
-    extra=vol.ALLOW_EXTRA,  # FIXME, should not be needed
+from .services import (
+    SchedulerService,
+    ChargerService,
+    SERVICE_SET_TIMER_BASIC_SETTINGS_SCHEMA,
+    SERVICE_SET_CHARGER_MAX_CURRENT_SCHEMA,
+    SERVICE_UPDATE_SCHEDULE_SCHEMA,
+    SERVICE_UPDATE_PROFILE_SCHEMA,
 )
 
 _LOGGER = logging.getLogger(__name__)
