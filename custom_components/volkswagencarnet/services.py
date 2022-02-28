@@ -4,8 +4,9 @@ from datetime import datetime, timezone
 from typing import Optional, Union
 
 import pytz
+import voluptuous as vol
 from homeassistant.core import HomeAssistant, ServiceCall
-from homeassistant.helpers import device_registry
+from homeassistant.helpers import device_registry, config_validation as cv
 from homeassistant.helpers.device_registry import DeviceEntry, DeviceRegistry
 from volkswagencarnet.vw_timer import Timer, TimerData
 from volkswagencarnet.vw_vehicle import Vehicle
@@ -15,19 +16,98 @@ from .error import ServiceError
 
 _LOGGER = logging.getLogger(__name__)
 
+SERVICE_SET_CHARGER_MAX_CURRENT_SCHEMA = vol.Schema(
+    {
+        vol.Optional("device_id"): vol.All(cv.string, vol.Length(min=32, max=32)),
+        vol.Optional("max_current"): vol.In([5, 10, 13, 16, 32, "5", "10", "13", "16", "32", "reduced", "max"]),
+    },
+    extra=vol.ALLOW_EXTRA,  # FIXME, should not be needed
+)
 
-def validate_charge_max_current(charge_max_current: Optional[Union[int, str]]):
+SERVICE_UPDATE_SCHEDULE_SCHEMA = vol.Schema(
+    {
+        vol.Required("device_id"): vol.All(cv.string, vol.Length(min=32, max=32)),
+        vol.Required("timer_id"): vol.In([1, 2, 3]),
+        vol.Optional("charging_profile"): vol.All(cv.positive_int, vol.Range(min_included=1, max_included=10)),
+        vol.Optional("enabled"): vol.All(cv.boolean),
+        vol.Optional("frequency"): vol.In(["cyclic", "single"]),
+        vol.Optional("departure_time"): vol.All(cv.string),
+        vol.Optional("departure_datetime"): vol.All(cv.string),
+        vol.Optional("weekday_mask"): vol.All(cv.string, vol.Length(min=7, max=7)),
+    },
+    extra=vol.ALLOW_EXTRA,  # FIXME, should not be needed
+)
+
+SERVICE_SET_TIMER_BASIC_SETTINGS_SCHEMA = vol.Schema(
+    {
+        vol.Optional("device_id"): vol.All(cv.string, vol.Length(min=32, max=32)),
+        vol.Optional("min_level"): vol.In([0, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100]),
+        vol.Optional("target_temperature_celsius"): vol.Any(cv.string, cv.positive_int),
+        vol.Optional("target_temperature_fahrenheit"): vol.Any(cv.string, cv.positive_int),
+    },
+    extra=vol.ALLOW_EXTRA,  # FIXME, should not be needed
+)
+
+SERVICE_UPDATE_PROFILE_SCHEMA = vol.Schema(
+    {
+        vol.Required("device_id"): vol.All(cv.string, vol.Length(min=32, max=32)),
+        vol.Required("profile_id"): vol.All(cv.positive_int, vol.Range(min_included=1, max_included=10)),
+        vol.Optional("profile_name"): vol.All(cv.string),
+        vol.Optional("charging"): vol.All(cv.boolean),
+        vol.Optional("climatisation"): vol.All(cv.boolean),
+        vol.Optional("target_level"): vol.In(
+            [
+                0,
+                10,
+                20,
+                30,
+                40,
+                50,
+                60,
+                70,
+                80,
+                90,
+                100,
+                "0",
+                "10",
+                "20",
+                "30",
+                "40",
+                "50",
+                "60",
+                "70",
+                "80",
+                "90",
+                "100",
+            ]
+        ),
+        vol.Optional("charge_max_current"): vol.In([5, 10, 13, 16, 32, "5", "10", "13", "16", "32", "reduced", "max"]),
+        vol.Optional("night_rate"): vol.All(cv.boolean),
+        vol.Optional("night_rate_start"): vol.All(cv.string),
+        vol.Optional("night_rate_end"): vol.All(cv.string),
+    },
+    extra=vol.ALLOW_EXTRA,  # FIXME, should not be needed
+)
+
+
+def validate_charge_max_current(charge_max_current: Optional[Union[int, str]]) -> Optional[int]:
     """
-    Validate value against known valid ones.
+    Validate value against known valid ones and return numeric value.
 
     Maybe there is a way to actually check which values the car supports?
     """
     if (
         charge_max_current is None
         #  not working # or charge_max_current == "max"
-        or str(charge_max_current) in ["5", "10", "13", "16", "32"]
+        or str(charge_max_current) in ["5", "10", "13", "16", "32", "reduced", "max"]
     ):
-        return
+        if charge_max_current is None:
+            return None
+        elif charge_max_current == "max":
+            return 254
+        elif charge_max_current == "reduced":
+            return 252
+        return int(charge_max_current)
     raise ValueError(f"{charge_max_current} looks to be an invalid value")
 
 
@@ -81,12 +161,15 @@ class SchedulerService:
         # parse service call
         tt = service_call.data.get("target_temperature", None)
         ml = service_call.data.get("min_level", None)
+        hs = service_call.data.get("heater_source", None)
         res = True
 
+        # get timers
+        t = await c.connection.getTimers(c.vin)
         # update timers accordingly
+        if hs is not None:
+            t.timersAndProfiles.timerBasicSetting.set_heater_source(hs)
         if tt is not None:
-            # get timers
-            t = await c.connection.getTimers(c.vin)
             _LOGGER.debug(f"Setting target temperature to {tt} {self.hass.config.units.temperature_unit}")
             if self.hass.config.units.is_metric:
                 t.timersAndProfiles.timerBasicSetting.set_target_temperature_celsius(float(tt))
@@ -169,7 +252,7 @@ class SchedulerService:
         night_rate_start = service_call.data.get("night_rate_start", None)
         night_rate_end = service_call.data.get("night_rate_end", None)
 
-        validate_charge_max_current(charge_max_current)
+        charge_max_current = validate_charge_max_current(charge_max_current)
 
         profile = data.get_profile(profile_id)
         profile.profileName = profile_name if profile_name is not None else profile.profileName
@@ -211,8 +294,10 @@ class ChargerService:
         v = get_vehicle(c)
 
         # parse service call
-        level = service_call.data.get("max_current", None)
-        validate_charge_max_current(level)
+        level = validate_charge_max_current(service_call.data.get("max_current", None))
+
+        if level is None:
+            raise ValueError("Can't change value to None")
 
         # Apply
         return await v.set_charger_current(level)
