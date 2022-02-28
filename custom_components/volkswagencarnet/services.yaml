@@ -62,6 +62,16 @@ set_timer_basic_settings:
           max: 87
           step: 0.5
           unit_of_measurement: "C/F"
+    heater_source:
+      name: Heater source
+      description: Select heater source (only if auxiliary heater is installed)
+      example: 'electric'
+      required: false
+      selector:
+        select:
+          options:
+            - 'electric'
+            - 'auxiliary'
 
 update_schedule:
   name: Update departure schedule
@@ -238,3 +248,13 @@ update_profile:
             - '80'
             - '90'
             - '100'
+    heater_source:
+      name: Heater source
+      description: Select heater source (only if auxiliary heater is installed)
+      example: 'electric'
+      required: false
+      selector:
+        select:
+          options:
+            - 'electric'
+            - 'auxiliary'
