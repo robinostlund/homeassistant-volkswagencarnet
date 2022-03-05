@@ -1,13 +1,12 @@
 from typing import Optional
 
-from volkswagencarnet.vw_dashboard import create_instruments
 from volkswagencarnet.vw_vehicle import Vehicle
 
 import homeassistant.helpers.config_validation as cv
 import logging
 
 import voluptuous as vol
-from homeassistant import config_entries, helpers
+from homeassistant import config_entries
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import (
     CONF_NAME,
@@ -16,12 +15,12 @@ from homeassistant.const import (
     CONF_SCAN_INTERVAL,
     CONF_USERNAME,
 )
-from homeassistant.core import callback, HomeAssistant
+from homeassistant.core import callback
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
 
 from volkswagencarnet.vw_connection import Connection
 
-from .util import get_convert_conf
+from .util import get_convert_conf, get_coordinator, get_vehicle
 from .const import (
     CONF_CONVERT,
     CONF_DEBUG,
@@ -233,7 +232,6 @@ class VolkswagenCarnetOptionsFlowHandler(config_entries.OptionsFlow):
     def __init__(self, config_entry: ConfigEntry):
         """Initialize domain options flow."""
         super().__init__()
-        self._connection: Optional[Connection] = None
         self._session = None
         self._errors = {}
 
@@ -241,15 +239,6 @@ class VolkswagenCarnetOptionsFlowHandler(config_entries.OptionsFlow):
 
     async def async_step_init(self, user_input=None):
         """Manage the options."""
-        self._connection = Connection(
-            session=async_get_clientsession(self.hass),
-            username=self._config_entry.data[CONF_USERNAME],
-            password=self._config_entry.data[CONF_PASSWORD],
-            fulldebug=self._config_entry.data.get(CONF_DEBUG, DEFAULT_DEBUG),
-            country=self._config_entry.data[CONF_REGION],
-        )
-
-        await self._connection.doLogin()
         return await self.async_step_user()
 
     async def async_step_user(self, user_input=None):
@@ -300,15 +289,22 @@ class VolkswagenCarnetOptionsFlowHandler(config_entries.OptionsFlow):
         )
 
     async def async_step_select_instruments(self, user_input=None):
+        coordinator = await get_coordinator(self.hass, self._config_entry)
         data = self._config_entry.as_dict()
         if user_input is not None:
+
             data["data"][CONF_RESOURCES] = user_input[CONF_RESOURCES]
 
+            self.hass.config_entries.async_update_entry(
+                self._config_entry,
+                data={**data["data"]},
+            )
+            self.hass.async_create_task(self.hass.config_entries.async_reload(self._config_entry.entry_id))
+
             ret = self.async_create_entry(title=self._config_entry.data[CONF_NAME], data=data)
-            await self._connection.logout()
             return ret
 
-        v: Vehicle = self._connection.vehicle(self._config_entry.data[CONF_VEHICLE])
+        v: Vehicle = get_vehicle(coordinator=coordinator)
         d = v.dashboard()
 
         instruments_dict = {instrument.attr: instrument.name for instrument in d.instruments}

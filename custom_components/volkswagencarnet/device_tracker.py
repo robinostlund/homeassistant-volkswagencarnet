@@ -9,8 +9,8 @@ from homeassistant.core import HomeAssistant
 from homeassistant.helpers.dispatcher import async_dispatcher_connect
 from homeassistant.util import slugify
 
-from . import SIGNAL_STATE_UPDATED, VolkswagenEntity
-from .const import DATA, DATA_KEY, DOMAIN
+from . import VolkswagenEntity
+from .const import DATA, DATA_KEY, DOMAIN, SIGNAL_STATE_UPDATED
 
 _LOGGER = logging.getLogger(__name__)
 

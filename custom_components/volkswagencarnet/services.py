@@ -1,7 +1,6 @@
 """Services exposed to Home Assistant."""
 import logging
 from datetime import datetime, timezone
-from typing import Optional, Union
 
 import pytz
 import voluptuous as vol
@@ -9,7 +8,7 @@ from homeassistant.core import HomeAssistant, ServiceCall
 from homeassistant.helpers import config_validation as cv
 from volkswagencarnet.vw_timer import Timer, TimerData
 
-from util import get_coordinator, get_vehicle
+from .util import get_coordinator_by_device_id, get_vehicle, validate_charge_max_current
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -87,27 +86,6 @@ SERVICE_UPDATE_PROFILE_SCHEMA = vol.Schema(
 )
 
 
-def validate_charge_max_current(charge_max_current: Optional[Union[int, str]]) -> Optional[int]:
-    """
-    Validate value against known valid ones and return numeric value.
-
-    Maybe there is a way to actually check which values the car supports?
-    """
-    if (
-        charge_max_current is None
-        #  not working # or charge_max_current == "max"
-        or str(charge_max_current) in ["5", "10", "13", "16", "32", "reduced", "max"]
-    ):
-        if charge_max_current is None:
-            return None
-        elif charge_max_current == "max":
-            return 254
-        elif charge_max_current == "reduced":
-            return 252
-        return int(charge_max_current)
-    raise ValueError(f"{charge_max_current} looks to be an invalid value")
-
-
 class SchedulerService:
     """Schedule services class."""
 
@@ -117,7 +95,7 @@ class SchedulerService:
 
     async def set_timer_basic_settings(self, service_call: ServiceCall):
         """Service for configuring basic settings."""
-        c = await get_coordinator(self.hass, service_call.data.get("device_id"))
+        c = await get_coordinator_by_device_id(self.hass, service_call.data.get("device_id"))
         v = get_vehicle(c)
 
         # parse service call
@@ -153,7 +131,7 @@ class SchedulerService:
 
     async def update_schedule(self, service_call: ServiceCall):
         """Service for updating departure schedules."""
-        c = await get_coordinator(self.hass, service_call.data.get("device_id"))
+        c = await get_coordinator_by_device_id(self.hass, service_call.data.get("device_id"))
         v = get_vehicle(c)
 
         data: TimerData = await c.connection.getTimers(c.vin)
@@ -203,7 +181,7 @@ class SchedulerService:
 
     async def update_profile(self, service_call: ServiceCall):
         """Service for updating charging profiles (locations)."""
-        c = await get_coordinator(self.hass, service_call.data.get("device_id"))
+        c = await get_coordinator_by_device_id(self.hass, service_call.data.get("device_id"))
         v = get_vehicle(coordinator=c)
 
         data: TimerData = await c.connection.getTimers(c.vin)
@@ -262,7 +240,7 @@ class ChargerService:
 
     async def set_charger_max_current(self, service_call: ServiceCall):
         """Service for setting max charging current."""
-        c = await get_coordinator(self.hass, service_call.data.get("device_id"))
+        c = await get_coordinator_by_device_id(self.hass, service_call.data.get("device_id"))
         v = get_vehicle(c)
 
         # parse service call

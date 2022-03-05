@@ -29,7 +29,7 @@ from volkswagencarnet.vw_dashboard import (
 )
 from volkswagencarnet.vw_vehicle import Vehicle
 
-from util import get_convert_conf
+from .util import get_convert_conf
 from .const import (
     COMPONENTS,
     CONF_MUTABLE,

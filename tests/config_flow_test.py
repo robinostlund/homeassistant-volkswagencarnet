@@ -8,7 +8,8 @@ from homeassistant.core import HomeAssistant
 from homeassistant.data_entry_flow import FlowResult
 from volkswagencarnet.vw_connection import Connection
 
-from custom_components.volkswagencarnet import CONF_DEBUG, CONF_REGION, config_flow
+from custom_components.volkswagencarnet import config_flow
+from custom_components.volkswagencarnet.const import CONF_DEBUG, CONF_REGION
 from custom_components.volkswagencarnet.config_flow import VolkswagenCarnetConfigFlow
 
 

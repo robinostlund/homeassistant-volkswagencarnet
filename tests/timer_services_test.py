@@ -5,14 +5,11 @@ from datetime import timedelta
 from types import MappingProxyType
 from unittest.mock import patch, MagicMock
 
-import freezegun
-import homeassistant.config_entries
 from homeassistant.const import (
     CONF_PASSWORD,
     CONF_USERNAME,
 )
-from homeassistant.core import HomeAssistant, ServiceCall
-from homeassistant.helpers import device_registry
+from homeassistant.core import HomeAssistant
 from homeassistant.util.unit_system import METRIC_SYSTEM
 from volkswagencarnet.vw_timer import (
     TimerData,
@@ -26,60 +23,18 @@ from volkswagencarnet.vw_timer import (
 from volkswagencarnet.vw_vehicle import Vehicle
 
 from custom_components.volkswagencarnet import (
-    DOMAIN,
-    SERVICE_SET_TIMER_BASIC_SETTINGS,
     VolkswagenCoordinator,
-    CONF_VEHICLE,
-    CONF_REGION,
-    CONF_DEBUG,
     SERVICE_SET_TIMER_BASIC_SETTINGS_SCHEMA,
     SchedulerService,
 )
+from custom_components.volkswagencarnet.const import (
+    DOMAIN,
+    SERVICE_SET_TIMER_BASIC_SETTINGS,
+    CONF_VEHICLE,
+    CONF_REGION,
+    CONF_DEBUG,
+)
 from .hass_mocks import MockConfigEntry
-
-
-async def test_get_coordinator(hass: HomeAssistant):
-    """Test that we can find the coordinator."""
-    dev_id: str = "xyz"
-    service = SchedulerService(hass=hass)
-
-    m_coord = MagicMock(VolkswagenCoordinator)
-    config = {
-        CONF_DEBUG: False,
-        CONF_PASSWORD: "",
-        CONF_USERNAME: "",
-        CONF_VEHICLE: dev_id,
-        CONF_REGION: "zz",
-        "coordinator": m_coord,
-    }
-
-    # We want to skip the actual setup flow here
-    with patch.object(homeassistant.config_entries.ConfigEntries, "async_setup") as flow, patch.object(
-        homeassistant.config_entries.ConfigEntries, "_async_schedule_save"
-    ):
-        f: Future = Future()
-        f.set_result(True)
-        flow.return_value = f
-        config_entry = MockConfigEntry(domain=DOMAIN, data=config)
-
-        await hass.config_entries.async_add(config_entry)
-
-    registry = device_registry.async_get(hass)
-
-    identifiers: set[tuple[str, str]] = {tuple(["volkswagencarnet", dev_id])}  # type: ignore
-
-    dev_entry = registry.async_get_or_create(config_entry_id=config_entry.entry_id, identifiers=identifiers)
-
-    service_call = ServiceCall(
-        DOMAIN,
-        SERVICE_SET_TIMER_BASIC_SETTINGS,
-        {
-            "device_id": dev_entry.id,
-        },
-    )
-
-    res = await SchedulerService.get_coordinator(self=service, service_call=service_call)
-    assert m_coord == res
 
 
 @patch("custom_components.volkswagencarnet.Connection")
@@ -112,7 +67,9 @@ async def test_call_service(conn: MagicMock, hass: HomeAssistant):
     target_temp = 24.5
     data = {"device_id": e.entry_id, "target_temperature": target_temp}
 
-    with patch.object(s, "get_coordinator") as m, patch.object(c.connection, "getTimers") as get_timers:
+    with patch("custom_components.volkswagencarnet.services.get_coordinator_by_device_id") as m, patch.object(
+        c.connection, "getTimers"
+    ) as get_timers:
         m.return_value = c
         timer_profiles = [
             TimerProfile(
@@ -158,25 +115,3 @@ async def test_call_service(conn: MagicMock, hass: HomeAssistant):
         assert 2975 == used_args
 
     assert res is True
-
-
-@freezegun.freeze_time("2022-02-22T12:20:22Z")
-def test_time_to_utc(hass: HomeAssistant):
-    """Test time conversion."""
-    s = SchedulerService(hass=hass)
-
-    with patch.object(hass.config, "time_zone", "America/Anchorage"):
-        assert s.time_to_utc("16:00:34") == "01:00"
-
-    with patch.object(hass.config, "time_zone", "Europe/Helsinki"):
-        assert s.time_to_utc("15:00:34") == "13:00"
-
-
-def test_validate_charge_amps():
-    from custom_components.volkswagencarnet.services import validate_charge_max_current
-
-    assert validate_charge_max_current(3) is False
-    assert validate_charge_max_current(32) is True
-    assert validate_charge_max_current("10") is True
-    assert validate_charge_max_current("max") is True
-    assert validate_charge_max_current("foo") is False
