@@ -65,6 +65,13 @@
           "debug": "Enable full debug logs from API (requires debug logging enabled in config)",
           "convert": "Select if you wan to make any distance unit conversions"
         }
+      },
+      "select_instruments": {
+        "title": "Instruments",
+        "description": "Select instruments to monitor",
+        "data": {
+          "resources": "Resources to monitor"
+        }
       }
     }
   }

@@ -1,9 +1,13 @@
 from typing import Optional
 
+from volkswagencarnet.vw_dashboard import create_instruments
+from volkswagencarnet.vw_vehicle import Vehicle
+
 import homeassistant.helpers.config_validation as cv
 import logging
+
 import voluptuous as vol
-from homeassistant import config_entries
+from homeassistant import config_entries, helpers
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import (
     CONF_NAME,
@@ -12,13 +16,13 @@ from homeassistant.const import (
     CONF_SCAN_INTERVAL,
     CONF_USERNAME,
 )
-from homeassistant.core import callback
+from homeassistant.core import callback, HomeAssistant
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
 
 from volkswagencarnet.vw_connection import Connection
 
-import custom_components
-from custom_components.volkswagencarnet.const import (
+from .util import get_convert_conf
+from .const import (
     CONF_CONVERT,
     CONF_DEBUG,
     CONVERT_DICT,
@@ -229,21 +233,33 @@ class VolkswagenCarnetOptionsFlowHandler(config_entries.OptionsFlow):
     def __init__(self, config_entry: ConfigEntry):
         """Initialize domain options flow."""
         super().__init__()
+        self._connection: Optional[Connection] = None
+        self._session = None
+        self._errors = {}
 
-        self._config_entry = config_entry
+        self._config_entry: ConfigEntry = config_entry
 
     async def async_step_init(self, user_input=None):
         """Manage the options."""
+        self._connection = Connection(
+            session=async_get_clientsession(self.hass),
+            username=self._config_entry.data[CONF_USERNAME],
+            password=self._config_entry.data[CONF_PASSWORD],
+            fulldebug=self._config_entry.data.get(CONF_DEBUG, DEFAULT_DEBUG),
+            country=self._config_entry.data[CONF_REGION],
+        )
+
+        await self._connection.doLogin()
         return await self.async_step_user()
 
     async def async_step_user(self, user_input=None):
         """Manage the options."""
         if user_input is not None:
             # return self.async_create_entry(title="", data=user_input)
-            await self.async_step_select_instruments()
+            return await self.async_step_select_instruments()
 
         # Backward compatibility
-        default_convert_conf = custom_components.volkswagencarnet.get_convert_conf(self._config_entry)
+        default_convert_conf = get_convert_conf(self._config_entry)
 
         return self.async_show_form(
             step_id="user",
@@ -279,6 +295,32 @@ class VolkswagenCarnetOptionsFlowHandler(config_entries.OptionsFlow):
                         CONF_REGION,
                         default=self._config_entry.options.get(CONF_REGION, self._config_entry.data[CONF_REGION]),
                     ): str,
+                }
+            ),
+        )
+
+    async def async_step_select_instruments(self, user_input=None):
+        data = self._config_entry.as_dict()
+        if user_input is not None:
+            data["data"][CONF_RESOURCES] = user_input[CONF_RESOURCES]
+
+            ret = self.async_create_entry(title=self._config_entry.data[CONF_NAME], data=data)
+            await self._connection.logout()
+            return ret
+
+        v: Vehicle = self._connection.vehicle(self._config_entry.data[CONF_VEHICLE])
+        d = v.dashboard()
+
+        instruments_dict = {instrument.attr: instrument.name for instrument in d.instruments}
+
+        return self.async_show_form(
+            step_id="select_instruments",
+            errors=self._errors,
+            data_schema=vol.Schema(
+                {
+                    vol.Optional(CONF_RESOURCES, default=list(data["data"][CONF_RESOURCES])): cv.multi_select(
+                        instruments_dict
+                    )
                 }
             ),
         )

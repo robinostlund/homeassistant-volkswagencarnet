@@ -29,6 +29,7 @@ from volkswagencarnet.vw_dashboard import (
 )
 from volkswagencarnet.vw_vehicle import Vehicle
 
+from util import get_convert_conf
 from .const import (
     COMPONENTS,
     CONF_MUTABLE,
@@ -48,7 +49,6 @@ from .const import (
     CONF_DEBUG,
     DEFAULT_DEBUG,
     CONF_CONVERT,
-    CONF_NO_CONVERSION,
     CONF_IMPERIAL_UNITS,
     SERVICE_SET_TIMER_BASIC_SETTINGS,
     SERVICE_UPDATE_SCHEDULE,
@@ -199,14 +199,6 @@ async def async_unload_coordinator(hass: HomeAssistant, entry: ConfigEntry) -> b
 async def _async_update_listener(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     """Handle options update."""
     return await hass.config_entries.async_reload(entry.entry_id)
-
-
-def get_convert_conf(entry: ConfigEntry) -> Optional[str]:
-    return (
-        CONF_SCANDINAVIAN_MILES
-        if entry.options.get(CONF_SCANDINAVIAN_MILES, entry.data.get(CONF_SCANDINAVIAN_MILES, False))
-        else CONF_NO_CONVERSION
-    )
 
 
 class VolkswagenData:
