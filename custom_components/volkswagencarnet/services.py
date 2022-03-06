@@ -161,22 +161,28 @@ class SchedulerService:
         # parse service call
         tt = service_call.data.get("target_temperature", None)
         ml = service_call.data.get("min_level", None)
-        hs = service_call.data.get("heater_source", None)
+        # hs = service_call.data.get("heater_source", None)
         res = True
 
-        # get timers
-        t = await c.connection.getTimers(c.vin)
-        # update timers accordingly
-        if hs is not None:
-            t.timersAndProfiles.timerBasicSetting.set_heater_source(hs)
+        # update timers accordingly (not working)
+        # if hs is not None:
+        #     _LOGGER.debug(f"Setting heater source to {hs}")
+        #     # get timers
+        #     t = await c.connection.getTimers(c.vin)
+        #     t.timersAndProfiles.timerBasicSetting.set_heater_source(hs)
+        #     res = await c.connection._setDepartureTimer(c.vin, t.timersAndProfiles, "setHeaterSource")
+        #     # res = await v.set_departure_timer_heater_source(hs)
+        #     _LOGGER.debug(f"set heater source returned {res}")
         if tt is not None:
             _LOGGER.debug(f"Setting target temperature to {tt} {self.hass.config.units.temperature_unit}")
+            # get timers
+            t = await c.connection.getTimers(c.vin)
             if self.hass.config.units.is_metric:
                 t.timersAndProfiles.timerBasicSetting.set_target_temperature_celsius(float(tt))
             else:
                 t.timersAndProfiles.timerBasicSetting.set_target_temperature_fahrenheit(int(tt))
             # send command to volkswagencarnet
-            res = await v.set_climatisation_temp(t.timersAndProfiles.timerBasicSetting.targetTemperature)
+            res = res and await v.set_climatisation_temp(t.timersAndProfiles.timerBasicSetting.targetTemperature)
         if ml is not None:
             _LOGGER.debug(f"Setting minimum charge level to {ml}%")
             # send charge limit command to volkswagencarnet
@@ -251,7 +257,7 @@ class SchedulerService:
         night_rate = service_call.data.get("night_rate", None)
         night_rate_start = service_call.data.get("night_rate_start", None)
         night_rate_end = service_call.data.get("night_rate_end", None)
-        heater_source = service_call.data.get("heater_source", None)
+        # heater_source = service_call.data.get("heater_source", None)
 
         # update timers accordingly
         charge_max_current = validate_charge_max_current(charge_max_current)
@@ -268,10 +274,10 @@ class SchedulerService:
             profile.nightRateTimeStart = self.time_to_utc(night_rate_start)
         if night_rate_end is not None:
             profile.nightRateTimeEnd = self.time_to_utc(night_rate_end)
-        if heater_source is not None:
-            data.timersAndProfiles.timerBasicSetting.set_heater_source(heater_source)
+        # if heater_source is not None:
+        #    data.timersAndProfiles.timerBasicSetting.set_heater_source(heater_source)
 
-        _LOGGER.debug(f"Updating profile {profile}")
+        _LOGGER.debug(f"Updating profile {profile.profileID}: {profile.profileName}")
         res = await v.set_schedule(data)
         return res
 
