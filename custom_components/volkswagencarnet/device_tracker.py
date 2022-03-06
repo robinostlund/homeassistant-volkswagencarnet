@@ -9,7 +9,8 @@ from homeassistant.core import HomeAssistant
 from homeassistant.helpers.dispatcher import async_dispatcher_connect
 from homeassistant.util import slugify
 
-from . import DATA, DATA_KEY, DOMAIN, SIGNAL_STATE_UPDATED, VolkswagenEntity
+from . import SIGNAL_STATE_UPDATED, VolkswagenEntity
+from .const import DATA, DATA_KEY, DOMAIN
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -40,7 +41,7 @@ async def async_setup_scanner(hass, config, async_see, discovery_info=None):
     async def see_vehicle():
         """Handle the reporting of the vehicle position."""
         host_name = data.vehicle_name(instrument.vehicle)
-        dev_id = "{}".format(slugify(host_name))
+        dev_id = f"{slugify(host_name)}"
         _LOGGER.debug("Getting location of %s" % host_name)
         await async_see(
             dev_id=dev_id,

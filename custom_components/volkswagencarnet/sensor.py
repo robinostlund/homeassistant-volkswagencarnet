@@ -3,8 +3,8 @@ Support for Volkswagen WeConnect Platform
 """
 import logging
 
-from . import DATA_KEY, DOMAIN, VolkswagenEntity
-from .const import DATA
+from . import VolkswagenEntity
+from .const import DATA_KEY, DATA, DOMAIN
 
 _LOGGER = logging.getLogger(__name__)
 

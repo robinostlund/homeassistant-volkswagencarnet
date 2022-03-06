@@ -1,0 +1,262 @@
+set_charger_max_current:
+  name: Set the maximum charging current
+  description: >
+    Set the maximum charging current for manually started slow (AC) charges.
+  fields:
+    device_id:
+      name: Vehicle
+      description: Vehicle device id
+      required: true
+      selector:
+        device:
+          integration: volkswagencarnet
+    max_current:
+      name: Max current
+      description: Charger max current (A)
+      example: 13
+      required: true
+      selector:
+        select:
+          options:
+            - '5'
+            - '10'
+            - '13'
+            - '16'
+            - '32'
+            - 'reduced'
+            - 'max'
+
+set_timer_basic_settings:
+  name: Set the basic departure timer settings
+  description: >
+    Set the target temperature and minimum limit that the car will immediately
+    charge to when a departure timer is active. This minimum limit overrides
+    most other settings, including off-peak times.
+    Provide at least one of the properties.
+  fields:
+    device_id:
+      name: Vehicle
+      description: The vehicle to set charge limit for
+      required: true
+      selector:
+        device:
+          integration: volkswagencarnet
+    min_level:
+      name: Charge minimum level
+      description: The minimum charge level (0-100%)
+      example: 50
+      required: false
+      selector:
+        number:
+          min: 0
+          max: 100
+          step: 10
+          unit_of_measurement: "%"
+    target_temperature:
+      name: Temperature
+      description: Climatisation target temperature in system temperature unit (°C/°F)
+      example: 24.5
+      required: false
+      selector:
+        number:
+          mode: box
+          min: 15
+          max: 87
+          step: 0.5
+          unit_of_measurement: "C/F"
+#    heater_source:
+#      name: Heater source
+#      description: Select heater source (only if auxiliary heater is installed)
+#      example: 'electric'
+#      required: false
+#      selector:
+#        select:
+#          options:
+#            - 'electric'
+#            - 'auxiliary'
+
+update_schedule:
+  name: Update departure schedule
+  description: >
+    Update a departure schedule
+  fields:
+    device_id:
+      name: Vehicle
+      description: The vehicle device
+      required: true
+      selector:
+        device:
+          integration: volkswagencarnet
+    timer_id:
+      name: Timer id
+      description: The timer id (1, 2 or 3)
+      example: 1
+      required: true
+      selector:
+        number:
+          min: 1
+          max: 3
+          step: 1
+    profile_id:
+      name: Charging profile
+      description: The charging profile id (1..10) to use
+      example: 3
+      required: false
+      selector:
+        number:
+          min: 1
+          max: 10
+          step: 1
+    enabled:
+      name: Timer enabled
+      description: Enable this timer
+      example: 3
+      required: false
+      selector:
+        boolean:
+    frequency:
+      name: Timer frequency
+      description: cyclic / single
+      example: "cyclic"
+      required: false
+      selector:
+        select:
+          options:
+            - "cyclic"
+            - "single"
+    departure_time:
+      name: Departure time
+      description: "hh:mm for cyclic frequency"
+      example: "06:45"
+      required: false
+      selector:
+        time:
+    departure_datetime:
+      name: Departure time
+      description: "timestamp for single"
+      example: "2022-02-22T06:45:00+0200"
+      required: false
+      selector:
+        text:
+    weekday_mask:
+      name: Weekday mask
+      description: Weekdays to apply the cyclic timer
+      example: "yyyyynn"
+      required: false
+      selector:
+        text:
+
+update_profile:
+  name: Update charging profile
+  description: >
+    Update a charging profile
+  fields:
+    device_id:
+      name: Vehicle
+      description: The vehicle device
+      required: true
+      selector:
+        device:
+          integration: volkswagencarnet
+    profile_id:
+      name: Charging profile
+      description: The charging profile id (1..10) to update
+      example: 3
+      required: true
+      selector:
+        select:
+          options:
+            - '1'
+            - '2'
+            - '3'
+            - '4'
+            - '5'
+            - '6'
+            - '7'
+            - '8'
+            - '9'
+            - '10'
+    profile_name:
+      name: Name
+      description: A descriptive name
+      example: Garage at night
+      required: false
+      selector:
+        text:
+    charging:
+      name: Charging
+      description: Enable battery charging
+      example: true
+      required: false
+      selector:
+        boolean:
+    climatisation:
+      name: Climatisation
+      description: Enable climatisation
+      example: true
+      required: false
+      selector:
+        boolean:
+    night_rate:
+      name: Night rate
+      description: Enable off-peak charging
+      example: true
+      required: false
+      selector:
+        boolean:
+    night_rate_start:
+      name: Night rate start time
+      description: "hh:mm (24h format)"
+      example: "21:45"
+      required: false
+      selector:
+        time:
+    night_rate_end:
+      name: Night rate end time
+      description: "hh:mm (24h format)"
+      example: "06:00"
+      required: false
+      selector:
+        time:
+    charge_max_current:
+      name: Max charge current
+      description: 0 = max, else 5/10/16/other car supported value. No idea what happens for wrong values...
+      example: 16
+      required: false
+      selector:
+        select:
+          options:
+            - '5'
+            - '10'
+            - '13'
+            - '16'
+            - '32'
+    target_level:
+      name: Battery target level %
+      description: Charge battery to this level
+      example: '70'
+      required: false
+      selector:
+        select:
+          options:
+            - '0'
+            - '10'
+            - '20'
+            - '30'
+            - '40'
+            - '50'
+            - '60'
+            - '70'
+            - '80'
+            - '90'
+            - '100'
+#    heater_source:
+#      name: Heater source
+#      description: Select heater source (only if auxiliary heater is installed)
+#      example: 'electric'
+#      required: false
+#      selector:
+#        select:
+#          options:
+#            - 'electric'
+#            - 'auxiliary'

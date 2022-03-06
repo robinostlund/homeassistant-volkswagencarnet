@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 import asyncio
 import logging
 from datetime import datetime, timedelta
@@ -21,7 +20,13 @@ from homeassistant.helpers.entity import Entity
 from homeassistant.helpers.icon import icon_for_battery_level
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
 from volkswagencarnet.vw_connection import Connection
-from volkswagencarnet.vw_dashboard import Instrument, Climate, BinarySensor, Sensor, Switch
+from volkswagencarnet.vw_dashboard import (
+    Instrument,
+    Climate,
+    BinarySensor,
+    Sensor,
+    Switch,
+)
 from volkswagencarnet.vw_vehicle import Vehicle
 
 from .const import (
@@ -34,12 +39,9 @@ from .const import (
     CONF_SPIN,
     CONF_VEHICLE,
     DATA,
-    DATA_KEY,
-    DEFAULT_REGION,
     DEFAULT_REPORT_UPDATE_INTERVAL,
     DEFAULT_UPDATE_INTERVAL,
     DOMAIN,
-    MIN_UPDATE_INTERVAL,
     SIGNAL_STATE_UPDATED,
     UNDO_UPDATE_LISTENER,
     UPDATE_CALLBACK,
@@ -48,13 +50,60 @@ from .const import (
     CONF_CONVERT,
     CONF_NO_CONVERSION,
     CONF_IMPERIAL_UNITS,
+    SERVICE_SET_TIMER_BASIC_SETTINGS,
+    SERVICE_UPDATE_SCHEDULE,
+    SERVICE_UPDATE_PROFILE,
+    SERVICE_SET_CHARGER_MAX_CURRENT,
+)
+from .services import (
+    SchedulerService,
+    ChargerService,
+    SERVICE_SET_TIMER_BASIC_SETTINGS_SCHEMA,
+    SERVICE_SET_CHARGER_MAX_CURRENT_SCHEMA,
+    SERVICE_UPDATE_SCHEDULE_SCHEMA,
+    SERVICE_UPDATE_PROFILE_SCHEMA,
 )
 
 _LOGGER = logging.getLogger(__name__)
 
 
+def unload_services(hass: HomeAssistant):
+    hass.services.async_remove(DOMAIN, SERVICE_SET_TIMER_BASIC_SETTINGS)
+    hass.services.async_remove(DOMAIN, SERVICE_UPDATE_SCHEDULE)
+    hass.services.async_remove(DOMAIN, SERVICE_UPDATE_PROFILE)
+    hass.services.async_remove(DOMAIN, SERVICE_SET_CHARGER_MAX_CURRENT)
+
+
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     """Setup Volkswagen WeConnect component"""
+
+    def register_services():
+        cs = ChargerService(hass)
+        ss = SchedulerService(hass)
+        hass.services.async_register(
+            domain=DOMAIN,
+            service=SERVICE_SET_TIMER_BASIC_SETTINGS,
+            service_func=ss.set_timer_basic_settings,
+            schema=SERVICE_SET_TIMER_BASIC_SETTINGS_SCHEMA,
+        )
+        hass.services.async_register(
+            domain=DOMAIN,
+            service=SERVICE_UPDATE_SCHEDULE,
+            service_func=ss.update_schedule,
+            schema=SERVICE_UPDATE_SCHEDULE_SCHEMA,
+        )
+        hass.services.async_register(
+            domain=DOMAIN,
+            service=SERVICE_UPDATE_PROFILE,
+            service_func=ss.update_profile,
+            schema=SERVICE_UPDATE_PROFILE_SCHEMA,
+        )
+        hass.services.async_register(
+            domain=DOMAIN,
+            service=SERVICE_SET_CHARGER_MAX_CURRENT,
+            service_func=cs.set_charger_max_current,
+            schema=SERVICE_SET_CHARGER_MAX_CURRENT_SCHEMA,
+        )
 
     if entry.options.get(CONF_SCAN_INTERVAL):
         update_interval = timedelta(minutes=entry.options[CONF_SCAN_INTERVAL])
@@ -77,7 +126,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     if not coordinator.last_update_success:
         raise ConfigEntryNotReady
 
-    data = VolkswagenData(entry.data, coordinator)
+    data: VolkswagenData = VolkswagenData(entry.data, coordinator)
     instruments = coordinator.data
 
     def is_enabled(attr):
@@ -103,6 +152,8 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         UNDO_UPDATE_LISTENER: entry.add_update_listener(_async_update_listener),
     }
 
+    register_services()
+
     return True
 
 
@@ -112,13 +163,16 @@ def update_callback(hass: HomeAssistant, coordinator: DataUpdateCoordinator) -> 
 
 
 async def async_setup(hass: HomeAssistant, config: dict) -> bool:
-    """Set up the Plaato component."""
+    """Set up the component."""
     hass.data.setdefault(DOMAIN, {})
     return True
 
 
 async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry):
     """Unload a config entry."""
+    _LOGGER.debug("Removing services")
+    unload_services(hass)
+    _LOGGER.debug("Removing update listener")
     hass.data[DOMAIN][entry.entry_id][UNDO_UPDATE_LISTENER]()
 
     return await async_unload_coordinator(hass, entry)
@@ -160,7 +214,7 @@ class VolkswagenData:
 
     def __init__(self, config: dict, coordinator: Optional[DataUpdateCoordinator] = None):
         """Initialize the component state."""
-        self.vehicles = set()
+        self.vehicles: set[Vehicle] = set()
         self.instruments = set()
         self.config = config.get(DOMAIN, config)
         self.names = self.config.get(CONF_NAME, None)
@@ -193,7 +247,14 @@ class VolkswagenData:
 class VolkswagenEntity(Entity):
     """Base class for all Volkswagen entities."""
 
-    def __init__(self, data: VolkswagenData, vin: str, component: str, attribute: str, callback=None):
+    def __init__(
+        self,
+        data: VolkswagenData,
+        vin: str,
+        component: str,
+        attribute: str,
+        callback=None,
+    ):
         """Initialize the entity."""
 
         def update_callbacks() -> None:
@@ -228,7 +289,9 @@ class VolkswagenEntity(Entity):
             self.async_on_remove(async_dispatcher_connect(self.hass, SIGNAL_STATE_UPDATED, self.async_write_ha_state))
 
     @property
-    def instrument(self) -> Union[BinarySensor, Climate, Sensor, Switch, Instrument, None]:
+    def instrument(
+        self,
+    ) -> Union[BinarySensor, Climate, Sensor, Switch, Instrument, None]:
         """Return corresponding instrument."""
         return self.data.instrument(self.vin, self.component, self.attribute)
 
@@ -312,8 +375,8 @@ class VolkswagenCoordinator(DataUpdateCoordinator):
     def __init__(self, hass: HomeAssistant, entry: ConfigEntry, update_interval: timedelta):
         self.vin = entry.data[CONF_VEHICLE].upper()
         self.entry = entry
-        self.platforms = []
-        self.report_last_updated = None
+        self.platforms: list[str] = []
+        self.report_last_updated: Optional[datetime] = None
         self.connection = Connection(
             session=async_get_clientsession(hass),
             username=self.entry.data[CONF_USERNAME],

@@ -13,7 +13,7 @@ When opening a Feature request, please start the title with "[FR]" prefix
 
 DO NOT DELETE ANY TEXT from this template! Otherwise, your issue may be closed without comment.
 
-Always check if there is a simular freature request already do avoid dublicates. If there is a simular FR already, please add comments if you have other thoughts about the solution. 
+Always check if there is a simular feature request already to avoid duplicates. If there is a simular FR already, please add comments if you have other thoughts about the solution.
 
 -->
 
