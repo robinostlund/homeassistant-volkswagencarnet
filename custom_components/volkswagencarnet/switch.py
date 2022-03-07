@@ -7,6 +7,7 @@ from typing import Any, Optional, Union
 import pytz
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity import ToggleEntity, EntityCategory
+from volkswagencarnet.vw_dashboard import Instrument
 
 from . import VolkswagenEntity, VolkswagenData
 from .const import DATA, DATA_KEY, DOMAIN, UPDATE_CALLBACK
@@ -21,39 +22,39 @@ async def async_setup_platform(hass: HomeAssistant, config, async_add_entities, 
     async_add_entities([VolkswagenSwitch(hass.data[DATA_KEY], *discovery_info)])
 
 
+def _add_device(data: VolkswagenData, vin: str, instrument: Instrument, callback):
+    """Decide which type of switch is needed."""
+    if instrument.attr.startswith("departure_timer"):
+        VolkswagenDepartureTimer(
+            data=data,
+            vin=vin,
+            component=instrument.component,
+            attribute=instrument.attr,
+            callback=callback,
+        )
+    else:
+        VolkswagenSwitch(
+            data=data,
+            vin=vin,
+            component=instrument.component,
+            attribute=instrument.attr,
+            callback=callback,
+        )
+
+
 async def async_setup_entry(hass: HomeAssistant, entry, async_add_devices):
     data = hass.data[DOMAIN][entry.entry_id][DATA]
     coordinator = data.coordinator
     if coordinator.data is not None:
         async_add_devices(
-            VolkswagenSwitch(
-                data,
-                coordinator.vin,
-                instrument.component,
-                instrument.attr,
-                hass.data[DOMAIN][entry.entry_id][UPDATE_CALLBACK],
+            _add_device(
+                data=data,
+                vin=coordinator.vin,
+                instrument=instrument,
+                callback=hass.data[DOMAIN][entry.entry_id][UPDATE_CALLBACK],
             )
-            for instrument in (
-                instrument
-                for instrument in data.instruments
-                if instrument.component == "switch" and not instrument.attr.startswith("departure_timer")
-            )
+            for instrument in (instrument for instrument in data.instruments if instrument.component == "switch")
         )
-        async_add_devices(
-            VolkswagenDepartureTimer(
-                data,
-                coordinator.vin,
-                instrument.component,
-                instrument.attr,
-                hass.data[DOMAIN][entry.entry_id][UPDATE_CALLBACK],
-            )
-            for instrument in (
-                instrument
-                for instrument in data.instruments
-                if instrument.component == "switch" and instrument.attr.startswith("departure_timer")
-            )
-        )
-
     return True
 
 
