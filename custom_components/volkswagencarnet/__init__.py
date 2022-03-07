@@ -29,7 +29,6 @@ from volkswagencarnet.vw_dashboard import (
 )
 from volkswagencarnet.vw_vehicle import Vehicle
 
-from .util import get_convert_conf
 from .const import (
     COMPONENTS,
     CONF_MUTABLE,
@@ -63,6 +62,7 @@ from .services import (
     SERVICE_UPDATE_SCHEDULE_SCHEMA,
     SERVICE_UPDATE_PROFILE_SCHEMA,
 )
+from .util import get_convert_conf
 
 _LOGGER = logging.getLogger(__name__)
 

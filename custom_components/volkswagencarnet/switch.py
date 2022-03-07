@@ -2,7 +2,7 @@
 import logging
 import re
 from datetime import datetime, timezone
-from typing import Any, Optional, Union
+from typing import Any, Union
 
 import pytz
 from homeassistant.core import HomeAssistant
@@ -16,7 +16,7 @@ _LOGGER = logging.getLogger(__name__)
 
 
 async def async_setup_platform(hass: HomeAssistant, config, async_add_entities, discovery_info=None):
-    """Setup the volkswagen switch."""
+    """Set up the volkswagen switch platform."""
     if discovery_info is None:
         return
     async_add_entities([VolkswagenSwitch(hass.data[DATA_KEY], *discovery_info)])
@@ -43,6 +43,7 @@ def _add_device(data: VolkswagenData, vin: str, instrument: Instrument, callback
 
 
 async def async_setup_entry(hass: HomeAssistant, entry, async_add_devices):
+    """Add configured devices for this entity."""
     data = hass.data[DOMAIN][entry.entry_id][DATA]
     coordinator = data.coordinator
     if coordinator.data is not None:
@@ -62,12 +63,15 @@ class VolkswagenSwitch(VolkswagenEntity, ToggleEntity):
     """Representation of a Volkswagen WeConnect Switch."""
 
     def __init__(self, data: VolkswagenData, vin: str, component: str, attribute: str, callback=None):
+        """Initialize switch."""
         super().__init__(data, vin, component, attribute, callback)
 
     def turn_on(self, **kwargs: Any) -> None:
+        """Don't support sync methods."""
         raise NotImplementedError
 
     def turn_off(self, **kwargs: Any) -> None:
+        """Don't support sync methods."""
         raise NotImplementedError
 
     @property
@@ -90,34 +94,44 @@ class VolkswagenSwitch(VolkswagenEntity, ToggleEntity):
 
     @property
     def assumed_state(self):
+        """Return state assumption."""
         return self.instrument.assumed_state
 
     @property
     def extra_state_attributes(self) -> dict[str, Any]:
-        return {**super().extra_state_attributes, **self.instrument.attributes}
+        """Return extra state attributes."""
+        return {**super().extra_state_attributes, **(self.instrument.attributes if self.instrument is not None else {})}
 
 
 class VolkswagenDepartureTimer(VolkswagenSwitch):
+    """Departure timer class."""
+
     def turn_on(self, **kwargs: Any) -> None:
+        """Enable timer."""
         super().turn_on()
 
     def turn_off(self, **kwargs: Any) -> None:
+        """Disable timer."""
         super().turn_off()
 
     def __init__(self, data: VolkswagenData, vin: str, component: str, attribute: str, callback=None):
+        """Initialize class."""
         super().__init__(data, vin, component, attribute, callback)
         _LOGGER.debug("Departure Timer initialized")
 
     @property
     def device_class(self) -> str:
+        """Return custom device class."""
         return "departure_timer"
 
     @property
     def entity_category(self) -> Union[EntityCategory, str, None]:
+        """Return entity category."""
         return EntityCategory.CONFIG
 
     @property
-    def extra_state_attributes(self) -> Optional[dict[str, Any]]:
+    def extra_state_attributes(self) -> dict[str, Any]:
+        """Return extra state attributes."""
         attribs = super(VolkswagenSwitch, self).extra_state_attributes
         if "departure_time" in attribs:
             if re.match(r"^\d\d:\d\d$", attribs["departure_time"]):
