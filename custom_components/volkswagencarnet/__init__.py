@@ -234,7 +234,7 @@ class VolkswagenData:
         self.vehicles: set[Vehicle] = set()
         self.instruments = set()
         self.config: Mapping[str, Any] = config.get(DOMAIN, config)
-        self.names: str = self.config.get(CONF_NAME, None)
+        self.names: str = self.config.get(CONF_NAME, "")
         self.coordinator: Optional[VolkswagenCoordinator] = coordinator
 
     def instrument(self, vin: str, component: str, attr: str) -> Optional[Instrument]:
@@ -253,9 +253,7 @@ class VolkswagenData:
         if isinstance(self.names, str):
             return self.names
 
-        if vehicle.vin and vehicle.vin.lower() in self.names:
-            return self.names[vehicle.vin.lower()]
-        elif vehicle.vin:
+        if vehicle.vin:
             return vehicle.vin
         else:
             return ""
