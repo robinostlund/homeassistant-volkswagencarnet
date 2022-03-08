@@ -67,6 +67,13 @@
           "scandinavian_miles": "Käytä peninkulmaa kilometrien sijaan anturien tiedoissa",
           "convert": "Käytä etäisyysmuunnoksia"
         }
+      },
+      "select_instruments": {
+        "title": "Mittarit",
+        "description": "Valitse tarkasteltavat mittarit",
+        "data": {
+          "resources": "Tarkasteltavat resurssit"
+        }
       }
     }
   }

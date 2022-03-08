@@ -1,7 +1,7 @@
 import asyncio
 import logging
 from datetime import datetime, timedelta
-from typing import Optional, Any, Union
+from typing import Optional, Any, Union, Mapping
 
 from homeassistant.config_entries import ConfigEntry, SOURCE_REAUTH
 from homeassistant.const import (
@@ -233,9 +233,9 @@ class VolkswagenData:
         """Initialize the component state."""
         self.vehicles: set[Vehicle] = set()
         self.instruments = set()
-        self.config = config.get(DOMAIN, config)
-        self.names = self.config.get(CONF_NAME, None)
-        self.coordinator = coordinator
+        self.config: Mapping[str, Any] = config.get(DOMAIN, config)
+        self.names: str = self.config.get(CONF_NAME, None)
+        self.coordinator: Optional[VolkswagenCoordinator] = coordinator
 
     def instrument(self, vin: str, component: str, attr: str) -> Optional[Instrument]:
         """Return corresponding instrument."""

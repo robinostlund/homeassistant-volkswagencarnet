@@ -9,12 +9,11 @@
           "username": "Email",
           "password": "Password",
           "mutable": "Uncheck to make the car 'read only'. Keep checked to interact with the car",
-          "region": "Country code where the car was sold (ISO 3155-1 / Alpha-2)",
+          "region": "Region (The country where the car was sold)",
           "spin": "S-PIN",
-          "scandinavian_miles": "Enable if you want to change from km to mil on sensors",
           "name": "Name your car (defaults to VIN number)",
           "debug": "Enable full debug logs from API (requires debug logging enabled in config)",
-          "convert": "Select if you want to make any distance unit conversions"
+          "convert": "Select if you wan to make any distance unit conversions"
         }
       },
       "select_vehicle": {
@@ -25,16 +24,16 @@
         }
       },
       "select_instruments": {
-        "title": "Instruments",
-        "description": "Select instruments to monitor",
+        "title": "Resources",
+        "description": "Select resources to monitor",
         "data": {
           "resources": "Resources to monitor"
         }
       },
       "reauth_confirm": {
         "data": {
-          "description": "Re-authenticate with your WeConnect account. Make sure to accept any new EULA in the WeConnect portal (https://www.portal.volkswagen-we.com/) before proceeding. ",
-          "username": "Email",
+          "description": "Re-authenticate with your We Connect account. Make sure to accept any new EULA in the We Connect portal (https://www.portal.volkswagen-we.com/) before proceeding. ",
+          "email": "Email",
           "password": "Password"
         }
       }
@@ -46,7 +45,7 @@
     "error": {
       "cannot_connect": "Could not login to Volkswagen We Connect, please check your credentials and verify that the service is working",
       "cannot_update": "Could not query update from Volkswagen We Connect",
-      "unknown": "[%key:common::config_flow::error::unknown%]"
+      "unknown": "An unknown error occurred"
     },
     "progress": {
       "task_login": "Logging in to We Connect",
@@ -64,8 +63,14 @@
           "scan_interval": "Sensors update interval (minutes)",
           "region": "Region (The country where the car was sold)",
           "debug": "Enable full debug logs from API (requires debug logging enabled in config)",
-          "scandinavian_miles": "Enable if you want to change from km to mil on sensors",
           "convert": "Select if you wan to make any distance unit conversions"
+        }
+      },
+      "select_instruments": {
+        "title": "Resources",
+        "description": "Select resources to monitor",
+        "data": {
+          "resources": "Resources to monitor"
         }
       }
     }
