@@ -1,10 +1,7 @@
+import logging
 from typing import Optional
 
-from volkswagencarnet.vw_vehicle import Vehicle
-
 import homeassistant.helpers.config_validation as cv
-import logging
-
 import voluptuous as vol
 from homeassistant import config_entries
 from homeassistant.config_entries import ConfigEntry
@@ -17,10 +14,9 @@ from homeassistant.const import (
 )
 from homeassistant.core import callback
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
-
 from volkswagencarnet.vw_connection import Connection
+from volkswagencarnet.vw_vehicle import Vehicle
 
-from .util import get_convert_conf, get_coordinator, get_vehicle
 from .const import (
     CONF_CONVERT,
     CONF_DEBUG,
@@ -36,7 +32,9 @@ from .const import (
     DEFAULT_UPDATE_INTERVAL,
     DOMAIN,
     DEFAULT_DEBUG,
+    CONF_AVAILABLE_RESOURCES,
 )
+from .util import get_convert_conf, get_coordinator, get_vehicle
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -53,7 +51,7 @@ DATA_SCHEMA = {
 
 
 class VolkswagenCarnetConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
-    VERSION = 1
+    VERSION = 2
     task_login = None
     task_finish = None
     entry = None
@@ -114,9 +112,12 @@ class VolkswagenCarnetConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         )
 
     async def async_step_select_instruments(self, user_input=None):
+        instruments = self._init_info["CONF_VEHICLES"][self._init_info[CONF_VEHICLE]]
+        instruments_dict = {instrument.attr: instrument.name for instrument in instruments}
+
         if user_input is not None:
-            self._init_info[CONF_RESOURCES] = user_input[CONF_RESOURCES]
-            del self._init_info["CONF_VEHICLES"]
+            # self._init_info[CONF_RESOURCES] = user_input[CONF_RESOURCES]
+            self._init_info.pop("CONF_VEHICLES", None)
 
             if self._init_info[CONF_NAME] is None:
                 self._init_info[CONF_NAME] = self._init_info[CONF_VEHICLE]
@@ -124,16 +125,19 @@ class VolkswagenCarnetConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
             await self.async_set_unique_id(self._init_info[CONF_VEHICLE])
             self._abort_if_unique_id_configured()
 
-            return self.async_create_entry(title=self._init_info[CONF_NAME], data=self._init_info)
+            return self.async_create_entry(
+                title=self._init_info[CONF_NAME],
+                data=self._init_info,
+                options={CONF_RESOURCES: user_input[CONF_RESOURCES], CONF_AVAILABLE_RESOURCES: instruments_dict},
+            )
 
-        instruments = self._init_info["CONF_VEHICLES"][self._init_info[CONF_VEHICLE]]
-        instruments_dict = {instrument.attr: instrument.name for instrument in instruments}
         return self.async_show_form(
             step_id="select_instruments",
             errors=self._errors,
             data_schema=vol.Schema(
                 {vol.Optional(CONF_RESOURCES, default=list(instruments_dict.keys())): cv.multi_select(instruments_dict)}
             ),
+            last_step=True,
         )
 
     async def async_step_login(self, user_input=None):
@@ -291,32 +295,37 @@ class VolkswagenCarnetOptionsFlowHandler(config_entries.OptionsFlow):
     async def async_step_select_instruments(self, user_input=None):
         coordinator = await get_coordinator(self.hass, self._config_entry)
         data = self._config_entry.as_dict()
-        if user_input is not None:
-
-            data["data"][CONF_RESOURCES] = user_input[CONF_RESOURCES]
-
-            self.hass.config_entries.async_update_entry(
-                self._config_entry,
-                data={**data["data"]},
-            )
-            self.hass.async_create_task(self.hass.config_entries.async_reload(self._config_entry.entry_id))
-
-            ret = self.async_create_entry(title=self._config_entry.data[CONF_NAME], data=data)
-            return ret
 
         v: Vehicle = get_vehicle(coordinator=coordinator)
         d = v.dashboard()
 
         instruments_dict = {instrument.attr: instrument.name for instrument in d.instruments}
 
+        if user_input is not None:
+
+            options = {CONF_RESOURCES: user_input[CONF_RESOURCES], CONF_AVAILABLE_RESOURCES: instruments_dict}
+
+            removed_resources = set(data.get("options", {}).get("resources", {})) - set(options[CONF_RESOURCES])
+            added_resources = set(options[CONF_RESOURCES]) - set(data.get("options", {}).get("resources", {}))
+            # TODO: actually remove removedentities
+            _LOGGER.info(f"Added resources: {added_resources}, removed resoures: {removed_resources}")
+
+            # Update the data first
+            self.hass.config_entries.async_update_entry(
+                self._config_entry,
+                data={**data["data"]},
+            )
+
+            # Set options
+            return self.async_create_entry(title="", data=options)
+
+        selected = {i for i in instruments_dict if i in data["options"][CONF_RESOURCES]}
+
         return self.async_show_form(
             step_id="select_instruments",
             errors=self._errors,
             data_schema=vol.Schema(
-                {
-                    vol.Optional(CONF_RESOURCES, default=list(data["data"][CONF_RESOURCES])): cv.multi_select(
-                        instruments_dict
-                    )
-                }
+                {vol.Optional(CONF_RESOURCES, default=list(selected)): cv.multi_select(instruments_dict)}
             ),
+            last_step=True,
         )

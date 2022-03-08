@@ -14,7 +14,11 @@ _LOGGER = logging.getLogger(__name__)
 
 
 def get_convert_conf(entry: ConfigEntry) -> Optional[str]:
-    """Convert old configuration."""
+    """
+    Convert old configuration.
+
+    Used in migrating config entry to version 2.
+    """
     return (
         CONF_SCANDINAVIAN_MILES
         if entry.options.get(CONF_SCANDINAVIAN_MILES, entry.data.get(CONF_SCANDINAVIAN_MILES, False))

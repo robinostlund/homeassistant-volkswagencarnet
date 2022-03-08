@@ -131,7 +131,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
 
     def is_enabled(attr):
         """Return true if the user has enabled the resource."""
-        return attr in entry.data.get(CONF_RESOURCES, [attr])
+        return attr in entry.options.get(CONF_RESOURCES, [attr])
 
     components = set()
     for instrument in (
@@ -153,6 +153,31 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     }
 
     register_services()
+
+    return True
+
+
+async def async_migrate_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
+    """Migrate an old config entry."""
+    version = entry.version
+
+    _LOGGER.debug("Migrating config from version %s", version)
+
+    # 1 -> 2: Move resources from data -> options
+    if version == 1:
+        # Backward compatibility
+        default_convert_conf = get_convert_conf(entry)
+
+        version = entry.version = 2
+        options = dict(entry.options)
+        data = dict(entry.data)
+        options[CONF_RESOURCES] = data[CONF_RESOURCES]
+        options[CONF_CONVERT] = options.get(CONF_CONVERT, default_convert_conf)
+        data.pop(CONF_RESOURCES, None)
+
+        hass.config_entries.async_update_entry(entry, data=data, options=options)
+
+    _LOGGER.info("Migration to config version %s successful", version)
 
     return True
 
@@ -391,10 +416,7 @@ class VolkswagenCoordinator(DataUpdateCoordinator):
         if self.entry.options.get(CONF_REPORT_REQUEST, False):
             await self.report_request(vehicle)
 
-        # Backward compatibility
-        default_convert_conf = get_convert_conf(self.entry)
-
-        convert_conf = self.entry.options.get(CONF_CONVERT, self.entry.data.get(CONF_CONVERT, default_convert_conf))
+        convert_conf = self.entry.options.get(CONF_CONVERT)
 
         dashboard = vehicle.dashboard(
             mutable=self.entry.data.get(CONF_MUTABLE),
