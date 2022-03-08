@@ -119,7 +119,7 @@ class VolkswagenCarnetConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
             # self._init_info[CONF_RESOURCES] = user_input[CONF_RESOURCES]
             self._init_info.pop("CONF_VEHICLES", None)
 
-            if self._init_info[CONF_NAME] is None:
+            if self._init_info[CONF_NAME] is None or self._init_info[CONF_NAME] == "":
                 self._init_info[CONF_NAME] = self._init_info[CONF_VEHICLE]
 
             await self.async_set_unique_id(self._init_info[CONF_VEHICLE])
