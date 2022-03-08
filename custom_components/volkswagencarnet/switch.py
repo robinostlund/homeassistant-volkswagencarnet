@@ -25,7 +25,7 @@ async def async_setup_platform(hass: HomeAssistant, config, async_add_entities, 
 def _add_device(data: VolkswagenData, vin: str, instrument: Instrument, callback):
     """Decide which type of switch is needed."""
     if instrument.attr.startswith("departure_timer"):
-        VolkswagenDepartureTimer(
+        return VolkswagenDepartureTimer(
             data=data,
             vin=vin,
             component=instrument.component,
@@ -33,7 +33,7 @@ def _add_device(data: VolkswagenData, vin: str, instrument: Instrument, callback
             callback=callback,
         )
     else:
-        VolkswagenSwitch(
+        return VolkswagenSwitch(
             data=data,
             vin=vin,
             component=instrument.component,
