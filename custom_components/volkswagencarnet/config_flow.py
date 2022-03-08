@@ -14,6 +14,7 @@ from homeassistant.const import (
 )
 from homeassistant.core import callback
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
+from homeassistant.helpers.entity_registry import async_get
 from volkswagencarnet.vw_connection import Connection
 from volkswagencarnet.vw_vehicle import Vehicle
 
@@ -307,14 +308,20 @@ class VolkswagenCarnetOptionsFlowHandler(config_entries.OptionsFlow):
 
             removed_resources = set(data.get("options", {}).get("resources", {})) - set(options[CONF_RESOURCES])
             added_resources = set(options[CONF_RESOURCES]) - set(data.get("options", {}).get("resources", {}))
-            # TODO: actually remove removedentities
-            _LOGGER.info(f"Added resources: {added_resources}, removed resoures: {removed_resources}")
+
+            _LOGGER.info(f"Adding resources: {added_resources}, removing resources: {removed_resources}")
 
             # Update the data first
             self.hass.config_entries.async_update_entry(
                 self._config_entry,
                 data={**data["data"]},
             )
+
+            if len(removed_resources) > 0:
+                entity_registry = async_get(self.hass)
+                # Remove all HA entities because we don't know which entities a resource has created :/
+                # All entities will be recreated automatically anyway.
+                entity_registry.async_clear_config_entry(self._config_entry.entry_id)
 
             # Set options
             return self.async_create_entry(title="", data=options)

@@ -53,6 +53,7 @@ from .const import (
     SERVICE_UPDATE_SCHEDULE,
     SERVICE_UPDATE_PROFILE,
     SERVICE_SET_CHARGER_MAX_CURRENT,
+    CONF_AVAILABLE_RESOURCES,
 )
 from .services import (
     SchedulerService,
@@ -133,14 +134,16 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         """Return true if the user has enabled the resource."""
         return attr in entry.options.get(CONF_RESOURCES, [attr])
 
+    def is_new(attr):
+        """Return true if the resource is new."""
+        return attr not in entry.options.get(CONF_AVAILABLE_RESOURCES, [attr])
+
     components = set()
-    for instrument in (
-        instrument
-        for instrument in instruments
-        if instrument.component in COMPONENTS and is_enabled(instrument.slug_attr)
-    ):
-        data.instruments.add(instrument)
-        components.add(COMPONENTS[instrument.component])
+    for instrument in (instrument for instrument in instruments if instrument.component in COMPONENTS):
+        # Add resource if it's enabled or new
+        if is_enabled(instrument.slug_attr) or (is_new(instrument.slug_attr) and not entry.pref_disable_new_entities):
+            data.instruments.add(instrument)
+            components.add(COMPONENTS[instrument.component])
 
     for component in components:
         coordinator.platforms.append(component)
