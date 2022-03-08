@@ -24,8 +24,8 @@
         }
       },
       "select_instruments": {
-        "title": "Instruments",
-        "description": "Select instruments to monitor",
+        "title": "Resources",
+        "description": "Select resources to monitor",
         "data": {
           "resources": "Resources to monitor"
         }
@@ -67,8 +67,8 @@
         }
       },
       "select_instruments": {
-        "title": "Instruments",
-        "description": "Select instruments to monitor",
+        "title": "Resources",
+        "description": "Select resources to monitor",
         "data": {
           "resources": "Resources to monitor"
         }

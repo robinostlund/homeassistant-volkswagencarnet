@@ -67,6 +67,13 @@
           "scandinavian_miles": "Ative se você quiser mudar de km para mil nos sensores",
           "convert": "Selecione se você deseja fazer qualquer conversão de unidade de distância"
         }
+      },
+      "select_instruments": {
+        "title": "Instrumentos",
+        "description": "Selecionar instrumentos para monitorar",
+        "data": {
+          "resources": "Recursos para monitorar"
+        }
       }
     }
   }

@@ -67,6 +67,13 @@
           "scandinavian_miles": "Włącz, jeśli chcesz zmienić z km na mil w sensorach",
           "convert": "Wybierz, jeśli chcesz dokonać konwersji jednostek odległości"
         }
+      },
+      "select_instruments": {
+        "title": "Sensory",
+        "description": "Wybierz sensory które chcesz dodać do Home Assistant",
+        "data": {
+          "resources": "Zasoby do dodania"
+        }
       }
     }
   }

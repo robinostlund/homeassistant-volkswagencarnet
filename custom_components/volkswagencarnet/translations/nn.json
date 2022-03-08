@@ -67,6 +67,13 @@
           "scandinavian_miles": "Aktiver om du vil endre frå km til mil på sensorar",
           "convert": "Velg denne viss du vil ha omrekning av distanse"
         }
+      },
+      "select_instruments": {
+        "title": "Instrument",
+        "description": "Velg instrument du ønskjer å overvåke",
+        "data": {
+          "resources": "Ressurser som skal overvåkast"
+        }
       }
     }
   }
