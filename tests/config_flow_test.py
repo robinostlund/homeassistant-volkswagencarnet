@@ -92,7 +92,7 @@ async def test_options_flow(get_vehicle: MagicMock, get_coordinator: MagicMock, 
         domain=DOMAIN,
         # data={**DUMMY_CONFIG, **{"coordinator": m_coordinator}},
         data=DUMMY_CONFIG,
-        options={"resources": {}},
+        options={"resources": {}, "unknown_stuff": "foobar"},
         entry_id="test",
     )
     entry.add_to_hass(hass)
@@ -127,4 +127,7 @@ async def test_options_flow(get_vehicle: MagicMock, get_coordinator: MagicMock, 
 
     # Verify that the options were updated
     assert entry.options.get(CONF_RESOURCES) == new_resources
+    # but nothing unknown was destroyed
+    assert entry.options.get("unknown_stuff") == "foobar"
+    # and we have something in "all resources"
     assert entry.options.get(CONF_AVAILABLE_RESOURCES, None) is not None

@@ -54,6 +54,7 @@ from .const import (
     SERVICE_UPDATE_PROFILE,
     SERVICE_SET_CHARGER_MAX_CURRENT,
     CONF_AVAILABLE_RESOURCES,
+    CONF_NO_CONVERSION,
 )
 from .services import (
     SchedulerService,
@@ -414,10 +415,10 @@ class VolkswagenCoordinator(DataUpdateCoordinator):
                 "Failed to update WeConnect. Need to accept EULA? Try logging in to the portal: https://www.portal.volkswagen-we.com/"
             )
 
-        if self.entry.options.get(CONF_REPORT_REQUEST, False):
+        if self.entry.options.get(CONF_REPORT_REQUEST, self.entry.data.get(CONF_REPORT_REQUEST, False)):
             await self.report_request(vehicle)
 
-        convert_conf = self.entry.options.get(CONF_CONVERT)
+        convert_conf = self.entry.options.get(CONF_CONVERT, self.entry.data.get(CONF_CONVERT, CONF_NO_CONVERSION))
 
         dashboard = vehicle.dashboard(
             mutable=self.entry.data.get(CONF_MUTABLE),

@@ -35,7 +35,7 @@ from .const import (
     DEFAULT_DEBUG,
     CONF_AVAILABLE_RESOURCES,
 )
-from .util import get_convert_conf, get_coordinator, get_vehicle
+from .util import get_coordinator, get_vehicle
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -241,6 +241,7 @@ class VolkswagenCarnetOptionsFlowHandler(config_entries.OptionsFlow):
         self._errors = {}
 
         self._config_entry: ConfigEntry = config_entry
+        self._data = {}
 
     async def async_step_init(self, user_input=None):
         """Manage the options."""
@@ -249,11 +250,8 @@ class VolkswagenCarnetOptionsFlowHandler(config_entries.OptionsFlow):
     async def async_step_user(self, user_input=None):
         """Manage the options."""
         if user_input is not None:
-            # return self.async_create_entry(title="", data=user_input)
+            self._data = user_input
             return await self.async_step_select_instruments()
-
-        # Backward compatibility
-        default_convert_conf = get_convert_conf(self._config_entry)
 
         return self.async_show_form(
             step_id="user",
@@ -261,7 +259,9 @@ class VolkswagenCarnetOptionsFlowHandler(config_entries.OptionsFlow):
                 {
                     vol.Optional(
                         CONF_REPORT_REQUEST,
-                        default=self._config_entry.options.get(CONF_REPORT_REQUEST, False),
+                        default=self._config_entry.options.get(
+                            CONF_REPORT_REQUEST, self._config_entry.data.get(CONF_REPORT_REQUEST, False)
+                        ),
                     ): cv.boolean,
                     vol.Optional(
                         CONF_DEBUG,
@@ -272,18 +272,21 @@ class VolkswagenCarnetOptionsFlowHandler(config_entries.OptionsFlow):
                     vol.Optional(
                         CONF_CONVERT,
                         default=self._config_entry.options.get(
-                            CONF_CONVERT, self._config_entry.data.get(CONF_CONVERT, default_convert_conf)
+                            CONF_CONVERT, self._config_entry.data.get(CONF_CONVERT, None)
                         ),
                     ): vol.In(CONVERT_DICT),
                     vol.Optional(
                         CONF_REPORT_SCAN_INTERVAL,
                         default=self._config_entry.options.get(
-                            CONF_REPORT_SCAN_INTERVAL, DEFAULT_REPORT_UPDATE_INTERVAL
+                            CONF_REPORT_SCAN_INTERVAL,
+                            self._config_entry.data.get(CONF_REPORT_SCAN_INTERVAL, DEFAULT_REPORT_UPDATE_INTERVAL),
                         ),
                     ): cv.positive_int,
                     vol.Optional(
                         CONF_SCAN_INTERVAL,
-                        default=self._config_entry.options.get(CONF_SCAN_INTERVAL, DEFAULT_UPDATE_INTERVAL),
+                        default=self._config_entry.options.get(
+                            CONF_SCAN_INTERVAL, self._config_entry.data.get(CONF_SCAN_INTERVAL, DEFAULT_UPDATE_INTERVAL)
+                        ),
                     ): cv.positive_int,
                     vol.Optional(
                         CONF_REGION,
@@ -304,24 +307,38 @@ class VolkswagenCarnetOptionsFlowHandler(config_entries.OptionsFlow):
 
         if user_input is not None:
 
-            options = {CONF_RESOURCES: user_input[CONF_RESOURCES], CONF_AVAILABLE_RESOURCES: instruments_dict}
+            options = {
+                **data["options"],
+                CONF_RESOURCES: user_input[CONF_RESOURCES],
+                CONF_AVAILABLE_RESOURCES: instruments_dict,
+            }
 
             removed_resources = set(data.get("options", {}).get("resources", {})) - set(options[CONF_RESOURCES])
             added_resources = set(options[CONF_RESOURCES]) - set(data.get("options", {}).get("resources", {}))
 
             _LOGGER.info(f"Adding resources: {added_resources}, removing resources: {removed_resources}")
 
+            # Need to recreate entitiesin some cases
+            # Some resource was removed
+            recreate_entities = len(removed_resources) > 0
+            # distance conversion was changed
+            recreate_entities = recreate_entities or self._data[CONF_CONVERT] != data.get("data", {}).get(
+                CONF_CONVERT, ""
+            )
+
+            if recreate_entities:
+                entity_registry = async_get(self.hass)
+                # Remove all HA entities because we don't know which entities a resource has created :/
+                # All entities will be recreated automatically anyway.
+                entity_registry.async_clear_config_entry(self._config_entry.entry_id)
+
+            # Update data with input from previous steps
+            data.get("data").update(self._data)
             # Update the data first
             self.hass.config_entries.async_update_entry(
                 self._config_entry,
                 data={**data["data"]},
             )
-
-            if len(removed_resources) > 0:
-                entity_registry = async_get(self.hass)
-                # Remove all HA entities because we don't know which entities a resource has created :/
-                # All entities will be recreated automatically anyway.
-                entity_registry.async_clear_config_entry(self._config_entry.entry_id)
 
             # Set options
             return self.async_create_entry(title="", data=options)
