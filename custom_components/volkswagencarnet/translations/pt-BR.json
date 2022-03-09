@@ -11,7 +11,6 @@
           "mutable": "Desmarque para tornar o carro 'somente leitura'. Mantenha marcado para interagir com o carro",
           "region": "Código do país onde o carro foi vendido (ISO 3155-1 / Alpha-2)",
           "spin": "S-PIN",
-          "scandinavian_miles": "Ative se você quiser mudar de km para mil nos sensores",
           "name": "Nome do carro (o padrão é o número VIN)",
           "debug": "Habilitar logs de depuração completos da API (requer log de depuração habilitado nas configurações)",
           "convert": "Selecione se você deseja fazer qualquer conversão de unidade de distância"
@@ -64,7 +63,6 @@
           "scan_interval": "Intervalo de atualização dos sensores (minutos)",
           "region": "Região (o país onde o carro foi vendido)",
           "debug": "Habilitar logs de depuração completos da API (requer log de depuração habilitado nas configurações)",
-          "scandinavian_miles": "Ative se você quiser mudar de km para mil nos sensores",
           "convert": "Selecione se você deseja fazer qualquer conversão de unidade de distância"
         }
       },
