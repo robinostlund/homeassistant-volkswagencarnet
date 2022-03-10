@@ -30,11 +30,17 @@ from custom_components.volkswagencarnet.const import (
     CONF_CONVERT,
     CONF_REPORT_REQUEST,
     CONF_AVAILABLE_RESOURCES,
-    CONF_IMPERIAL_UNITS,
+    CONF_NO_CONVERSION,
 )
 
-DUMMY_CONFIG = {CONF_USERNAME: "unit tester", CONF_PASSWORD: "password123", CONF_DEBUG: True, CONF_REGION: "XX"}
-DUMMY_OPTIONS = {CONF_CONVERT: CONF_IMPERIAL_UNITS, CONF_DEBUG: True, CONF_REGION: "XY", CONF_REPORT_REQUEST: False}
+DUMMY_CONFIG = {
+    CONF_USERNAME: "unit tester",
+    CONF_PASSWORD: "password123",
+    CONF_DEBUG: True,
+    CONF_REGION: "XX",
+    CONF_CONVERT: CONF_NO_CONVERSION,
+}
+DUMMY_OPTIONS = {CONF_CONVERT: CONF_NO_CONVERSION, CONF_DEBUG: True, CONF_REGION: "XY", CONF_REPORT_REQUEST: False}
 
 
 @patch("custom_components.volkswagencarnet.config_flow.Connection")
