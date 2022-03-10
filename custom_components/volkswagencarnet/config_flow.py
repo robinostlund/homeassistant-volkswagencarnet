@@ -1,7 +1,7 @@
+import logging
 from typing import Optional
 
 import homeassistant.helpers.config_validation as cv
-import logging
 import voluptuous as vol
 from homeassistant import config_entries
 from homeassistant.config_entries import ConfigEntry
@@ -14,11 +14,11 @@ from homeassistant.const import (
 )
 from homeassistant.core import callback
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
-
+from homeassistant.helpers.entity_registry import async_get
 from volkswagencarnet.vw_connection import Connection
+from volkswagencarnet.vw_vehicle import Vehicle
 
-import custom_components
-from custom_components.volkswagencarnet.const import (
+from .const import (
     CONF_CONVERT,
     CONF_DEBUG,
     CONVERT_DICT,
@@ -33,7 +33,9 @@ from custom_components.volkswagencarnet.const import (
     DEFAULT_UPDATE_INTERVAL,
     DOMAIN,
     DEFAULT_DEBUG,
+    CONF_AVAILABLE_RESOURCES,
 )
+from .util import get_coordinator, get_vehicle
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -44,13 +46,13 @@ DATA_SCHEMA = {
     vol.Optional(CONF_SPIN, default=""): str,
     vol.Optional(CONF_REGION, default=DEFAULT_REGION): str,
     vol.Optional(CONF_MUTABLE, default=True): cv.boolean,
-    vol.Optional(CONF_CONVERT, default=None): vol.In(CONVERT_DICT),
+    vol.Optional(CONF_CONVERT, default=None): vol.Optional(vol.In({**CONVERT_DICT, **{None: None}})),
     vol.Optional(CONF_DEBUG, default=DEFAULT_DEBUG): cv.boolean,
 }
 
 
 class VolkswagenCarnetConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
-    VERSION = 1
+    VERSION = 2
     task_login = None
     task_finish = None
     entry = None
@@ -111,26 +113,32 @@ class VolkswagenCarnetConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         )
 
     async def async_step_select_instruments(self, user_input=None):
-        if user_input is not None:
-            self._init_info[CONF_RESOURCES] = user_input[CONF_RESOURCES]
-            del self._init_info["CONF_VEHICLES"]
+        instruments = self._init_info["CONF_VEHICLES"][self._init_info[CONF_VEHICLE]]
+        instruments_dict = {instrument.attr: instrument.name for instrument in instruments}
 
-            if self._init_info[CONF_NAME] is None:
+        if user_input is not None:
+            # self._init_info[CONF_RESOURCES] = user_input[CONF_RESOURCES]
+            self._init_info.pop("CONF_VEHICLES", None)
+
+            if self._init_info[CONF_NAME] is None or self._init_info[CONF_NAME] == "":
                 self._init_info[CONF_NAME] = self._init_info[CONF_VEHICLE]
 
             await self.async_set_unique_id(self._init_info[CONF_VEHICLE])
             self._abort_if_unique_id_configured()
 
-            return self.async_create_entry(title=self._init_info[CONF_NAME], data=self._init_info)
+            return self.async_create_entry(
+                title=self._init_info[CONF_NAME],
+                data=self._init_info,
+                options={CONF_RESOURCES: user_input[CONF_RESOURCES], CONF_AVAILABLE_RESOURCES: instruments_dict},
+            )
 
-        instruments = self._init_info["CONF_VEHICLES"][self._init_info[CONF_VEHICLE]]
-        instruments_dict = {instrument.attr: instrument.name for instrument in instruments}
         return self.async_show_form(
             step_id="select_instruments",
             errors=self._errors,
             data_schema=vol.Schema(
                 {vol.Optional(CONF_RESOURCES, default=list(instruments_dict.keys())): cv.multi_select(instruments_dict)}
             ),
+            last_step=True,
         )
 
     async def async_step_login(self, user_input=None):
@@ -229,8 +237,11 @@ class VolkswagenCarnetOptionsFlowHandler(config_entries.OptionsFlow):
     def __init__(self, config_entry: ConfigEntry):
         """Initialize domain options flow."""
         super().__init__()
+        self._session = None
+        self._errors = {}
 
-        self._config_entry = config_entry
+        self._config_entry: ConfigEntry = config_entry
+        self._data = {}
 
     async def async_step_init(self, user_input=None):
         """Manage the options."""
@@ -239,11 +250,8 @@ class VolkswagenCarnetOptionsFlowHandler(config_entries.OptionsFlow):
     async def async_step_user(self, user_input=None):
         """Manage the options."""
         if user_input is not None:
-            # return self.async_create_entry(title="", data=user_input)
-            await self.async_step_select_instruments()
-
-        # Backward compatibility
-        default_convert_conf = custom_components.volkswagencarnet.get_convert_conf(self._config_entry)
+            self._data = user_input
+            return await self.async_step_select_instruments()
 
         return self.async_show_form(
             step_id="user",
@@ -251,7 +259,9 @@ class VolkswagenCarnetOptionsFlowHandler(config_entries.OptionsFlow):
                 {
                     vol.Optional(
                         CONF_REPORT_REQUEST,
-                        default=self._config_entry.options.get(CONF_REPORT_REQUEST, False),
+                        default=self._config_entry.options.get(
+                            CONF_REPORT_REQUEST, self._config_entry.data.get(CONF_REPORT_REQUEST, False)
+                        ),
                     ): cv.boolean,
                     vol.Optional(
                         CONF_DEBUG,
@@ -262,18 +272,21 @@ class VolkswagenCarnetOptionsFlowHandler(config_entries.OptionsFlow):
                     vol.Optional(
                         CONF_CONVERT,
                         default=self._config_entry.options.get(
-                            CONF_CONVERT, self._config_entry.data.get(CONF_CONVERT, default_convert_conf)
+                            CONF_CONVERT, self._config_entry.data.get(CONF_CONVERT, None)
                         ),
-                    ): vol.In(CONVERT_DICT),
+                    ): vol.In({**CONVERT_DICT}),
                     vol.Optional(
                         CONF_REPORT_SCAN_INTERVAL,
                         default=self._config_entry.options.get(
-                            CONF_REPORT_SCAN_INTERVAL, DEFAULT_REPORT_UPDATE_INTERVAL
+                            CONF_REPORT_SCAN_INTERVAL,
+                            self._config_entry.data.get(CONF_REPORT_SCAN_INTERVAL, DEFAULT_REPORT_UPDATE_INTERVAL),
                         ),
                     ): cv.positive_int,
                     vol.Optional(
                         CONF_SCAN_INTERVAL,
-                        default=self._config_entry.options.get(CONF_SCAN_INTERVAL, DEFAULT_UPDATE_INTERVAL),
+                        default=self._config_entry.options.get(
+                            CONF_SCAN_INTERVAL, self._config_entry.data.get(CONF_SCAN_INTERVAL, DEFAULT_UPDATE_INTERVAL)
+                        ),
                     ): cv.positive_int,
                     vol.Optional(
                         CONF_REGION,
@@ -281,4 +294,62 @@ class VolkswagenCarnetOptionsFlowHandler(config_entries.OptionsFlow):
                     ): str,
                 }
             ),
+        )
+
+    async def async_step_select_instruments(self, user_input=None):
+        coordinator = await get_coordinator(self.hass, self._config_entry)
+        data = self._config_entry.as_dict()
+
+        v: Vehicle = get_vehicle(coordinator=coordinator)
+        d = v.dashboard()
+
+        instruments_dict = {instrument.attr: instrument.name for instrument in d.instruments}
+
+        if user_input is not None:
+
+            options = {
+                **data["options"],
+                CONF_RESOURCES: user_input[CONF_RESOURCES],
+                CONF_AVAILABLE_RESOURCES: instruments_dict,
+            }
+
+            removed_resources = set(data.get("options", {}).get("resources", {})) - set(options[CONF_RESOURCES])
+            added_resources = set(options[CONF_RESOURCES]) - set(data.get("options", {}).get("resources", {}))
+
+            _LOGGER.info(f"Adding resources: {added_resources}, removing resources: {removed_resources}")
+
+            # Need to recreate entitiesin some cases
+            # Some resource was removed
+            recreate_entities = len(removed_resources) > 0
+            # distance conversion was changed
+            recreate_entities = recreate_entities or self._data[CONF_CONVERT] != data.get("data", {}).get(
+                CONF_CONVERT, ""
+            )
+
+            if recreate_entities:
+                entity_registry = async_get(self.hass)
+                # Remove all HA entities because we don't know which entities a resource has created :/
+                # All entities will be recreated automatically anyway.
+                entity_registry.async_clear_config_entry(self._config_entry.entry_id)
+
+            # Update data with input from previous steps
+            data.get("data").update(self._data)
+            # Update the data first
+            self.hass.config_entries.async_update_entry(
+                self._config_entry,
+                data={**data["data"]},
+            )
+
+            # Set options
+            return self.async_create_entry(title="", data=options)
+
+        selected = {i for i in instruments_dict if i in data["options"][CONF_RESOURCES]}
+
+        return self.async_show_form(
+            step_id="select_instruments",
+            errors=self._errors,
+            data_schema=vol.Schema(
+                {vol.Optional(CONF_RESOURCES, default=list(selected)): cv.multi_select(instruments_dict)}
+            ),
+            last_step=True,
         )

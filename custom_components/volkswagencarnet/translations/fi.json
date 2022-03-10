@@ -11,7 +11,6 @@
           "mutable": "Salli komentojen lähettäminen ajoneuvolle",
           "region": "Maa jossa ajoneuvo myytiin (ISO 3155-1 / Alpha-2)",
           "spin": "S-PIN",
-          "scandinavian_miles": "Käytä peninkulmaa kilometrien sijaan anturien tiedoissa",
           "name": "Nimeä ajoneuvo (oletuksena näytetään VIN)",
           "debug": "Ota täysi API:n debuglogitus käyttöön (logitustaso pitää myös olla asetettu debugille)",
           "convert": "Käytä etäisyysmuunnoksia"
@@ -64,8 +63,14 @@
           "scan_interval": "Anturidatan päivitysväli (minuuteissa)",
           "region": "Maa jossa ajoneuvo myytiin (ISO 3155-1 / Alpha-2)",
           "debug": "Ota täysi API:n debuglogitus käyttöön (debug-taso pitää olla asetettu)",
-          "scandinavian_miles": "Käytä peninkulmaa kilometrien sijaan anturien tiedoissa",
           "convert": "Käytä etäisyysmuunnoksia"
+        }
+      },
+      "select_instruments": {
+        "title": "Mittarit",
+        "description": "Valitse tarkasteltavat mittarit",
+        "data": {
+          "resources": "Tarkasteltavat resurssit"
         }
       }
     }

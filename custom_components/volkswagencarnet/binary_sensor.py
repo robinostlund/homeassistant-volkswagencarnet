@@ -5,8 +5,8 @@ import logging
 
 from homeassistant.components.binary_sensor import DEVICE_CLASSES, BinarySensorEntity
 
-from . import UPDATE_CALLBACK, VolkswagenEntity
-from .const import DATA_KEY, DATA, DOMAIN
+from . import VolkswagenEntity
+from .const import DATA_KEY, DATA, DOMAIN, UPDATE_CALLBACK
 
 _LOGGER = logging.getLogger(__name__)
 

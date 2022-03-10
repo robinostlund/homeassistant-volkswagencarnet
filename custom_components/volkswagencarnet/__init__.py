@@ -1,7 +1,7 @@
 import asyncio
 import logging
 from datetime import datetime, timedelta
-from typing import Optional, Any, Union
+from typing import Optional, Any, Union, Mapping
 
 from homeassistant.config_entries import ConfigEntry, SOURCE_REAUTH
 from homeassistant.const import (
@@ -48,12 +48,13 @@ from .const import (
     CONF_DEBUG,
     DEFAULT_DEBUG,
     CONF_CONVERT,
-    CONF_NO_CONVERSION,
     CONF_IMPERIAL_UNITS,
     SERVICE_SET_TIMER_BASIC_SETTINGS,
     SERVICE_UPDATE_SCHEDULE,
     SERVICE_UPDATE_PROFILE,
     SERVICE_SET_CHARGER_MAX_CURRENT,
+    CONF_AVAILABLE_RESOURCES,
+    CONF_NO_CONVERSION,
 )
 from .services import (
     SchedulerService,
@@ -63,6 +64,7 @@ from .services import (
     SERVICE_UPDATE_SCHEDULE_SCHEMA,
     SERVICE_UPDATE_PROFILE_SCHEMA,
 )
+from .util import get_convert_conf
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -131,16 +133,18 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
 
     def is_enabled(attr):
         """Return true if the user has enabled the resource."""
-        return attr in entry.data.get(CONF_RESOURCES, [attr])
+        return attr in entry.options.get(CONF_RESOURCES, [attr])
+
+    def is_new(attr):
+        """Return true if the resource is new."""
+        return attr not in entry.options.get(CONF_AVAILABLE_RESOURCES, [attr])
 
     components = set()
-    for instrument in (
-        instrument
-        for instrument in instruments
-        if instrument.component in COMPONENTS and is_enabled(instrument.slug_attr)
-    ):
-        data.instruments.add(instrument)
-        components.add(COMPONENTS[instrument.component])
+    for instrument in (instrument for instrument in instruments if instrument.component in COMPONENTS):
+        # Add resource if it's enabled or new
+        if is_enabled(instrument.slug_attr) or (is_new(instrument.slug_attr) and not entry.pref_disable_new_entities):
+            data.instruments.add(instrument)
+            components.add(COMPONENTS[instrument.component])
 
     for component in components:
         coordinator.platforms.append(component)
@@ -153,6 +157,31 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     }
 
     register_services()
+
+    return True
+
+
+async def async_migrate_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
+    """Migrate an old config entry."""
+    version = entry.version
+
+    _LOGGER.debug("Migrating config from version %s", version)
+
+    # 1 -> 2: Move resources from data -> options
+    if version == 1:
+        # Backward compatibility
+        default_convert_conf = get_convert_conf(entry)
+
+        version = entry.version = 2
+        options = dict(entry.options)
+        data = dict(entry.data)
+        options[CONF_RESOURCES] = data[CONF_RESOURCES]
+        options[CONF_CONVERT] = options.get(CONF_CONVERT, default_convert_conf)
+        data.pop(CONF_RESOURCES, None)
+
+        hass.config_entries.async_update_entry(entry, data=data, options=options)
+
+    _LOGGER.info("Migration to config version %s successful", version)
 
     return True
 
@@ -201,14 +230,6 @@ async def _async_update_listener(hass: HomeAssistant, entry: ConfigEntry) -> boo
     return await hass.config_entries.async_reload(entry.entry_id)
 
 
-def get_convert_conf(entry: ConfigEntry) -> Optional[str]:
-    return (
-        CONF_SCANDINAVIAN_MILES
-        if entry.options.get(CONF_SCANDINAVIAN_MILES, entry.data.get(CONF_SCANDINAVIAN_MILES, False))
-        else CONF_NO_CONVERSION
-    )
-
-
 class VolkswagenData:
     """Hold component state."""
 
@@ -216,9 +237,9 @@ class VolkswagenData:
         """Initialize the component state."""
         self.vehicles: set[Vehicle] = set()
         self.instruments = set()
-        self.config = config.get(DOMAIN, config)
-        self.names = self.config.get(CONF_NAME, None)
-        self.coordinator = coordinator
+        self.config: Mapping[str, Any] = config.get(DOMAIN, config)
+        self.names: str = self.config.get(CONF_NAME, "")
+        self.coordinator: Optional[VolkswagenCoordinator] = coordinator
 
     def instrument(self, vin: str, component: str, attr: str) -> Optional[Instrument]:
         """Return corresponding instrument."""
@@ -236,9 +257,7 @@ class VolkswagenData:
         if isinstance(self.names, str):
             return self.names
 
-        if vehicle.vin and vehicle.vin.lower() in self.names:
-            return self.names[vehicle.vin.lower()]
-        elif vehicle.vin:
+        if vehicle.vin:
             return vehicle.vin
         else:
             return ""
@@ -396,13 +415,10 @@ class VolkswagenCoordinator(DataUpdateCoordinator):
                 "Failed to update WeConnect. Need to accept EULA? Try logging in to the portal: https://www.portal.volkswagen-we.com/"
             )
 
-        if self.entry.options.get(CONF_REPORT_REQUEST, False):
+        if self.entry.options.get(CONF_REPORT_REQUEST, self.entry.data.get(CONF_REPORT_REQUEST, False)):
             await self.report_request(vehicle)
 
-        # Backward compatibility
-        default_convert_conf = get_convert_conf(self.entry)
-
-        convert_conf = self.entry.options.get(CONF_CONVERT, self.entry.data.get(CONF_CONVERT, default_convert_conf))
+        convert_conf = self.entry.options.get(CONF_CONVERT, self.entry.data.get(CONF_CONVERT, CONF_NO_CONVERSION))
 
         dashboard = vehicle.dashboard(
             mutable=self.entry.data.get(CONF_MUTABLE),

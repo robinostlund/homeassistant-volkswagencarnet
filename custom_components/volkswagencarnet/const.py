@@ -18,6 +18,7 @@ CONF_VEHICLE = "vehicle"
 CONF_REPORT_REQUEST = "report_request"
 CONF_REPORT_SCAN_INTERVAL = "report_scan_interval"
 CONF_DEBUG = "debug"
+CONF_AVAILABLE_RESOURCES = "available_resources"
 
 UPDATE_CALLBACK = "update_callback"
 DATA = "data"
@@ -30,7 +31,6 @@ DEFAULT_UPDATE_INTERVAL = 5
 DEFAULT_REPORT_UPDATE_INTERVAL = 1
 
 CONVERT_DICT = {
-    CONF_NO_CONVERSION: "No conversion",
     CONF_IMPERIAL_UNITS: "Imperial units",
     CONF_SCANDINAVIAN_MILES: "km to mil",
 }

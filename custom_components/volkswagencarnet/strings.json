@@ -24,8 +24,8 @@
         }
       },
       "select_instruments": {
-        "title": "Instruments",
-        "description": "Select instruments to monitor",
+        "title": "Resources",
+        "description": "Select resources to monitor",
         "data": {
           "resources": "Resources to monitor"
         }
@@ -64,6 +64,13 @@
           "region": "Region (The country where the car was sold)",
           "debug": "Enable full debug logs from API (requires debug logging enabled in config)",
           "convert": "Select if you wan to make any distance unit conversions"
+        }
+      },
+      "select_instruments": {
+        "title": "Resources",
+        "description": "Select resources to monitor",
+        "data": {
+          "resources": "Resources to monitor"
         }
       }
     }

@@ -11,7 +11,6 @@
           "mutable": "Ta vekk krysset for å gjere bilen 'read only'. Behald krysset om du vil gjere endringar mot bilen",
           "region": "Landskode der bilen blei solgt (ISO 3155-1 / Aplha-2)",
           "spin": "S-PIN",
-          "scandinavian_miles": "Aktiver om du vil endre frå km til mil på sensorar",
           "name": "Gje bilen ditt eit navn (ellers blir navnet det same som VIN nummeret)",
           "debug": "Skru på debug logger frå API (krev at debug logging er skrudd på i konfigurasjonen",
           "convert": "Velg denne viss du vil ha omrekning av distanse"
@@ -64,8 +63,14 @@
           "scan_interval": "Oppdateringsintervall for sensorar (minutt)",
           "region": "Region (landet der bilen blei solgt)",
           "debug": "Skru på debug logger frå API (krev at debug logging er skrudd på i konfigurasjonen",
-          "scandinavian_miles": "Aktiver om du vil endre frå km til mil på sensorar",
           "convert": "Velg denne viss du vil ha omrekning av distanse"
+        }
+      },
+      "select_instruments": {
+        "title": "Instrument",
+        "description": "Velg instrument du ønskjer å overvåke",
+        "data": {
+          "resources": "Ressurser som skal overvåkast"
         }
       }
     }

@@ -11,7 +11,6 @@
             "mutable": "Fjern hake for å bare lese verdier. Hak av dersom du vil sende kommandoer til bilen",
             "region": "Landkode for landet der bilen ble solgt (ISO 3155-1 / Alpha-2)",
             "spin": "S-PIN",
-            "scandinavian_miles": "Kryss av dersom du vil endre fra km til mil på sensorer",
             "name": "Gi bilen et kallenavn (Standard er VIN number)",
             "debug": "Aktiver full debug-logg fra API (krever feilsøkingslogging aktivert i config)",
             "convert": "Velg om du vil gjøre noen avstandsenhetskonverteringer"
@@ -64,8 +63,14 @@
             "scan_interval": "Sensorenes oppdateringsintervall (minutter)",
             "region": "Region (landet der bilen ble solgt)",
             "debug": "Aktiver fullstendige feilsøkingslogger fra API (krever feilsøkingslogging aktivert i config)",
-            "scandinavian_miles": "Aktiver hvis du vil endre fra km til mil på sensorer",
             "convert": "Velg om du vil gjøre noen avstandsenhetskonverteringer"
+          }
+        },
+        "select_instruments": {
+          "title": "Instrumenter",
+          "description": "Velg instrumenter som skal overvåkes",
+          "data": {
+            "resources": "Velg ressurser som skal overvåkes"
           }
         }
       }
