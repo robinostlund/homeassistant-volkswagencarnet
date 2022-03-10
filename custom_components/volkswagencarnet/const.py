@@ -12,7 +12,7 @@ CONF_MUTABLE = "mutable"
 CONF_SPIN = "spin"
 CONF_SCANDINAVIAN_MILES = "scandinavian_miles"
 CONF_IMPERIAL_UNITS = "imperial_units"
-CONF_NO_CONVERSION = None
+CONF_NO_CONVERSION = "no_conversion"
 CONF_CONVERT = "convert"
 CONF_VEHICLE = "vehicle"
 CONF_REPORT_REQUEST = "report_request"
@@ -31,6 +31,8 @@ DEFAULT_UPDATE_INTERVAL = 5
 DEFAULT_REPORT_UPDATE_INTERVAL = 1
 
 CONVERT_DICT = {
+    None: None,
+    CONF_NO_CONVERSION: "No conversion",
     CONF_IMPERIAL_UNITS: "Imperial units",
     CONF_SCANDINAVIAN_MILES: "km to mil",
 }
