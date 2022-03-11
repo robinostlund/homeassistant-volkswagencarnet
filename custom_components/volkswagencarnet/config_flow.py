@@ -53,7 +53,7 @@ DATA_SCHEMA = {
 
 
 class VolkswagenCarnetConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
-    VERSION = 2
+    VERSION = 3
     task_login = None
     task_finish = None
     entry = None
@@ -271,10 +271,7 @@ class VolkswagenCarnetOptionsFlowHandler(config_entries.OptionsFlow):
                         ),
                     ): cv.boolean,
                     vol.Optional(
-                        CONF_CONVERT,
-                        default=self._config_entry.options.get(
-                            CONF_CONVERT, self._config_entry.data.get(CONF_CONVERT, CONF_NO_CONVERSION)
-                        ),
+                        CONF_CONVERT, default=self._config_entry.data.get(CONF_CONVERT, CONF_NO_CONVERSION)
                     ): vol.In(CONVERT_DICT),
                     vol.Optional(
                         CONF_REPORT_SCAN_INTERVAL,
