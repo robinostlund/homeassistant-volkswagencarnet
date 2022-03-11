@@ -351,7 +351,9 @@ class VolkswagenEntity(Entity):
     @property
     def assumed_state(self) -> bool:
         """Return true if unable to access real state of entity."""
-        return self.instrument.assumed_state
+        if hasattr(self.instrument, "assumed_state"):
+            return self.instrument.assumed_state
+        return True
 
     @property
     def extra_state_attributes(self) -> dict:
