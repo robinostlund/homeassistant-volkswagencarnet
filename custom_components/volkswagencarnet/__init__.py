@@ -241,9 +241,9 @@ class VolkswagenData:
         self.names: str = self.config.get(CONF_NAME, "")
         self.coordinator: Optional[VolkswagenCoordinator] = coordinator
 
-    def instrument(self, vin: str, component: str, attr: str) -> Optional[Instrument]:
+    def instrument(self, vin: str, component: str, attr: str) -> Instrument:
         """Return corresponding instrument."""
-        return next(
+        ret = next(
             (
                 instrument
                 for instrument in (self.coordinator.data if self.coordinator is not None else self.instruments)
@@ -251,6 +251,9 @@ class VolkswagenData:
             ),
             None,
         )
+        if ret is None:
+            raise ValueError(f"Instrument not found; component: {component}, attribute: {attr}")
+        return ret
 
     def vehicle_name(self, vehicle: Vehicle) -> str:
         """Provide a friendly name for a vehicle."""
@@ -310,7 +313,7 @@ class VolkswagenEntity(Entity):
     @property
     def instrument(
         self,
-    ) -> Union[BinarySensor, Climate, Sensor, Switch, Instrument, None]:
+    ) -> Union[BinarySensor, Climate, Sensor, Switch, Instrument]:
         """Return corresponding instrument."""
         return self.data.instrument(self.vin, self.component, self.attribute)
 
@@ -348,7 +351,7 @@ class VolkswagenEntity(Entity):
     @property
     def assumed_state(self) -> bool:
         """Return true if unable to access real state of entity."""
-        return True
+        return self.instrument.assumed_state
 
     @property
     def extra_state_attributes(self) -> dict:
