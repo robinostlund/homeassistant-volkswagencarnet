@@ -180,6 +180,14 @@ async def async_migrate_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         data.pop(CONF_RESOURCES, None)
 
         hass.config_entries.async_update_entry(entry, data=data, options=options)
+    if version == 2:
+        # Fix the empty added "convert" option that breaks further conversion configuration
+        version = entry.version = 3
+        options = dict(entry.options)
+        options.pop(CONF_CONVERT, None)
+        data = dict(entry.data)
+
+        hass.config_entries.async_update_entry(entry, data=data, options=options)
 
     _LOGGER.info("Migration to config version %s successful", version)
 
