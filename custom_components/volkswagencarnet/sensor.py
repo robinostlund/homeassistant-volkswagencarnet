@@ -1,7 +1,8 @@
-"""
-Support for Volkswagen WeConnect Platform
-"""
+"""Sensor support for Volkswagen We Connect platform."""
 import logging
+from typing import Union
+
+from homeassistant.components.sensor import SensorEntity, SensorStateClass, SensorDeviceClass, DEVICE_CLASSES
 
 from . import VolkswagenEntity
 from .const import DATA_KEY, DATA, DOMAIN
@@ -17,6 +18,7 @@ async def async_setup_platform(hass, config, async_add_entities, discovery_info=
 
 
 async def async_setup_entry(hass, entry, async_add_devices):
+    """Set up the entity."""
     data = hass.data[DOMAIN][entry.entry_id][DATA]
     coordinator = data.coordinator
     if coordinator.data is not None:
@@ -28,11 +30,11 @@ async def async_setup_entry(hass, entry, async_add_devices):
     return True
 
 
-class VolkswagenSensor(VolkswagenEntity):
+class VolkswagenSensor(VolkswagenEntity, SensorEntity):
     """Representation of a Volkswagen WeConnect Sensor."""
 
     @property
-    def state(self):
+    def _attr_native_value(self):
         """Return the state of the sensor."""
         if self.instrument is not None:
             _LOGGER.debug("Getting state of %s" % self.instrument.attr)
@@ -43,6 +45,19 @@ class VolkswagenSensor(VolkswagenEntity):
         return self.instrument.state
 
     @property
-    def unit_of_measurement(self):
+    def _attr_native_unit_of_measurement(self):
         """Return the unit of measurement."""
         return self.instrument.unit
+
+    @property
+    def state_class(self) -> Union[SensorStateClass, str, None]:
+        """Return the state class."""
+        return self.instrument.state_class
+
+    @property
+    def device_class(self) -> Union[SensorDeviceClass, str, None]:
+        """Return the device class."""
+        if self.instrument.device_class in DEVICE_CLASSES:
+            return self.instrument.device_class
+        _LOGGER.warning(f"Unknown device class {self.instrument.device_class}")
+        return None
