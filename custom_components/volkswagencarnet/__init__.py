@@ -11,14 +11,14 @@ from homeassistant.const import (
     CONF_SCAN_INTERVAL,
     CONF_USERNAME,
     EVENT_HOMEASSISTANT_STOP,
+    STATE_UNKNOWN,
 )
-from homeassistant.core import HomeAssistant, Event
-from homeassistant.exceptions import ConfigEntryNotReady
+from homeassistant.core import HomeAssistant, Event, callback
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
 from homeassistant.helpers.dispatcher import async_dispatcher_connect
 from homeassistant.helpers.entity import Entity
 from homeassistant.helpers.icon import icon_for_battery_level
-from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
+from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed, CoordinatorEntity
 from volkswagencarnet.vw_connection import Connection
 from volkswagencarnet.vw_dashboard import (
     Instrument,
@@ -26,6 +26,9 @@ from volkswagencarnet.vw_dashboard import (
     BinarySensor,
     Sensor,
     Switch,
+    DoorLock,
+    Position,
+    TrunkLock,
 )
 from volkswagencarnet.vw_vehicle import Vehicle
 
@@ -114,6 +117,8 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
 
     coordinator = VolkswagenCoordinator(hass, entry, update_interval)
 
+    coordinator.async_add_listener(coordinator.async_update_listener)
+
     if not await coordinator.async_login():
         await hass.config_entries.flow.async_init(
             DOMAIN,
@@ -124,9 +129,8 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
 
     hass.bus.async_listen_once(EVENT_HOMEASSISTANT_STOP, coordinator.async_logout)
 
-    await coordinator.async_refresh()
-    if not coordinator.last_update_success:
-        raise ConfigEntryNotReady
+    # First refresh, with retry on errors
+    await coordinator.async_config_entry_first_refresh()
 
     data: VolkswagenData = VolkswagenData(entry.data, coordinator)
     instruments = coordinator.data
@@ -244,7 +248,7 @@ class VolkswagenData:
     def __init__(self, config: dict, coordinator: Optional[DataUpdateCoordinator] = None):
         """Initialize the component state."""
         self.vehicles: set[Vehicle] = set()
-        self.instruments = set()
+        self.instruments: set[Instrument] = set()
         self.config: Mapping[str, Any] = config.get(DOMAIN, config)
         self.names: str = self.config.get(CONF_NAME, "")
         self.coordinator: Optional[VolkswagenCoordinator] = coordinator
@@ -274,8 +278,10 @@ class VolkswagenData:
             return ""
 
 
-class VolkswagenEntity(Entity):
+class VolkswagenEntity(CoordinatorEntity, Entity):
     """Base class for all Volkswagen entities."""
+
+    last_updated: Optional[datetime] = None
 
     def __init__(
         self,
@@ -287,17 +293,44 @@ class VolkswagenEntity(Entity):
     ):
         """Initialize the entity."""
 
+        """Pass coordinator to CoordinatorEntity."""
+        super().__init__(data.coordinator)
+
         def update_callbacks() -> None:
             if callback is not None:
                 callback(self.hass, data.coordinator)
 
-        self.data = data
-        self.vin = vin
-        self.component = component
-        self.attribute = attribute
-        self.coordinator = data.coordinator
+        self.data: VolkswagenData = data
+        self.vin: str = vin
+        self.component: str = component
+        self.attribute: str = attribute
+        self.coordinator: Optional[VolkswagenCoordinator] = data.coordinator
         self.instrument.callback = update_callbacks
         self.callback = callback
+
+    @callback
+    def async_write_ha_state(self) -> None:
+        backend_refresh_time = self.instrument.last_refresh
+        prev = self.hass.states.get(self.entity_id)
+
+        # need to persist state if:
+        # - there is no previous state (could this be loaded from the database on restart?)
+        # - there is no information about when the last backend update was done
+        # - the state has changed (need to do string conversion here, as "new" state might be numeric,
+        #   but the stored one is a string... sigh)
+        if (
+            prev is None
+            or prev.attributes.get("last_updated", None) != backend_refresh_time
+            or str(self.state or STATE_UNKNOWN) != str(prev.state)
+        ):
+            super().async_write_ha_state()
+        else:
+            _LOGGER.debug("State not changed, skipping update.")
+
+    @callback
+    def _handle_coordinator_update(self) -> None:
+        """Handle updated data from the coordinator (push updates)."""
+        raise NotImplementedError("Implement in subclasses.")
 
     async def async_update(self) -> None:
         """Update the entity.
@@ -308,8 +341,10 @@ class VolkswagenEntity(Entity):
         # Ignore manual update requests if the entity is disabled
         if not self.enabled:
             return
-
-        await self.coordinator.async_request_refresh()
+        if self.coordinator is not None:
+            await self.coordinator.async_request_refresh()
+        else:
+            _LOGGER.error("Coordinator not set")
 
     async def async_added_to_hass(self) -> None:
         """Register update dispatcher."""
@@ -321,7 +356,7 @@ class VolkswagenEntity(Entity):
     @property
     def instrument(
         self,
-    ) -> Union[BinarySensor, Climate, Sensor, Switch, Instrument]:
+    ) -> Union[BinarySensor, Climate, DoorLock, Position, Sensor, Switch, TrunkLock, Instrument]:
         """Return corresponding instrument."""
         return self.data.instrument(self.vin, self.component, self.attribute)
 
@@ -369,6 +404,7 @@ class VolkswagenEntity(Entity):
         attributes = dict(
             self.instrument.attributes,
             model=f"{self.vehicle.model}/{self.vehicle.model_year}",
+            last_updated=self.instrument.last_refresh,
         )
 
         if not self.vehicle.is_model_image_supported:
@@ -418,6 +454,9 @@ class VolkswagenCoordinator(DataUpdateCoordinator):
         )
 
         super().__init__(hass, _LOGGER, name=DOMAIN, update_interval=update_interval)
+
+    def async_update_listener(self) -> None:
+        _LOGGER.debug(f"Async update finished for {self.vin} ({self.name}). Next update in {self.update_interval}.")
 
     async def _async_update_data(self) -> list[Instrument]:
         """Update data via library."""
