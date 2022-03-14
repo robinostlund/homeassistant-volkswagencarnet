@@ -1,2 +1,2 @@
 pytz
-volkswagencarnet==4.4.50-beta.2
+volkswagencarnet==4.4.50-beta.3
