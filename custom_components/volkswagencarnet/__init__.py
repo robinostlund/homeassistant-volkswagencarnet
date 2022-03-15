@@ -13,6 +13,7 @@ from homeassistant.const import (
     CONF_USERNAME,
     EVENT_HOMEASSISTANT_STOP,
     STATE_UNKNOWN,
+    STATE_UNAVAILABLE,
 )
 from homeassistant.core import HomeAssistant, Event, callback, State
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
@@ -318,6 +319,17 @@ class VolkswagenEntity(CoordinatorEntity, RestoreEntity):
         # Get the previous state from the state machine if found, restored data otherwise
         prev: Optional[State] = self.hass.states.get(self.entity_id) or self.restored_state
 
+        # This is not the best place to handle this, but... :shrug:..
+        if (
+            self.attribute == "requests_remaining"
+            and self.state == -1
+            and prev is not None
+            and prev.state not in [STATE_UNKNOWN, STATE_UNAVAILABLE]
+            and int(prev.state) >= 0
+        ):
+            _LOGGER.debug(f"Not changing requests remaining to '-1', as we have previous value '{prev.state}'")
+            return
+
         # need to persist state if:
         # - there is no previous state
         # - there is no information about when the last backend update was done
@@ -330,7 +342,7 @@ class VolkswagenEntity(CoordinatorEntity, RestoreEntity):
         ):
             super().async_write_ha_state()
         else:
-            _LOGGER.debug(f"{self.name}: state not changed ('{prev.state}' == {self.state}), skipping update.")
+            _LOGGER.debug(f"{self.name}: state not changed ('{prev.state}' == '{self.state}'), skipping update.")
 
     @callback
     def _handle_coordinator_update(self) -> None:
@@ -471,10 +483,8 @@ class VolkswagenCoordinator(DataUpdateCoordinator):
 
         if vehicle is None:
             raise UpdateFailed(
-                (
-                    "Failed to update WeConnect. Need to accept EULA? ",
-                    "Try logging in to the portal: https://www.portal.volkswagen-we.com/",
-                )
+                "Failed to update WeConnect. Need to accept EULA? "
+                "Try logging in to the portal: https://www.portal.volkswagen-we.com/"
             )
 
         if self.entry.options.get(CONF_REPORT_REQUEST, self.entry.data.get(CONF_REPORT_REQUEST, False)):
@@ -510,11 +520,9 @@ class VolkswagenCoordinator(DataUpdateCoordinator):
             await self.connection.doLogin(3)
             if not self.connection.logged_in:
                 _LOGGER.warning(
-                    (
-                        "Could not login to volkswagen WeConnect, ",
-                        "please check your credentials and verify that ",
-                        "the service is working",
-                    )
+                    "Could not login to volkswagen WeConnect, "
+                    "please check your credentials and verify that "
+                    "the service is working"
                 )
                 return False
 
@@ -553,11 +561,9 @@ class VolkswagenCoordinator(DataUpdateCoordinator):
                 await self.connection.doLogin()
                 if not self.connection.logged_in:
                     _LOGGER.warning(
-                        (
-                            "Could not login to volkswagen WeConnect, please ",
-                            "check your credentials and verify that the service ",
-                            "is working",
-                        )
+                        "Could not login to volkswagen WeConnect, please "
+                        "check your credentials and verify that the service "
+                        "is working"
                     )
                     return
 
