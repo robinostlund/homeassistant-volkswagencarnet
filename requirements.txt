@@ -1,2 +1,2 @@
 pytz
-volkswagencarnet==v4.4.50
+volkswagencarnet==v4.4.51
