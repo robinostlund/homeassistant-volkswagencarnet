@@ -316,19 +316,18 @@ class VolkswagenEntity(CoordinatorEntity, RestoreEntity):
     def async_write_ha_state(self) -> None:
         """Write state to HA, but only if needed."""
         backend_refresh_time = self.instrument.last_refresh
-        # Get the previous state from the state machine if found, restored data otherwise
-        prev: Optional[State] = self.hass.states.get(self.entity_id) or self.restored_state
+        # Get the previous state from the state machine if found
+        prev: Optional[State] = self.hass.states.get(self.entity_id)
 
         # This is not the best place to handle this, but... :shrug:..
-        if (
-            self.attribute == "requests_remaining"
-            and self.state == -1
-            and prev is not None
-            and prev.state not in [STATE_UNKNOWN, STATE_UNAVAILABLE]
-            and int(prev.state) >= 0
-        ):
-            _LOGGER.debug(f"Not changing requests remaining to '-1', as we have previous value '{prev.state}'")
-            return
+        if self.attribute == "requests_remaining" and self.state in [-1, STATE_UNAVAILABLE, STATE_UNKNOWN]:
+            restored = prev or self.restored_state
+            if restored is not None and isinstance(restored.state, int) and restored.state >= 0:
+                _LOGGER.debug(f"Restoring requests remaining to '{restored.state}'")
+                self.vehicle.requests_remaining(int(restored.state))
+            else:
+                _LOGGER.debug(f"Not changing requests remaining to '{self.state}'")
+                return
 
         # need to persist state if:
         # - there is no previous state
