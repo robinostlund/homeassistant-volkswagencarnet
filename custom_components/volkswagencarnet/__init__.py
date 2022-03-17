@@ -322,9 +322,13 @@ class VolkswagenEntity(CoordinatorEntity, RestoreEntity):
         # This is not the best place to handle this, but... :shrug:..
         if self.attribute == "requests_remaining" and self.state in [-1, STATE_UNAVAILABLE, STATE_UNKNOWN]:
             restored = prev or self.restored_state
-            if restored is not None and isinstance(restored.state, int) and restored.state >= 0:
-                _LOGGER.debug(f"Restoring requests remaining to '{restored.state}'")
-                self.vehicle.requests_remaining(int(restored.state))
+            if restored is not None:
+                try:
+                    value = int(restored.state)
+                    _LOGGER.debug(f"Restoring requests remaining to '{restored.state}'")
+                    self.vehicle.requests_remaining = value
+                except ValueError:
+                    pass
             else:
                 _LOGGER.debug(f"Not changing requests remaining to '{self.state}'")
                 return
@@ -451,6 +455,10 @@ class VolkswagenEntity(CoordinatorEntity, RestoreEntity):
     def unique_id(self) -> str:
         """Return a unique ID."""
         return f"{self.vin}-{self.component}-{self.attribute}"
+
+    def notify_updated(self):
+        """Schedule entity updates."""
+        self.hass.add_job(self.coordinator.async_request_refresh)
 
 
 class VolkswagenCoordinator(DataUpdateCoordinator):
