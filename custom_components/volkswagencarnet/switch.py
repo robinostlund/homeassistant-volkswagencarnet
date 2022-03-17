@@ -84,13 +84,13 @@ class VolkswagenSwitch(VolkswagenEntity, ToggleEntity):
         """Turn the switch on."""
         _LOGGER.debug("Turning ON %s." % self.instrument.attr)
         await self.instrument.turn_on()
-        self.async_write_ha_state()
+        self.notify_updated()
 
     async def async_turn_off(self, **kwargs):
         """Turn the switch off."""
         _LOGGER.debug("Turning OFF %s." % self.instrument.attr)
         await self.instrument.turn_off()
-        self.async_write_ha_state()
+        self.notify_updated()
 
     @property
     def assumed_state(self):
