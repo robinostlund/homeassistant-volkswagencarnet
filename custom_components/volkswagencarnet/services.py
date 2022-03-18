@@ -93,7 +93,7 @@ class SchedulerService:
         """Init."""
         self.hass: HomeAssistant = hass
 
-    async def set_timer_basic_settings(self, service_call: ServiceCall):
+    async def set_timer_basic_settings(self, service_call: ServiceCall) -> bool:
         """Service for configuring basic settings."""
         c = await get_coordinator_by_device_id(self.hass, service_call.data.get("device_id"))
         v = get_vehicle(c)
@@ -127,9 +127,12 @@ class SchedulerService:
             _LOGGER.debug(f"Setting minimum charge level to {ml}%")
             # send charge limit command to volkswagencarnet
             res = res and await v.set_charge_min_level(int(ml))
+
+        self.hass.add_job(c.async_request_refresh)
+
         return res
 
-    async def update_schedule(self, service_call: ServiceCall):
+    async def update_schedule(self, service_call: ServiceCall) -> bool:
         """Service for updating departure schedules."""
         c = await get_coordinator_by_device_id(self.hass, service_call.data.get("device_id"))
         v = get_vehicle(c)
@@ -177,9 +180,10 @@ class SchedulerService:
         _LOGGER.debug(f"Updating timer {timers[timer_id].json_updated['timer']}")
         data.timersAndProfiles.timerList.timer = [timers[1], timers[2], timers[3]]
         res = await v.set_schedule(data)
+        self.hass.add_job(c.async_request_refresh)
         return res
 
-    async def update_profile(self, service_call: ServiceCall):
+    async def update_profile(self, service_call: ServiceCall) -> bool:
         """Service for updating charging profiles (locations)."""
         c = await get_coordinator_by_device_id(self.hass, service_call.data.get("device_id"))
         v = get_vehicle(coordinator=c)
@@ -219,6 +223,7 @@ class SchedulerService:
 
         _LOGGER.debug(f"Updating profile {profile.profileID}: {profile.profileName}")
         res = await v.set_schedule(data)
+        self.hass.add_job(c.async_request_refresh)
         return res
 
     def time_to_utc(self, time_string: str) -> str:
@@ -238,7 +243,7 @@ class ChargerService:
         """Init."""
         self.hass: HomeAssistant = hass
 
-    async def set_charger_max_current(self, service_call: ServiceCall):
+    async def set_charger_max_current(self, service_call: ServiceCall) -> bool:
         """Service for setting max charging current."""
         c = await get_coordinator_by_device_id(self.hass, service_call.data.get("device_id"))
         v = get_vehicle(c)
@@ -250,4 +255,6 @@ class ChargerService:
             raise ValueError("Can't change value to None")
 
         # Apply
-        return await v.set_charger_current(level)
+        res = await v.set_charger_current(level)
+        self.hass.add_job(c.async_request_refresh)
+        return res

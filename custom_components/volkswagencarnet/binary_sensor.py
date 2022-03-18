@@ -1,9 +1,10 @@
-"""
-Support for Volkswagen WeConnect.
-"""
+"""BinarySensor support for Volkswagen We Connect integration."""
 import logging
+from typing import Union
 
-from homeassistant.components.binary_sensor import DEVICE_CLASSES, BinarySensorEntity
+from homeassistant.components.binary_sensor import DEVICE_CLASSES, BinarySensorEntity, BinarySensorDeviceClass
+from homeassistant.config_entries import ConfigEntry
+from homeassistant.core import HomeAssistant
 
 from . import VolkswagenEntity
 from .const import DATA_KEY, DATA, DOMAIN, UPDATE_CALLBACK
@@ -11,24 +12,25 @@ from .const import DATA_KEY, DATA, DOMAIN, UPDATE_CALLBACK
 _LOGGER = logging.getLogger(__name__)
 
 
-async def async_setup_platform(hass, config, async_add_entities, discovery_info=None):
-    """Set up the Volkswagen binary sensors."""
+async def async_setup_platform(hass: HomeAssistant, config: ConfigEntry, async_add_entities, discovery_info=None):
+    """Set up the Volkswagen binary sensors platform."""
     if discovery_info is None:
         return
     async_add_entities([VolkswagenBinarySensor(hass.data[DATA_KEY], *discovery_info)])
 
 
 async def async_setup_entry(hass, entry, async_add_devices):
+    """Set up the Volkswagen binary sensor."""
     data = hass.data[DOMAIN][entry.entry_id][DATA]
     coordinator = data.coordinator
     if coordinator.data is not None:
         async_add_devices(
             VolkswagenBinarySensor(
-                data,
-                coordinator.vin,
-                instrument.component,
-                instrument.attr,
-                hass.data[DOMAIN][entry.entry_id][UPDATE_CALLBACK],
+                data=data,
+                vin=coordinator.vin,
+                component=instrument.component,
+                attribute=instrument.attr,
+                callback=hass.data[DOMAIN][entry.entry_id][UPDATE_CALLBACK],
             )
             for instrument in (instrument for instrument in data.instruments if instrument.component == "binary_sensor")
         )
@@ -37,7 +39,7 @@ async def async_setup_entry(hass, entry, async_add_devices):
 
 
 class VolkswagenBinarySensor(VolkswagenEntity, BinarySensorEntity):
-    """Representation of a Volkswagen Binary Sensor"""
+    """Representation of a Volkswagen Binary Sensor."""
 
     @property
     def is_on(self):
@@ -46,8 +48,9 @@ class VolkswagenBinarySensor(VolkswagenEntity, BinarySensorEntity):
         return self.instrument.is_on
 
     @property
-    def device_class(self):
-        """Return the class of this sensor, from DEVICE_CLASSES."""
+    def device_class(self) -> Union[BinarySensorDeviceClass, str, None]:
+        """Return the device class."""
         if self.instrument.device_class in DEVICE_CLASSES:
             return self.instrument.device_class
+        _LOGGER.warning(f"Unknown device class {self.instrument.device_class}")
         return None

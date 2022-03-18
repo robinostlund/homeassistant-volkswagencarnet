@@ -1,3 +1,4 @@
+"""We Connect custom integration for Home Assistant."""
 import asyncio
 import logging
 from datetime import datetime, timedelta
@@ -11,14 +12,15 @@ from homeassistant.const import (
     CONF_SCAN_INTERVAL,
     CONF_USERNAME,
     EVENT_HOMEASSISTANT_STOP,
+    STATE_UNKNOWN,
+    STATE_UNAVAILABLE,
 )
-from homeassistant.core import HomeAssistant, Event
-from homeassistant.exceptions import ConfigEntryNotReady
+from homeassistant.core import HomeAssistant, Event, callback, State
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
 from homeassistant.helpers.dispatcher import async_dispatcher_connect
-from homeassistant.helpers.entity import Entity
 from homeassistant.helpers.icon import icon_for_battery_level
-from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
+from homeassistant.helpers.restore_state import RestoreEntity
+from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed, CoordinatorEntity
 from volkswagencarnet.vw_connection import Connection
 from volkswagencarnet.vw_dashboard import (
     Instrument,
@@ -26,6 +28,9 @@ from volkswagencarnet.vw_dashboard import (
     BinarySensor,
     Sensor,
     Switch,
+    DoorLock,
+    Position,
+    TrunkLock,
 )
 from volkswagencarnet.vw_vehicle import Vehicle
 
@@ -70,6 +75,7 @@ _LOGGER = logging.getLogger(__name__)
 
 
 def unload_services(hass: HomeAssistant):
+    """Unload the services from HA."""
     hass.services.async_remove(DOMAIN, SERVICE_SET_TIMER_BASIC_SETTINGS)
     hass.services.async_remove(DOMAIN, SERVICE_UPDATE_SCHEDULE)
     hass.services.async_remove(DOMAIN, SERVICE_UPDATE_PROFILE)
@@ -77,7 +83,7 @@ def unload_services(hass: HomeAssistant):
 
 
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
-    """Setup Volkswagen WeConnect component"""
+    """Perform Volkswagen WeConnect component setup."""
 
     def register_services():
         cs = ChargerService(hass)
@@ -114,6 +120,8 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
 
     coordinator = VolkswagenCoordinator(hass, entry, update_interval)
 
+    coordinator.async_add_listener(coordinator.async_update_listener)
+
     if not await coordinator.async_login():
         await hass.config_entries.flow.async_init(
             DOMAIN,
@@ -124,9 +132,8 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
 
     hass.bus.async_listen_once(EVENT_HOMEASSISTANT_STOP, coordinator.async_logout)
 
-    await coordinator.async_refresh()
-    if not coordinator.last_update_success:
-        raise ConfigEntryNotReady
+    # First refresh, with retry on errors
+    await coordinator.async_config_entry_first_refresh()
 
     data: VolkswagenData = VolkswagenData(entry.data, coordinator)
     instruments = coordinator.data
@@ -180,6 +187,14 @@ async def async_migrate_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         data.pop(CONF_RESOURCES, None)
 
         hass.config_entries.async_update_entry(entry, data=data, options=options)
+    if version == 2:
+        # Fix the empty added "convert" option that breaks further conversion configuration
+        version = entry.version = 3
+        options = dict(entry.options)
+        options.pop(CONF_CONVERT, None)
+        data = dict(entry.data)
+
+        hass.config_entries.async_update_entry(entry, data=data, options=options)
 
     _LOGGER.info("Migration to config version %s successful", version)
 
@@ -187,6 +202,7 @@ async def async_migrate_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
 
 
 def update_callback(hass: HomeAssistant, coordinator: DataUpdateCoordinator) -> None:
+    """Request data update."""
     _LOGGER.debug("Update request callback")
     hass.async_create_task(coordinator.async_request_refresh())
 
@@ -236,14 +252,14 @@ class VolkswagenData:
     def __init__(self, config: dict, coordinator: Optional[DataUpdateCoordinator] = None):
         """Initialize the component state."""
         self.vehicles: set[Vehicle] = set()
-        self.instruments = set()
+        self.instruments: set[Instrument] = set()
         self.config: Mapping[str, Any] = config.get(DOMAIN, config)
         self.names: str = self.config.get(CONF_NAME, "")
         self.coordinator: Optional[VolkswagenCoordinator] = coordinator
 
-    def instrument(self, vin: str, component: str, attr: str) -> Optional[Instrument]:
+    def instrument(self, vin: str, component: str, attr: str) -> Instrument:
         """Return corresponding instrument."""
-        return next(
+        ret = next(
             (
                 instrument
                 for instrument in (self.coordinator.data if self.coordinator is not None else self.instruments)
@@ -251,6 +267,9 @@ class VolkswagenData:
             ),
             None,
         )
+        if ret is None:
+            raise ValueError(f"Instrument not found; component: {component}, attribute: {attr}")
+        return ret
 
     def vehicle_name(self, vehicle: Vehicle) -> str:
         """Provide a friendly name for a vehicle."""
@@ -263,8 +282,11 @@ class VolkswagenData:
             return ""
 
 
-class VolkswagenEntity(Entity):
+class VolkswagenEntity(CoordinatorEntity, RestoreEntity):
     """Base class for all Volkswagen entities."""
+
+    last_updated: Optional[datetime] = None
+    restored_state: Optional[State] = None
 
     def __init__(
         self,
@@ -275,33 +297,77 @@ class VolkswagenEntity(Entity):
         callback=None,
     ):
         """Initialize the entity."""
+        # Pass coordinator to CoordinatorEntity.
+        super().__init__(data.coordinator)
 
         def update_callbacks() -> None:
             if callback is not None:
                 callback(self.hass, data.coordinator)
 
-        self.data = data
-        self.vin = vin
-        self.component = component
-        self.attribute = attribute
-        self.coordinator = data.coordinator
+        self.data: VolkswagenData = data
+        self.vin: str = vin
+        self.component: str = component
+        self.attribute: str = attribute
+        self.coordinator: Optional[VolkswagenCoordinator] = data.coordinator
         self.instrument.callback = update_callbacks
         self.callback = callback
+
+    @callback
+    def async_write_ha_state(self) -> None:
+        """Write state to HA, but only if needed."""
+        backend_refresh_time = self.instrument.last_refresh
+        # Get the previous state from the state machine if found
+        prev: Optional[State] = self.hass.states.get(self.entity_id)
+
+        # This is not the best place to handle this, but... :shrug:..
+        if self.attribute == "requests_remaining" and self.state in [-1, STATE_UNAVAILABLE, STATE_UNKNOWN]:
+            restored = prev or self.restored_state
+            if restored is not None:
+                try:
+                    value = int(restored.state)
+                    _LOGGER.debug(f"Restoring requests remaining to '{restored.state}'")
+                    self.vehicle.requests_remaining = value
+                except ValueError:
+                    pass
+            else:
+                _LOGGER.debug(f"Not changing requests remaining to '{self.state}'")
+                return
+
+        # need to persist state if:
+        # - there is no previous state
+        # - there is no information about when the last backend update was done
+        # - the state has changed (need to do string conversion here, as "new" state might be numeric,
+        #   but the stored one is a string... sigh)
+        if (
+            prev is None
+            or str(prev.attributes.get("last_updated", None)) != str(backend_refresh_time)
+            or str(self.state or STATE_UNKNOWN) != str(prev.state)
+        ):
+            super().async_write_ha_state()
+        else:
+            _LOGGER.debug(f"{self.name}: state not changed ('{prev.state}' == '{self.state}'), skipping update.")
+
+    @callback
+    def _handle_coordinator_update(self) -> None:
+        """Handle updated data from the coordinator (push updates)."""
+        raise NotImplementedError("Implement in subclasses.")
 
     async def async_update(self) -> None:
         """Update the entity.
 
         Only used by the generic entity update service.
         """
-
         # Ignore manual update requests if the entity is disabled
         if not self.enabled:
             return
-
-        await self.coordinator.async_request_refresh()
+        if self.coordinator is not None:
+            await self.coordinator.async_request_refresh()
+        else:
+            _LOGGER.error("Coordinator not set")
 
     async def async_added_to_hass(self) -> None:
         """Register update dispatcher."""
+        self.restored_state = await self.async_get_last_state()
         if self.coordinator is not None:
             self.async_on_remove(self.coordinator.async_add_listener(self.async_write_ha_state))
         else:
@@ -310,7 +376,7 @@ class VolkswagenEntity(Entity):
     @property
     def instrument(
         self,
-    ) -> Union[BinarySensor, Climate, Sensor, Switch, Instrument, None]:
+    ) -> Union[BinarySensor, Climate, DoorLock, Position, Sensor, Switch, TrunkLock, Instrument]:
         """Return corresponding instrument."""
         return self.data.instrument(self.vin, self.component, self.attribute)
 
@@ -348,6 +414,8 @@ class VolkswagenEntity(Entity):
     @property
     def assumed_state(self) -> bool:
         """Return true if unable to access real state of entity."""
+        if hasattr(self.instrument, "assumed_state"):
+            return self.instrument.assumed_state
         return True
 
     @property
@@ -356,6 +424,7 @@ class VolkswagenEntity(Entity):
         attributes = dict(
             self.instrument.attributes,
             model=f"{self.vehicle.model}/{self.vehicle.model_year}",
+            last_updated=self.instrument.last_refresh,
         )
 
         if not self.vehicle.is_model_image_supported:
@@ -387,11 +456,16 @@ class VolkswagenEntity(Entity):
         """Return a unique ID."""
         return f"{self.vin}-{self.component}-{self.attribute}"
 
+    def notify_updated(self):
+        """Schedule entity updates."""
+        self.hass.add_job(self.coordinator.async_request_refresh)
+
 
 class VolkswagenCoordinator(DataUpdateCoordinator):
     """Class to manage fetching data from the API."""
 
     def __init__(self, hass: HomeAssistant, entry: ConfigEntry, update_interval: timedelta):
+        """Initialize the coordinator."""
         self.vin = entry.data[CONF_VEHICLE].upper()
         self.entry = entry
         self.platforms: list[str] = []
@@ -406,13 +480,18 @@ class VolkswagenCoordinator(DataUpdateCoordinator):
 
         super().__init__(hass, _LOGGER, name=DOMAIN, update_interval=update_interval)
 
+    def async_update_listener(self) -> None:
+        """Listen for update events."""
+        _LOGGER.debug(f"Async update finished for {self.vin} ({self.name}). Next update in {self.update_interval}.")
+
     async def _async_update_data(self) -> list[Instrument]:
         """Update data via library."""
         vehicle = await self.update()
 
         if vehicle is None:
             raise UpdateFailed(
-                "Failed to update WeConnect. Need to accept EULA? Try logging in to the portal: https://www.portal.volkswagen-we.com/"
+                "Failed to update WeConnect. Need to accept EULA? "
+                "Try logging in to the portal: https://www.portal.volkswagen-we.com/"
             )
 
         if self.entry.options.get(CONF_REPORT_REQUEST, self.entry.data.get(CONF_REPORT_REQUEST, False)):
@@ -430,7 +509,7 @@ class VolkswagenCoordinator(DataUpdateCoordinator):
         return dashboard.instruments
 
     async def async_logout(self, event: Event = None) -> bool:
-        """Logout from Volkswagen WeConnect"""
+        """Logout from Volkswagen WeConnect."""
         if event is not None:
             _LOGGER.debug(f"Logging out due to event {event.event_type}")
         try:
@@ -442,21 +521,22 @@ class VolkswagenCoordinator(DataUpdateCoordinator):
         return True
 
     async def async_login(self) -> bool:
-        """Login to Volkswagen WeConnect"""
+        """Login to Volkswagen WeConnect."""
         # check if we can login
         if not self.connection.logged_in:
             await self.connection.doLogin(3)
             if not self.connection.logged_in:
                 _LOGGER.warning(
-                    "Could not login to volkswagen WeConnect, please check your credentials and verify that the service is working"
+                    "Could not login to volkswagen WeConnect, "
+                    "please check your credentials and verify that "
+                    "the service is working"
                 )
                 return False
 
         return True
 
     async def update(self) -> Optional[Vehicle]:
-        """Update status from Volkswagen WeConnect"""
-
+        """Update status from Volkswagen WeConnect."""
         # update vehicles
         if not await self.connection.update():
             _LOGGER.warning("Could not query update from volkswagen WeConnect")
@@ -470,7 +550,7 @@ class VolkswagenCoordinator(DataUpdateCoordinator):
         return None
 
     async def report_request(self, vehicle: Vehicle) -> None:
-        """Request car to report itself an update to Volkswagen WeConnect"""
+        """Request car to report itself an update to Volkswagen WeConnect."""
         report_interval = self.entry.options.get(CONF_REPORT_SCAN_INTERVAL, DEFAULT_REPORT_UPDATE_INTERVAL)
 
         if not self.report_last_updated:
@@ -481,13 +561,16 @@ class VolkswagenCoordinator(DataUpdateCoordinator):
         if days_since_last_update < report_interval:
             return
 
+        # noinspection PyBroadException
         try:
             # check if we can login
             if not self.connection.logged_in:
                 await self.connection.doLogin()
                 if not self.connection.logged_in:
                     _LOGGER.warning(
-                        "Could not login to volkswagen WeConnect, please check your credentials and verify that the service is working"
+                        "Could not login to volkswagen WeConnect, please "
+                        "check your credentials and verify that the service "
+                        "is working"
                     )
                     return
 
@@ -497,6 +580,6 @@ class VolkswagenCoordinator(DataUpdateCoordinator):
                 return
 
             self.report_last_updated = datetime.now()
-        except:
+        except:  # noqa: E722
             # This is actually not critical so...
             pass
