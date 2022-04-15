@@ -86,13 +86,3 @@ def validate_charge_max_current(charge_max_current: int | str | None) -> int | N
             return 252
         return int(charge_max_current)
     raise ValueError(f"{charge_max_current} looks to be an invalid value")
-
-
-def icon_for_lock(unlocked: bool | None = None) -> str:
-    """Get correct lock icon depending on state."""
-    if unlocked is None:
-        return "mdi:lock-question"
-    if unlocked:
-        return "mdi:lock-open"
-    else:
-        return "mdi:lock"

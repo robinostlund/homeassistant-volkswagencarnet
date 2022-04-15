@@ -1,3 +1,2 @@
-pyrate-limiter>=2.8.0
 pytz
-volkswagencarnet==4.4.54
+volkswagencarnet==4.4.55-beta.1

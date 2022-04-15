@@ -34,7 +34,6 @@ from volkswagencarnet.vw_dashboard import (
     Position,
     TrunkLock,
 )
-from volkswagencarnet.vw_dashboard import VWDeviceClass
 from volkswagencarnet.vw_vehicle import Vehicle
 
 from .const import (
@@ -72,7 +71,7 @@ from .services import (
     SERVICE_UPDATE_SCHEDULE_SCHEMA,
     SERVICE_UPDATE_PROFILE_SCHEMA,
 )
-from .util import get_convert_conf, icon_for_lock
+from .util import get_convert_conf
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -386,8 +385,6 @@ class VolkswagenEntity(CoordinatorEntity, RestoreEntity):
     @property
     def icon(self) -> str | None:
         """Return the icon."""
-        if self.device_class == VWDeviceClass.LOCK:
-            return icon_for_lock(self.instrument.state)
         if self.instrument.attr in ["battery_level", "charging"]:
             return icon_for_battery_level(battery_level=self.instrument.state, charging=self.vehicle.charging)
         else:
