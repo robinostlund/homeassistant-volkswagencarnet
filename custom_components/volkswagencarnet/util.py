@@ -1,5 +1,7 @@
+"""Helper utilities."""
+from __future__ import annotations
+
 import logging
-from typing import Optional, Union
 
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
@@ -13,7 +15,7 @@ from .error import ServiceError
 _LOGGER = logging.getLogger(__name__)
 
 
-def get_convert_conf(entry: ConfigEntry) -> Optional[str]:
+def get_convert_conf(entry: ConfigEntry) -> str | None:
     """
     Convert old configuration.
 
@@ -55,7 +57,7 @@ def get_vehicle(coordinator) -> Vehicle:
     _LOGGER.debug(f"Found VIN {coordinator.vin}")
     # parse service call
 
-    v: Optional[Vehicle] = None
+    v: Vehicle | None = None
     for vehicle in coordinator.connection.vehicles:
         if vehicle.vin.upper() == coordinator.vin:
             v = vehicle
@@ -65,7 +67,7 @@ def get_vehicle(coordinator) -> Vehicle:
     return v
 
 
-def validate_charge_max_current(charge_max_current: Optional[Union[int, str]]) -> Optional[int]:
+def validate_charge_max_current(charge_max_current: int | str | None) -> int | None:
     """
     Validate value against known valid ones and return numeric value.
 
