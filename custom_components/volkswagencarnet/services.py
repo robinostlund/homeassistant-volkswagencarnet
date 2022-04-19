@@ -117,12 +117,16 @@ class SchedulerService:
             _LOGGER.debug(f"Setting target temperature to {tt} {self.hass.config.units.temperature_unit}")
             # get timers
             t = await c.connection.getTimers(c.vin)
-            if self.hass.config.units.is_metric:
-                t.timersAndProfiles.timerBasicSetting.set_target_temperature_celsius(float(tt))
+            if t.timersAndProfiles.timerBasicSetting.targetTemperature is not None:
+                if self.hass.config.units.is_metric:
+                    t.timersAndProfiles.timerBasicSetting.set_target_temperature_celsius(float(tt))
+                else:
+                    t.timersAndProfiles.timerBasicSetting.set_target_temperature_fahrenheit(int(tt))
+                temp = t.timersAndProfiles.timerBasicSetting.targetTemperature
             else:
-                t.timersAndProfiles.timerBasicSetting.set_target_temperature_fahrenheit(int(tt))
+                temp = float(tt)
             # send command to volkswagencarnet
-            res = res and await v.set_climatisation_temp(t.timersAndProfiles.timerBasicSetting.targetTemperature)
+            res = res and await v.set_climatisation_temp(temp)
         if ml is not None:
             _LOGGER.debug(f"Setting minimum charge level to {ml}%")
             # send charge limit command to volkswagencarnet
