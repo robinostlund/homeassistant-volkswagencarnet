@@ -6,7 +6,7 @@
           "title": "We Connect konfigurasjon",
           "description": "Fyll inn We Connect informasion\n\nS-PIN er nødvendig for enkelte valg som å låse opp/igjen, og starte/stoppe oppvarming med drivstoff",
           "data": {
-            "username": "Epost",
+            "username": "E-post",
             "password": "Passord",
             "mutable": "Fjern hake for å bare lese verdier. Hak av dersom du vil sende kommandoer til bilen",
             "region": "Landkode for landet der bilen ble solgt (ISO 3155-1 / Alpha-2)",
