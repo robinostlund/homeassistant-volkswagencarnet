@@ -1,4 +1,4 @@
-[![hacs_badge](https://img.shields.io/badge/HACS-Default-orange.svg)](https://github.com/custom-components/hacs)
+[![hacs_badge](https://img.shields.io/badge/HACS-Default-orange.svg)](https://github.com/hacs/integration)
 ![Version](https://img.shields.io/github/v/release/robinostlund/homeassistant-volkswagencarnet)
 ![PyPi](https://img.shields.io/pypi/v/volkswagencarnet?label=latest%20pypi)
 ![Downloads](https://img.shields.io/github/downloads/robinostlund/homeassistant-volkswagencarnet/total)
