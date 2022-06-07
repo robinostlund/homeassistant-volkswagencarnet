@@ -1,6 +1,5 @@
 {
   "name": "Volkswagen We Connect",
-  "iot_class": "Cloud Polling",
   "homeassistant": "2021.12.0b1",
   "hide_default_branch": true,
   "zip_release": true,
