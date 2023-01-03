@@ -43,9 +43,6 @@ Make sure you have an account on Volkswagen We Connect.
 
 Clone or copy the repository and copy the folder 'homeassistant-volkswagencarnet/custom_component/volkswagencarnet' into '<config dir>/custom_components'
 
-#### Installing dependencies
-Note that only the packaged releases (zip file) have the dependencies configured so that Home Assistant can find them automatically, but if you use the source code or git branch, you need to manually install the correct versions of all dependencies also using something like `pip install -r requirements.txt`.
-
 ## Configuration
 * Restart Home Assistant
 * Add and configure the component via the UI: Configuration > Integrations > search for "Volkswagen We Connect" and follow the wizard to configure (use your We Connect credentials)
