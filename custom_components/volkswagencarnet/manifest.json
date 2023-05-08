@@ -1,12 +1,12 @@
 {
+    "domain": "volkswagencarnet",
+    "name": "Volkswagen WeConnect",
     "codeowners": [
         "@robinostlund"
     ],
     "config_flow": true,
     "documentation": "https://github.com/robinostlund/homeassistant-volkswagencarnet/blob/master/README.md",
     "dependencies": [],
-    "domain": "volkswagencarnet",
-    "name": "Volkswagen WeConnect",
     "iot_class": "cloud_polling",
     "issue_tracker": "https://github.com/robinostlund/homeassistant-volkswagencarnet/issues",
     "requirements": [],
