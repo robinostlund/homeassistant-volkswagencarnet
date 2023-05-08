@@ -304,7 +304,6 @@ class VolkswagenCarnetOptionsFlowHandler(config_entries.OptionsFlow):
         instruments_dict = {instrument.attr: instrument.name for instrument in d.instruments}
 
         if user_input is not None:
-
             options = {
                 **data["options"],
                 CONF_RESOURCES: user_input[CONF_RESOURCES],
