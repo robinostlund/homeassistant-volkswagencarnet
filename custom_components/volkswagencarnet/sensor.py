@@ -53,7 +53,8 @@ class VolkswagenSensor(VolkswagenEntity, SensorEntity):
     @property
     def _attr_native_unit_of_measurement(self):
         """Return the unit of measurement."""
-        return self.instrument.unit
+        if self.instrument.unit:
+            return self.instrument.unit
 
     @property
     def device_class(self) -> Union[SensorDeviceClass, None]:
