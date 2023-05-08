@@ -13,7 +13,9 @@ def auto_enable_custom_integrations(enable_custom_integrations):
 @pytest.fixture
 def bypass_setup_fixture():
     """Prevent setup."""
-    with patch("custom_components.volkswagencarnet.async_setup", return_value=True,), patch(
+    with patch("custom_components.volkswagencarnet.async_setup",
+        return_value=True,
+    ), patch(
         "custom_components.volkswagencarnet.async_setup_entry",
         return_value=True,
     ):
