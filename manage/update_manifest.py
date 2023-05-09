@@ -27,7 +27,7 @@ def update_manifest():
 
     # save manifest
     with open(f"{os.getcwd()}/custom_components/volkswagencarnet/manifest.json", "w") as manifestfile:
-        manifestfile.write(json.dumps(manifest, indent=4, sort_keys=True))
+        manifestfile.write(json.dumps(manifest, indent=4, sort_keys=False))
 
     # print output
     print("# generated manifest.json")
