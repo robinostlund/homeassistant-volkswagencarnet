@@ -1,12 +1,8 @@
 {
     "domain": "volkswagencarnet",
     "name": "Volkswagen WeConnect",
-    "after_dependencies": [
-        "http"
-    ],
-    "codeowners": [
-        "@robinostlund"
-    ],
+    "after_dependencies": ["http"],
+    "codeowners": ["@robinostlund"],
     "config_flow": true,
     "dependencies": [],
     "documentation": "https://github.com/robinostlund/homeassistant-volkswagencarnet/blob/master/README.md",
