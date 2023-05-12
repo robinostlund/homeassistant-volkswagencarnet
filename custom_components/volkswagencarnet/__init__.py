@@ -113,10 +113,10 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
             schema=SERVICE_SET_CHARGER_MAX_CURRENT_SCHEMA,
         )
 
-    if entry.options.get(CONF_SCAN_INTERVAL):
-        update_interval = timedelta(minutes=entry.options[CONF_SCAN_INTERVAL])
-    else:
-        update_interval = timedelta(minutes=DEFAULT_UPDATE_INTERVAL)
+    scan_interval_conf = self.entry.options.get(
+        CONF_SCAN_INTERVAL, self.entry.data.get(CONF_SCAN_INTERVAL, DEFAULT_UPDATE_INTERVAL)
+    )
+    update_interval = timedelta(minutes=scan_interval_conf)
 
     coordinator = VolkswagenCoordinator(hass, entry, update_interval)
 
@@ -551,7 +551,9 @@ class VolkswagenCoordinator(DataUpdateCoordinator):
 
     async def report_request(self, vehicle: Vehicle) -> None:
         """Request car to report itself an update to Volkswagen WeConnect."""
-        report_interval = self.entry.options.get(CONF_REPORT_SCAN_INTERVAL, DEFAULT_REPORT_UPDATE_INTERVAL)
+        report_interval = self.entry.options.get(
+            CONF_REPORT_SCAN_INTERVAL, self.entry.data.get(CONF_REPORT_SCAN_INTERVAL, DEFAULT_REPORT_UPDATE_INTERVAL)
+        )
 
         if not self.report_last_updated:
             days_since_last_update = 1
