@@ -113,8 +113,8 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
             schema=SERVICE_SET_CHARGER_MAX_CURRENT_SCHEMA,
         )
 
-    scan_interval_conf = self.entry.options.get(
-        CONF_SCAN_INTERVAL, self.entry.data.get(CONF_SCAN_INTERVAL, DEFAULT_UPDATE_INTERVAL)
+    scan_interval_conf = entry.options.get(
+        CONF_SCAN_INTERVAL, entry.data.get(CONF_SCAN_INTERVAL, DEFAULT_UPDATE_INTERVAL)
     )
     update_interval = timedelta(minutes=scan_interval_conf)
 
