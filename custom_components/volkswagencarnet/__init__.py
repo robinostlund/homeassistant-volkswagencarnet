@@ -1,5 +1,4 @@
 """We Connect custom integration for Home Assistant."""
-import asyncio
 import logging
 from datetime import datetime, timedelta
 from typing import Optional, Any, Union, Mapping
