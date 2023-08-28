@@ -524,7 +524,7 @@ class VolkswagenCoordinator(DataUpdateCoordinator):
         """Login to Volkswagen WeConnect."""
         # check if we can login
         if not self.connection.logged_in:
-            await self.connection.doLogin(3)
+            await self.connection.doLogin(10)
             if not self.connection.logged_in:
                 _LOGGER.warning(
                     "Could not login to volkswagen WeConnect, "
@@ -536,10 +536,11 @@ class VolkswagenCoordinator(DataUpdateCoordinator):
         return True
 
     async def update(self) -> Optional[Vehicle]:
+        _LOGGER.debug("Starting update")
         """Update status from Volkswagen WeConnect."""
         # update vehicles
         if not await self.connection.update():
-            _LOGGER.warning("Could not query update from volkswagen WeConnect")
+            _LOGGER.error("Could not query update from volkswagen WeConnect")
             return None
 
         _LOGGER.debug("Updating data from volkswagen WeConnect")
