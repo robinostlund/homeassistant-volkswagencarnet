@@ -1,1 +1,79 @@
-
+{
+        "title": "Volkswagen We Connect",
+        "config": {
+          "step": {
+            "user": {
+              "title": "We Connect Nastavení",
+              "description": "Vyplňte informace We Connect\n\nS-PIN je vyžadován pro některé specifické možnosti, jako je zamknutí/odemknutí a spuštění/zastavení ohřevu spalovacího motoru",
+              "data": {
+                "username": "Email",
+                "password": "Heslo",
+                "mutable": "Zrušte zaškrtnutí, aby bylo auto „pouze pro čtení“.  Pro interakci s vozem ponechte zaškrtnuté",
+                "region": "Kód země, kde bylo auto prodáno (ISO 3155-1 / Alpha-2)",
+                "spin": "S-PIN",
+                "name": "Pojmenujte své auto (výchozí číslo VIN)",
+                "debug": "Povolit úplné protokoly ladění z rozhraní API (vyžaduje povolení protokolování ladění v konfiguraci)",
+                "convert": "Vyberte, zda chcete provést nějaké převody jednotek vzdálenosti"
+              }
+            },
+            "select_vehicle": {
+              "title": "Vozidlo",
+              "description": "Byla nalezena následující vozidla.  Vyberte prosím vozidlo, které chcete sledovat",
+              "data": {
+                "vehicle": "VIN kód"
+              }
+            },
+            "select_instruments": {
+              "title": "Zdroje",
+              "description": "Vyberte zdroje, které chcete sledovat",
+              "data": {
+                "resources": "Zdroje ke sledování"
+              }
+            },
+            "reauth_confirm": {
+              "data": {
+                "description": "Znovu se ověřte pomocí svého účtu Volkswagen ID.  Než budete pokračovat, ujistěte se, že přijímáte jakoukoli novou EULA na portálu Volkswagen ID (https://id.vwgroup.io/landing-page).",
+                "email": "Email",
+                "password": "Heslo"
+              }
+            }
+          },
+          "abort": {
+            "already_configured": "Auto s tímto VIN je již nakonfigurováno",
+            "reauth_successful": "Opětovné ověření bylo úspěšné"
+          },
+          "error": {
+            "cannot_connect": "Nelze se přihlásit do Volkswagen Connect, zkontrolujte prosím své přihlašovací údaje a ověřte, že služba funguje",
+            "cannot_update": "Nelze požádat o aktualizaci z Volkswagen Connect",
+            "unknown": "Nastala neznámá chyba"
+          },
+          "progress": {
+            "task_login": "Přihlášení do VW Connect",
+            "task_update": "Načítání vozidel"
+          }
+        },
+        "options": {
+          "step": {
+            "user": {
+              "title": "Možnosti pro VW Connect",
+              "description": "Nakonfigurujte intervaly aktualizace",
+              "data": {
+                "report_request": "Povolit automatický požadavek na hlášení",
+                "report_scan_interval": "Interval aktualizace žádosti o přehled (dny)",
+                "scan_interval": "Interval aktualizace senzorů (minuty)",
+                "region": "Region (Země, kde bylo auto prodáno)",
+                "debug": "Povolit úplné protokoly ladění z rozhraní API (vyžaduje povolení protokolování ladění v konfiguraci)",
+                "convert": "Vyberte, zda chcete provést nějaké převody jednotek vzdálenosti"
+              }
+            },
+            "select_instruments": {
+              "title": "Zdroje",
+              "description": "Vyberte zdroje, které chcete sledovat",
+              "data": {
+                "resources": "Zdroje ke sledování"
+              }
+            }
+          }
+        }
+      }
+      
