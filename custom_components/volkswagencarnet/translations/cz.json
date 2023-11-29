@@ -39,38 +39,38 @@
             }
           },
           "abort": {
-            "already_configured": "Car with this VIN is already configured",
-            "reauth_successful": "Re-authentication was successful"
+            "already_configured": "Auto s tímto VIN je již nakonfigurováno",
+            "reauth_successful": "Opětovné ověření bylo úspěšné"
           },
           "error": {
-            "cannot_connect": "Could not login to Volkswagen We Connect, please check your credentials and verify that the service is working",
-            "cannot_update": "Could not query u okpdate from Volkswagen We Connect",
-            "unknown": "An unknown error occurred"
+            "cannot_connect": "Nelze se přihlásit do Volkswagen Connect, zkontrolujte prosím své přihlašovací údaje a ověřte, že služba funguje",
+            "cannot_update": "Nelze požádat o aktualizaci z Volkswagen Connect",
+            "unknown": "Nastala neznámá chyba"
           },
           "progress": {
-            "task_login": "Logging in to We Connect",
-            "task_update": "Fetching vehicles"
+            "task_login": "Přihlášení do VW Connect",
+            "task_update": "Načítání vozidel"
           }
         },
         "options": {
           "step": {
             "user": {
-              "title": "Options for We Connect",
-              "description": "Configure update intervals",
+              "title": "Možnosti pro VW Connect",
+              "description": "Nakonfigurujte intervaly aktualizace",
               "data": {
-                "report_request": "Enable automatic report request",
-                "report_scan_interval": "Report request update interval (days)",
-                "scan_interval": "Sensors update interval (minutes)",
-                "region": "Region (The country where the car was sold)",
-                "debug": "Enable full debug logs from API (requires debug logging enabled in config)",
-                "convert": "Select if you wan to make any distance unit conversions"
+                "report_request": "Povolit automatický požadavek na hlášení",
+                "report_scan_interval": "Interval aktualizace žádosti o přehled (dny)",
+                "scan_interval": "Interval aktualizace senzorů (minuty)",
+                "region": "Region (Země, kde bylo auto prodáno)",
+                "debug": "Povolit úplné protokoly ladění z rozhraní API (vyžaduje povolení protokolování ladění v konfiguraci)",
+                "convert": "Vyberte, zda chcete provést nějaké převody jednotek vzdálenosti"
               }
             },
             "select_instruments": {
-              "title": "Resources",
-              "description": "Select resources to monitor",
+              "title": "Zdroje",
+              "description": "Vyberte zdroje, které chcete sledovat",
               "data": {
-                "resources": "Resources to monitor"
+                "resources": "Zdroje ke sledování"
               }
             }
           }
