@@ -1,1 +1,79 @@
-
+{
+        "title": "Volkswagen We Connect",
+        "config": {
+          "step": {
+            "user": {
+              "title": "We Connect Nastavení",
+              "description": "Vyplňte informace We Connect\n\nS-PIN je vyžadován pro některé specifické možnosti, jako je zamknutí/odemknutí a spuštění/zastavení ohřevu spalovacího motoru",
+              "data": {
+                "username": "Email",
+                "password": "Heslo",
+                "mutable": "Zrušte zaškrtnutí, aby bylo auto „pouze pro čtení“.  Pro interakci s vozem ponechte zaškrtnuté",
+                "region": "Kód země, kde bylo auto prodáno (ISO 3155-1 / Alpha-2)",
+                "spin": "S-PIN",
+                "name": "Pojmenujte své auto (výchozí číslo VIN)",
+                "debug": "Povolit úplné protokoly ladění z rozhraní API (vyžaduje povolení protokolování ladění v konfiguraci)",
+                "convert": "Vyberte, zda chcete provést nějaké převody jednotek vzdálenosti"
+              }
+            },
+            "select_vehicle": {
+              "title": "Vozidlo",
+              "description": "Byla nalezena následující vozidla.  Vyberte prosím vozidlo, které chcete sledovat",
+              "data": {
+                "vehicle": "VIN kód"
+              }
+            },
+            "select_instruments": {
+              "title": "Zdroje",
+              "description": "Vyberte zdroje, které chcete sledovat",
+              "data": {
+                "resources": "Zdroje ke sledování"
+              }
+            },
+            "reauth_confirm": {
+              "data": {
+                "description": "Znovu se ověřte pomocí svého účtu Volkswagen ID.  Než budete pokračovat, ujistěte se, že přijímáte jakoukoli novou EULA na portálu Volkswagen ID (https://id.vwgroup.io/landing-page).",
+                "email": "Email",
+                "password": "Heslo"
+              }
+            }
+          },
+          "abort": {
+            "already_configured": "Car with this VIN is already configured",
+            "reauth_successful": "Re-authentication was successful"
+          },
+          "error": {
+            "cannot_connect": "Could not login to Volkswagen We Connect, please check your credentials and verify that the service is working",
+            "cannot_update": "Could not query u okpdate from Volkswagen We Connect",
+            "unknown": "An unknown error occurred"
+          },
+          "progress": {
+            "task_login": "Logging in to We Connect",
+            "task_update": "Fetching vehicles"
+          }
+        },
+        "options": {
+          "step": {
+            "user": {
+              "title": "Options for We Connect",
+              "description": "Configure update intervals",
+              "data": {
+                "report_request": "Enable automatic report request",
+                "report_scan_interval": "Report request update interval (days)",
+                "scan_interval": "Sensors update interval (minutes)",
+                "region": "Region (The country where the car was sold)",
+                "debug": "Enable full debug logs from API (requires debug logging enabled in config)",
+                "convert": "Select if you wan to make any distance unit conversions"
+              }
+            },
+            "select_instruments": {
+              "title": "Resources",
+              "description": "Select resources to monitor",
+              "data": {
+                "resources": "Resources to monitor"
+              }
+            }
+          }
+        }
+      }
+      
