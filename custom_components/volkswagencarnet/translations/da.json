@@ -8,7 +8,7 @@
         "data": {
           "username": "Email",
           "password": "Adgangskode",
-          "mutable": "Fjern afkrydsning for at gøre integrationen til 'read only'. Behold for at kunne interagere med bilen",
+          "mutable": "Fjern afkrydsning for at gøre integrationen til 'read only'. Behold afkrydsningen for at kunne interagere med bilen",
           "region": "Landekode for hvor bilen blev solgt (ISO 3155-1 / Alpha-2)",
           "spin": "S-PIN",
           "name": "Navngiv din bil (standard er bilens stelnummer)",
@@ -25,9 +25,9 @@
       },
       "select_instruments": {
         "title": "Ressourcer",
-        "description": "Vælg hvilke ressourcer som skal monitoreres",
+        "description": "Vælg hvilke ressourcer som skal overvåges",
         "data": {
-          "resources": "Ressourcer som skal monitoreres"
+          "resources": "Ressourcer som skal overvåges"
         }
       },
       "reauth_confirm": {
