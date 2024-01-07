@@ -9,14 +9,16 @@ from homeassistant.components.sensor import (
     DEVICE_CLASSES,
     STATE_CLASSES,
 )
+from homeassistant.config_entries import ConfigEntry
+from homeassistant.core import HomeAssistant
 
 from . import VolkswagenEntity
-from .const import DATA_KEY, DATA, DOMAIN
+from .const import DATA_KEY, DATA, DOMAIN, UPDATE_CALLBACK
 
 _LOGGER = logging.getLogger(__name__)
 
 
-async def async_setup_platform(hass, config, async_add_entities, discovery_info=None):
+async def async_setup_platform(hass: HomeAssistant, config: ConfigEntry, async_add_entities, discovery_info=None):
     """Set up the Volkswagen sensors."""
     if discovery_info is None:
         return
@@ -29,7 +31,13 @@ async def async_setup_entry(hass, entry, async_add_devices):
     coordinator = data.coordinator
     if coordinator.data is not None:
         async_add_devices(
-            VolkswagenSensor(data=data, vin=coordinator.vin, component=instrument.component, attribute=instrument.attr)
+            VolkswagenSensor(
+                data=data,
+                vin=coordinator.vin,
+                component=instrument.component,
+                attribute=instrument.attr,
+                callback=hass.data[DOMAIN][entry.entry_id][UPDATE_CALLBACK],
+            )
             for instrument in (instrument for instrument in data.instruments if instrument.component == "sensor")
         )
 
@@ -40,7 +48,7 @@ class VolkswagenSensor(VolkswagenEntity, SensorEntity):
     """Representation of a Volkswagen WeConnect Sensor."""
 
     @property
-    def _attr_native_value(self):
+    def native_value(self):
         """Return the state of the sensor."""
         if self.instrument is not None:
             _LOGGER.debug("Getting state of %s" % self.instrument.attr)
@@ -51,7 +59,7 @@ class VolkswagenSensor(VolkswagenEntity, SensorEntity):
         return self.instrument.state
 
     @property
-    def _attr_native_unit_of_measurement(self):
+    def native_unit_of_measurement(self):
         """Return the unit of measurement."""
         if self.instrument.unit:
             return self.instrument.unit
