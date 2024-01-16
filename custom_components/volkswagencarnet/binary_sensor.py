@@ -5,6 +5,7 @@ from typing import Union
 from homeassistant.components.binary_sensor import DEVICE_CLASSES, BinarySensorEntity, BinarySensorDeviceClass
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
+from homeassistant.helpers.entity import EntityCategory
 
 from . import VolkswagenEntity
 from .const import DATA_KEY, DATA, DOMAIN, UPDATE_CALLBACK
@@ -54,3 +55,11 @@ class VolkswagenBinarySensor(VolkswagenEntity, BinarySensorEntity):
             return self.instrument.device_class
         _LOGGER.warning(f"Unknown device class {self.instrument.device_class}")
         return None
+
+    @property
+    def entity_category(self) -> Union[EntityCategory, str, None]:
+        """Return entity category."""
+        if self.instrument.entity_type == "diag":
+            return EntityCategory.DIAGNOSTIC
+        if self.instrument.entity_type == "config":
+            return EntityCategory.CONFIG

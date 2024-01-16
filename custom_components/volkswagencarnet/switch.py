@@ -93,6 +93,14 @@ class VolkswagenSwitch(VolkswagenEntity, ToggleEntity):
         self.notify_updated()
 
     @property
+    def entity_category(self) -> Union[EntityCategory, str, None]:
+        """Return entity category."""
+        if self.instrument.entity_type == "diag":
+            return EntityCategory.DIAGNOSTIC
+        if self.instrument.entity_type == "config":
+            return EntityCategory.CONFIG
+
+    @property
     def assumed_state(self):
         """Return state assumption."""
         return self.instrument.assumed_state
