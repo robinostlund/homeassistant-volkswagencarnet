@@ -63,7 +63,7 @@
           "scan_interval": "Sensors update interval (minutes)",
           "region": "Region (The country where the car was sold)",
           "debug": "Enable full debug logs from API (requires debug logging enabled in config)",
-          "convert": "Select if you wan to make any distance unit conversions"
+          "convert": "Select if you want to make any distance unit conversions"
         }
       },
       "select_instruments": {
