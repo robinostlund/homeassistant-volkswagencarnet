@@ -11,6 +11,7 @@ from homeassistant.components.sensor import (
 )
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
+from homeassistant.helpers.entity import EntityCategory
 
 from . import VolkswagenEntity
 from .const import DATA_KEY, DATA, DOMAIN, UPDATE_CALLBACK
@@ -79,3 +80,11 @@ class VolkswagenSensor(VolkswagenEntity, SensorEntity):
             return self.instrument.state_class
         _LOGGER.warning(f"Unknown state class {self.instrument.state_class}")
         return None
+
+    @property
+    def entity_category(self) -> Union[EntityCategory, str, None]:
+        """Return entity category."""
+        if self.instrument.entity_type == "diag":
+            return EntityCategory.DIAGNOSTIC
+        if self.instrument.entity_type == "config":
+            return EntityCategory.CONFIG
