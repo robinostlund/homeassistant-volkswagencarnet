@@ -151,21 +151,15 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         return attr not in entry.options.get(CONF_AVAILABLE_RESOURCES, [attr])
 
     components = set()
-    for instrument in (
-        instrument for instrument in instruments if instrument.component in COMPONENTS
-    ):
+    for instrument in (instrument for instrument in instruments if instrument.component in COMPONENTS):
         # Add resource if it's enabled or new
-        if is_enabled(instrument.slug_attr) or (
-            is_new(instrument.slug_attr) and not entry.pref_disable_new_entities
-        ):
+        if is_enabled(instrument.slug_attr) or (is_new(instrument.slug_attr) and not entry.pref_disable_new_entities):
             data.instruments.add(instrument)
             components.add(COMPONENTS[instrument.component])
 
     for component in components:
         coordinator.platforms.append(component)
-        hass.async_create_task(
-            hass.config_entries.async_forward_entry_setup(entry, component)
-        )
+        hass.async_create_task(hass.config_entries.async_forward_entry_setup(entry, component))
 
     hass.data[DOMAIN][entry.entry_id] = {
         UPDATE_CALLBACK: update_callback,
@@ -259,9 +253,7 @@ async def _async_update_listener(hass: HomeAssistant, entry: ConfigEntry) -> boo
 class VolkswagenData:
     """Hold component state."""
 
-    def __init__(
-        self, config: dict, coordinator: Optional[DataUpdateCoordinator] = None
-    ):
+    def __init__(self, config: dict, coordinator: Optional[DataUpdateCoordinator] = None):
         """Initialize the component state."""
         self.vehicles: set[Vehicle] = set()
         self.instruments: set[Instrument] = set()
@@ -274,21 +266,13 @@ class VolkswagenData:
         ret = next(
             (
                 instrument
-                for instrument in (
-                    self.coordinator.data
-                    if self.coordinator is not None
-                    else self.instruments
-                )
-                if instrument.vehicle.vin == vin
-                and instrument.component == component
-                and instrument.attr == attr
+                for instrument in (self.coordinator.data if self.coordinator is not None else self.instruments)
+                if instrument.vehicle.vin == vin and instrument.component == component and instrument.attr == attr
             ),
             None,
         )
         if ret is None:
-            raise ValueError(
-                f"Instrument not found; component: {component}, attribute: {attr}"
-            )
+            raise ValueError(f"Instrument not found; component: {component}, attribute: {attr}")
         return ret
 
     def vehicle_name(self, vehicle: Vehicle) -> str:
@@ -364,15 +348,12 @@ class VolkswagenEntity(CoordinatorEntity, RestoreEntity):
         #   but the stored one is a string... sigh)
         if (
             prev is None
-            or str(prev.attributes.get("last_updated", None))
-            != str(backend_refresh_time)
+            or str(prev.attributes.get("last_updated", None)) != str(backend_refresh_time)
             or str(self.state or STATE_UNKNOWN) != str(prev.state)
         ):
             super().async_write_ha_state()
         else:
-            _LOGGER.debug(
-                f"{self.name}: state not changed ('{prev.state}' == '{self.state}'), skipping update."
-            )
+            _LOGGER.debug(f"{self.name}: state not changed ('{prev.state}' == '{self.state}'), skipping update.")
 
     @callback
     def _handle_coordinator_update(self) -> None:
@@ -396,22 +377,14 @@ class VolkswagenEntity(CoordinatorEntity, RestoreEntity):
         """Register update dispatcher."""
         self.restored_state = await self.async_get_last_state()
         if self.coordinator is not None:
-            self.async_on_remove(
-                self.coordinator.async_add_listener(self.async_write_ha_state)
-            )
+            self.async_on_remove(self.coordinator.async_add_listener(self.async_write_ha_state))
         else:
-            self.async_on_remove(
-                async_dispatcher_connect(
-                    self.hass, SIGNAL_STATE_UPDATED, self.async_write_ha_state
-                )
-            )
+            self.async_on_remove(async_dispatcher_connect(self.hass, SIGNAL_STATE_UPDATED, self.async_write_ha_state))
 
     @property
     def instrument(
         self,
-    ) -> Union[
-        BinarySensor, Climate, DoorLock, Position, Sensor, Switch, TrunkLock, Instrument
-    ]:
+    ) -> Union[BinarySensor, Climate, DoorLock, Position, Sensor, Switch, TrunkLock, Instrument]:
         """Return corresponding instrument."""
         return self.data.instrument(self.vin, self.component, self.attribute)
 
@@ -419,9 +392,7 @@ class VolkswagenEntity(CoordinatorEntity, RestoreEntity):
     def icon(self) -> Optional[str]:
         """Return the icon."""
         if self.instrument.attr in ["battery_level", "charging"]:
-            return icon_for_battery_level(
-                battery_level=self.instrument.state, charging=self.vehicle.charging
-            )
+            return icon_for_battery_level(battery_level=self.instrument.state, charging=self.vehicle.charging)
         else:
             return self.instrument.icon
 
@@ -501,9 +472,7 @@ class VolkswagenEntity(CoordinatorEntity, RestoreEntity):
 class VolkswagenCoordinator(DataUpdateCoordinator):
     """Class to manage fetching data from the API."""
 
-    def __init__(
-        self, hass: HomeAssistant, entry: ConfigEntry, update_interval: timedelta
-    ):
+    def __init__(self, hass: HomeAssistant, entry: ConfigEntry, update_interval: timedelta):
         """Initialize the coordinator."""
         self.vin = entry.data[CONF_VEHICLE].upper()
         self.entry = entry
@@ -513,9 +482,7 @@ class VolkswagenCoordinator(DataUpdateCoordinator):
             session=async_get_clientsession(hass),
             username=self.entry.data[CONF_USERNAME],
             password=self.entry.data[CONF_PASSWORD],
-            fulldebug=self.entry.options.get(
-                CONF_DEBUG, self.entry.data.get(CONF_DEBUG, DEFAULT_DEBUG)
-            ),
+            fulldebug=self.entry.options.get(CONF_DEBUG, self.entry.data.get(CONF_DEBUG, DEFAULT_DEBUG)),
             country=self.entry.options.get(CONF_REGION, self.entry.data[CONF_REGION]),
         )
 
@@ -523,9 +490,7 @@ class VolkswagenCoordinator(DataUpdateCoordinator):
 
     def async_update_listener(self) -> None:
         """Listen for update events."""
-        _LOGGER.debug(
-            f"Async update finished for {self.vin} ({self.name}). Next update in {self.update_interval}."
-        )
+        _LOGGER.debug(f"Async update finished for {self.vin} ({self.name}). Next update in {self.update_interval}.")
 
     async def _async_update_data(self) -> list[Instrument]:
         """Update data via library."""
@@ -537,14 +502,10 @@ class VolkswagenCoordinator(DataUpdateCoordinator):
                 "Try logging in to the portal: https://www.portal.volkswagen-we.com/"
             )
 
-        if self.entry.options.get(
-            CONF_REPORT_REQUEST, self.entry.data.get(CONF_REPORT_REQUEST, False)
-        ):
+        if self.entry.options.get(CONF_REPORT_REQUEST, self.entry.data.get(CONF_REPORT_REQUEST, False)):
             await self.report_request(vehicle)
 
-        convert_conf = self.entry.options.get(
-            CONF_CONVERT, self.entry.data.get(CONF_CONVERT, CONF_NO_CONVERSION)
-        )
+        convert_conf = self.entry.options.get(CONF_CONVERT, self.entry.data.get(CONF_CONVERT, CONF_NO_CONVERSION))
 
         dashboard = vehicle.dashboard(
             mutable=self.entry.data.get(CONF_MUTABLE),
@@ -600,9 +561,7 @@ class VolkswagenCoordinator(DataUpdateCoordinator):
         """Request car to report itself an update to Volkswagen WeConnect."""
         report_interval = self.entry.options.get(
             CONF_REPORT_SCAN_INTERVAL,
-            self.entry.data.get(
-                CONF_REPORT_SCAN_INTERVAL, DEFAULT_REPORT_UPDATE_INTERVAL
-            ),
+            self.entry.data.get(CONF_REPORT_SCAN_INTERVAL, DEFAULT_REPORT_UPDATE_INTERVAL),
         )
 
         if not self.report_last_updated:

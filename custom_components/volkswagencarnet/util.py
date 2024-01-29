@@ -21,9 +21,7 @@ def get_convert_conf(entry: ConfigEntry) -> Optional[str]:
     """
     return (
         CONF_SCANDINAVIAN_MILES
-        if entry.options.get(
-            CONF_SCANDINAVIAN_MILES, entry.data.get(CONF_SCANDINAVIAN_MILES, False)
-        )
+        if entry.options.get(CONF_SCANDINAVIAN_MILES, entry.data.get(CONF_SCANDINAVIAN_MILES, False))
         else CONF_NO_CONVERSION
     )
 
@@ -33,9 +31,7 @@ async def get_coordinator_by_device_id(hass: HomeAssistant, device_id: str):
     registry: DeviceRegistry = device_registry.async_get(hass)
     dev_entry: DeviceEntry = registry.async_get(device_id)
 
-    config_entry = hass.config_entries.async_get_entry(
-        list(dev_entry.config_entries)[0]
-    )
+    config_entry = hass.config_entries.async_get_entry(list(dev_entry.config_entries)[0])
     return await get_coordinator(hass, config_entry)
 
 
@@ -69,9 +65,7 @@ def get_vehicle(coordinator) -> Vehicle:
     return v
 
 
-def validate_charge_max_current(
-    charge_max_current: Optional[Union[int, str]]
-) -> Optional[int]:
+def validate_charge_max_current(charge_max_current: Optional[Union[int, str]]) -> Optional[int]:
     """
     Validate value against known valid ones and return numeric value.
 

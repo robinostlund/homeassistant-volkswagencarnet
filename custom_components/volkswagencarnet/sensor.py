@@ -19,9 +19,7 @@ from .const import DATA_KEY, DATA, DOMAIN, UPDATE_CALLBACK
 _LOGGER = logging.getLogger(__name__)
 
 
-async def async_setup_platform(
-    hass: HomeAssistant, config: ConfigEntry, async_add_entities, discovery_info=None
-):
+async def async_setup_platform(hass: HomeAssistant, config: ConfigEntry, async_add_entities, discovery_info=None):
     """Set up the Volkswagen sensors."""
     if discovery_info is None:
         return
@@ -41,11 +39,7 @@ async def async_setup_entry(hass, entry, async_add_devices):
                 attribute=instrument.attr,
                 callback=hass.data[DOMAIN][entry.entry_id][UPDATE_CALLBACK],
             )
-            for instrument in (
-                instrument
-                for instrument in data.instruments
-                if instrument.component == "sensor"
-            )
+            for instrument in (instrument for instrument in data.instruments if instrument.component == "sensor")
         )
 
     return True
@@ -74,10 +68,7 @@ class VolkswagenSensor(VolkswagenEntity, SensorEntity):
     @property
     def device_class(self) -> Union[SensorDeviceClass, None]:
         """Return the device class."""
-        if (
-            self.instrument.device_class is None
-            or self.instrument.device_class in DEVICE_CLASSES
-        ):
+        if self.instrument.device_class is None or self.instrument.device_class in DEVICE_CLASSES:
             return self.instrument.device_class
         _LOGGER.warning(f"Unknown device class {self.instrument.device_class}")
         return None
@@ -85,10 +76,7 @@ class VolkswagenSensor(VolkswagenEntity, SensorEntity):
     @property
     def state_class(self) -> Union[SensorStateClass, None]:
         """Return the state class."""
-        if (
-            self.instrument.state_class is None
-            or self.instrument.state_class in STATE_CLASSES
-        ):
+        if self.instrument.state_class is None or self.instrument.state_class in STATE_CLASSES:
             return self.instrument.state_class
         _LOGGER.warning(f"Unknown state class {self.instrument.state_class}")
         return None

@@ -15,9 +15,7 @@ _LOGGER = logging.getLogger(__name__)
 SERVICE_SET_CHARGER_MAX_CURRENT_SCHEMA = vol.Schema(
     {
         vol.Optional("device_id"): vol.All(cv.string, vol.Length(min=32, max=32)),
-        vol.Optional("max_current"): vol.In(
-            [5, 10, 13, 16, 32, "5", "10", "13", "16", "32", "reduced", "max"]
-        ),
+        vol.Optional("max_current"): vol.In([5, 10, 13, 16, 32, "5", "10", "13", "16", "32", "reduced", "max"]),
     },
     extra=vol.ALLOW_EXTRA,  # FIXME, should not be needed
 )
@@ -26,9 +24,7 @@ SERVICE_UPDATE_SCHEDULE_SCHEMA = vol.Schema(
     {
         vol.Required("device_id"): vol.All(cv.string, vol.Length(min=32, max=32)),
         vol.Required("timer_id"): vol.In([1, 2, 3]),
-        vol.Optional("charging_profile"): vol.All(
-            cv.positive_int, vol.Range(min_included=1, max_included=10)
-        ),
+        vol.Optional("charging_profile"): vol.All(cv.positive_int, vol.Range(min_included=1, max_included=10)),
         vol.Optional("enabled"): vol.All(cv.boolean),
         vol.Optional("frequency"): vol.In(["cyclic", "single"]),
         vol.Optional("departure_time"): vol.All(cv.string),
@@ -43,9 +39,7 @@ SERVICE_SET_TIMER_BASIC_SETTINGS_SCHEMA = vol.Schema(
         vol.Optional("device_id"): vol.All(cv.string, vol.Length(min=32, max=32)),
         vol.Optional("min_level"): vol.In([0, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100]),
         vol.Optional("target_temperature_celsius"): vol.Any(cv.string, cv.positive_int),
-        vol.Optional("target_temperature_fahrenheit"): vol.Any(
-            cv.string, cv.positive_int
-        ),
+        vol.Optional("target_temperature_fahrenheit"): vol.Any(cv.string, cv.positive_int),
     },
     extra=vol.ALLOW_EXTRA,  # FIXME, should not be needed
 )
@@ -53,9 +47,7 @@ SERVICE_SET_TIMER_BASIC_SETTINGS_SCHEMA = vol.Schema(
 SERVICE_UPDATE_PROFILE_SCHEMA = vol.Schema(
     {
         vol.Required("device_id"): vol.All(cv.string, vol.Length(min=32, max=32)),
-        vol.Required("profile_id"): vol.All(
-            cv.positive_int, vol.Range(min_included=1, max_included=10)
-        ),
+        vol.Required("profile_id"): vol.All(cv.positive_int, vol.Range(min_included=1, max_included=10)),
         vol.Optional("profile_name"): vol.All(cv.string),
         vol.Optional("charging"): vol.All(cv.boolean),
         vol.Optional("climatisation"): vol.All(cv.boolean),
@@ -85,9 +77,7 @@ SERVICE_UPDATE_PROFILE_SCHEMA = vol.Schema(
                 "100",
             ]
         ),
-        vol.Optional("charge_max_current"): vol.In(
-            [5, 10, 13, 16, 32, "5", "10", "13", "16", "32", "reduced", "max"]
-        ),
+        vol.Optional("charge_max_current"): vol.In([5, 10, 13, 16, 32, "5", "10", "13", "16", "32", "reduced", "max"]),
         vol.Optional("night_rate"): vol.All(cv.boolean),
         vol.Optional("night_rate_start"): vol.All(cv.string),
         vol.Optional("night_rate_end"): vol.All(cv.string),
@@ -105,9 +95,7 @@ class SchedulerService:
 
     async def set_timer_basic_settings(self, service_call: ServiceCall) -> bool:
         """Service for configuring basic settings."""
-        c = await get_coordinator_by_device_id(
-            self.hass, service_call.data.get("device_id")
-        )
+        c = await get_coordinator_by_device_id(self.hass, service_call.data.get("device_id"))
         v = get_vehicle(c)
 
         # parse service call
@@ -126,23 +114,15 @@ class SchedulerService:
         #     # res = await v.set_departure_timer_heater_source(hs)
         #     _LOGGER.debug(f"set heater source returned {res}")
         if tt is not None:
-            _LOGGER.debug(
-                f"Setting target temperature to {tt} {self.hass.config.units.temperature_unit}"
-            )
+            _LOGGER.debug(f"Setting target temperature to {tt} {self.hass.config.units.temperature_unit}")
             # get timers
             t = await c.connection.getTimers(c.vin)
             if self.hass.config.units.is_metric:
-                t.timersAndProfiles.timerBasicSetting.set_target_temperature_celsius(
-                    float(tt)
-                )
+                t.timersAndProfiles.timerBasicSetting.set_target_temperature_celsius(float(tt))
             else:
-                t.timersAndProfiles.timerBasicSetting.set_target_temperature_fahrenheit(
-                    int(tt)
-                )
+                t.timersAndProfiles.timerBasicSetting.set_target_temperature_fahrenheit(int(tt))
             # send command to volkswagencarnet
-            res = res and await v.set_climatisation_temp(
-                t.timersAndProfiles.timerBasicSetting.targetTemperature
-            )
+            res = res and await v.set_climatisation_temp(t.timersAndProfiles.timerBasicSetting.targetTemperature)
         if ml is not None:
             _LOGGER.debug(f"Setting minimum charge level to {ml}%")
             # send charge limit command to volkswagencarnet
@@ -154,9 +134,7 @@ class SchedulerService:
 
     async def update_schedule(self, service_call: ServiceCall) -> bool:
         """Service for updating departure schedules."""
-        c = await get_coordinator_by_device_id(
-            self.hass, service_call.data.get("device_id")
-        )
+        c = await get_coordinator_by_device_id(self.hass, service_call.data.get("device_id"))
         v = get_vehicle(c)
 
         data: TimerData = await c.connection.getTimers(c.vin)
@@ -201,9 +179,7 @@ class SchedulerService:
             timers[timer_id].profileID = charging_profile
 
         if enabled is not None:
-            timers[timer_id].timerProgrammedStatus = (
-                "programmed" if enabled else "notProgrammed"
-            )
+            timers[timer_id].timerProgrammedStatus = "programmed" if enabled else "notProgrammed"
 
         _LOGGER.debug(f"Updating timer {timers[timer_id].json_updated['timer']}")
         data.timersAndProfiles.timerList.timer = [timers[1], timers[2], timers[3]]
@@ -213,9 +189,7 @@ class SchedulerService:
 
     async def update_profile(self, service_call: ServiceCall) -> bool:
         """Service for updating charging profiles (locations)."""
-        c = await get_coordinator_by_device_id(
-            self.hass, service_call.data.get("device_id")
-        )
+        c = await get_coordinator_by_device_id(self.hass, service_call.data.get("device_id"))
         v = get_vehicle(coordinator=c)
 
         data: TimerData = await c.connection.getTimers(c.vin)
@@ -237,28 +211,12 @@ class SchedulerService:
         charge_max_current = validate_charge_max_current(charge_max_current)
 
         profile = data.get_profile(profile_id)
-        profile.profileName = (
-            profile_name if profile_name is not None else profile.profileName
-        )
-        profile.operationCharging = (
-            charging if charging is not None else profile.operationCharging
-        )
-        profile.chargeMaxCurrent = (
-            charge_max_current
-            if charge_max_current is not None
-            else profile.chargeMaxCurrent
-        )
-        profile.operationClimatisation = (
-            climatisation
-            if climatisation is not None
-            else profile.operationClimatisation
-        )
-        profile.targetChargeLevel = (
-            target_level if target_level is not None else profile.targetChargeLevel
-        )
-        profile.nightRateActive = (
-            night_rate if night_rate is not None else profile.nightRateActive
-        )
+        profile.profileName = profile_name if profile_name is not None else profile.profileName
+        profile.operationCharging = charging if charging is not None else profile.operationCharging
+        profile.chargeMaxCurrent = charge_max_current if charge_max_current is not None else profile.chargeMaxCurrent
+        profile.operationClimatisation = climatisation if climatisation is not None else profile.operationClimatisation
+        profile.targetChargeLevel = target_level if target_level is not None else profile.targetChargeLevel
+        profile.nightRateActive = night_rate if night_rate is not None else profile.nightRateActive
 
         if night_rate_start is not None:
             profile.nightRateTimeStart = self.time_to_utc(night_rate_start)
@@ -291,9 +249,7 @@ class ChargerService:
 
     async def set_charger_max_current(self, service_call: ServiceCall) -> bool:
         """Service for setting max charging current."""
-        c = await get_coordinator_by_device_id(
-            self.hass, service_call.data.get("device_id")
-        )
+        c = await get_coordinator_by_device_id(self.hass, service_call.data.get("device_id"))
         v = get_vehicle(c)
 
         # parse service call

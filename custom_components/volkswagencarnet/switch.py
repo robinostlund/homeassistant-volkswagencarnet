@@ -15,9 +15,7 @@ from .const import DATA, DATA_KEY, DOMAIN, UPDATE_CALLBACK
 _LOGGER = logging.getLogger(__name__)
 
 
-async def async_setup_platform(
-    hass: HomeAssistant, config, async_add_entities, discovery_info=None
-):
+async def async_setup_platform(hass: HomeAssistant, config, async_add_entities, discovery_info=None):
     """Set up the volkswagen switch platform."""
     if discovery_info is None:
         return
@@ -56,11 +54,7 @@ async def async_setup_entry(hass: HomeAssistant, entry, async_add_devices):
                 instrument=instrument,
                 callback=hass.data[DOMAIN][entry.entry_id][UPDATE_CALLBACK],
             )
-            for instrument in (
-                instrument
-                for instrument in data.instruments
-                if instrument.component == "switch"
-            )
+            for instrument in (instrument for instrument in data.instruments if instrument.component == "switch")
         )
     return True
 
@@ -176,8 +170,8 @@ class VolkswagenDepartureTimer(VolkswagenSwitch):
                 ).astimezone(pytz.timezone(self.hass.config.time_zone))
                 attribs["departure_time"] = d.strftime("%H:%M")
             else:
-                d = datetime.strptime(
-                    attribs["departure_time"], "%Y-%m-%dT%H:%M"
-                ).replace(tzinfo=timezone.utc, second=0, microsecond=0)
+                d = datetime.strptime(attribs["departure_time"], "%Y-%m-%dT%H:%M").replace(
+                    tzinfo=timezone.utc, second=0, microsecond=0
+                )
                 attribs["departure_time"] = d
         return attribs

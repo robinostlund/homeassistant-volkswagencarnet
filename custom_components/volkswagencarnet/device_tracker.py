@@ -27,9 +27,7 @@ async def async_setup_entry(hass: HomeAssistant, entry, async_add_devices):
                 attribute=instrument.attr,
             )
             for instrument in (
-                instrument
-                for instrument in data.instruments
-                if instrument.component == "device_tracker"
+                instrument for instrument in data.instruments if instrument.component == "device_tracker"
             )
         )
 

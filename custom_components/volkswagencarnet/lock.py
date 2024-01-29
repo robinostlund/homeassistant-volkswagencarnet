@@ -30,11 +30,7 @@ async def async_setup_entry(hass, entry, async_add_devices):
                 component=instrument.component,
                 attribute=instrument.attr,
             )
-            for instrument in (
-                instrument
-                for instrument in data.instruments
-                if instrument.component == "lock"
-            )
+            for instrument in (instrument for instrument in data.instruments if instrument.component == "lock")
         )
 
     return True
