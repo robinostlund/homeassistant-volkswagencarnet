@@ -2,7 +2,11 @@
 import logging
 from typing import Union
 
-from homeassistant.components.binary_sensor import DEVICE_CLASSES, BinarySensorEntity, BinarySensorDeviceClass
+from homeassistant.components.binary_sensor import (
+    DEVICE_CLASSES,
+    BinarySensorEntity,
+    BinarySensorDeviceClass,
+)
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity import EntityCategory

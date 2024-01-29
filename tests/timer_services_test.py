@@ -41,7 +41,13 @@ from .hass_mocks import MockConfigEntry
 async def test_call_service(conn: MagicMock, hass: HomeAssistant):
     """Test service call."""
     e = MockConfigEntry(
-        data={CONF_VEHICLE: "xyz", CONF_USERNAME: "", CONF_PASSWORD: "", CONF_DEBUG: True, CONF_REGION: "ZZ"}
+        data={
+            CONF_VEHICLE: "xyz",
+            CONF_USERNAME: "",
+            CONF_PASSWORD: "",
+            CONF_DEBUG: True,
+            CONF_REGION: "ZZ",
+        }
     )
 
     c: VolkswagenCoordinator = VolkswagenCoordinator(hass=hass, entry=e, update_interval=timedelta(minutes=10))
@@ -99,14 +105,22 @@ async def test_call_service(conn: MagicMock, hass: HomeAssistant):
         ]
         basic_settings = BasicSettings(timestamp="2022-02-22T20:22:00Z", targetTemperature=2965, chargeMinLimit=20)
         tpl = TimerProfileList(timer_profiles)
-        tp = TimersAndProfiles(timerProfileList=tpl, timerList=TimerList(timer_list), timerBasicSetting=basic_settings)
+        tp = TimersAndProfiles(
+            timerProfileList=tpl,
+            timerList=TimerList(timer_list),
+            timerBasicSetting=basic_settings,
+        )
 
         future: Future = asyncio.Future()
         future.set_result(TimerData(timersAndProfiles=tp, status={}))
         get_timers.return_value = future
 
         res = await hass.services.async_call(
-            domain=DOMAIN, service=SERVICE_SET_TIMER_BASIC_SETTINGS, service_data=data, blocking=True, limit=15
+            domain=DOMAIN,
+            service=SERVICE_SET_TIMER_BASIC_SETTINGS,
+            service_data=data,
+            blocking=True,
+            limit=15,
         )
 
         c.connection.vehicles[0].set_climatisation_temp.assert_called_once()

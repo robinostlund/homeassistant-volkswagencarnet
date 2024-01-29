@@ -21,7 +21,10 @@ async def async_setup_entry(hass: HomeAssistant, entry, async_add_devices):
     if coordinator.data is not None:
         async_add_devices(
             VolkswagenDeviceTracker(
-                data=data, vin=coordinator.vin, component=instrument.component, attribute=instrument.attr
+                data=data,
+                vin=coordinator.vin,
+                component=instrument.component,
+                attribute=instrument.attr,
             )
             for instrument in (
                 instrument for instrument in data.instruments if instrument.component == "device_tracker"

@@ -62,7 +62,14 @@ async def async_setup_entry(hass: HomeAssistant, entry, async_add_devices):
 class VolkswagenSwitch(VolkswagenEntity, ToggleEntity):
     """Representation of a Volkswagen WeConnect Switch."""
 
-    def __init__(self, data: VolkswagenData, vin: str, component: str, attribute: str, callback=None):
+    def __init__(
+        self,
+        data: VolkswagenData,
+        vin: str,
+        component: str,
+        attribute: str,
+        callback=None,
+    ):
         """Initialize switch."""
         super().__init__(data, vin, component, attribute, callback)
 
@@ -108,7 +115,10 @@ class VolkswagenSwitch(VolkswagenEntity, ToggleEntity):
     @property
     def extra_state_attributes(self) -> dict[str, Any]:
         """Return extra state attributes."""
-        return {**super().extra_state_attributes, **(self.instrument.attributes if self.instrument is not None else {})}
+        return {
+            **super().extra_state_attributes,
+            **(self.instrument.attributes if self.instrument is not None else {}),
+        }
 
 
 class VolkswagenDepartureTimer(VolkswagenSwitch):
@@ -122,7 +132,14 @@ class VolkswagenDepartureTimer(VolkswagenSwitch):
         """Disable timer."""
         super().turn_off()
 
-    def __init__(self, data: VolkswagenData, vin: str, component: str, attribute: str, callback=None):
+    def __init__(
+        self,
+        data: VolkswagenData,
+        vin: str,
+        component: str,
+        attribute: str,
+        callback=None,
+    ):
         """Initialize class."""
         super().__init__(data, vin, component, attribute, callback)
         _LOGGER.debug("Departure Timer initialized")

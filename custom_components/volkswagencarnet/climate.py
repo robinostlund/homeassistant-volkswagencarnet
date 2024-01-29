@@ -34,7 +34,12 @@ async def async_setup_entry(hass, entry, async_add_devices):
     coordinator = data.coordinator
     if coordinator.data is not None:
         async_add_devices(
-            VolkswagenClimate(data=data, vin=coordinator.vin, component=instrument.component, attribute=instrument.attr)
+            VolkswagenClimate(
+                data=data,
+                vin=coordinator.vin,
+                component=instrument.component,
+                attribute=instrument.attr,
+            )
             for instrument in (instrument for instrument in data.instruments if instrument.component == "climate")
         )
 

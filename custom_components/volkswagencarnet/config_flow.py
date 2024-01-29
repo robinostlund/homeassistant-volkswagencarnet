@@ -130,7 +130,10 @@ class VolkswagenCarnetConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
             return self.async_create_entry(
                 title=self._init_info[CONF_NAME],
                 data=self._init_info,
-                options={CONF_RESOURCES: user_input[CONF_RESOURCES], CONF_AVAILABLE_RESOURCES: instruments_dict},
+                options={
+                    CONF_RESOURCES: user_input[CONF_RESOURCES],
+                    CONF_AVAILABLE_RESOURCES: instruments_dict,
+                },
             )
 
         return self.async_show_form(
@@ -261,29 +264,36 @@ class VolkswagenCarnetOptionsFlowHandler(config_entries.OptionsFlow):
                     vol.Optional(
                         CONF_REPORT_REQUEST,
                         default=self._config_entry.options.get(
-                            CONF_REPORT_REQUEST, self._config_entry.data.get(CONF_REPORT_REQUEST, False)
+                            CONF_REPORT_REQUEST,
+                            self._config_entry.data.get(CONF_REPORT_REQUEST, False),
                         ),
                     ): cv.boolean,
                     vol.Optional(
                         CONF_DEBUG,
                         default=self._config_entry.options.get(
-                            CONF_DEBUG, self._config_entry.data.get(CONF_DEBUG, DEFAULT_DEBUG)
+                            CONF_DEBUG,
+                            self._config_entry.data.get(CONF_DEBUG, DEFAULT_DEBUG),
                         ),
                     ): cv.boolean,
                     vol.Optional(
-                        CONF_CONVERT, default=self._config_entry.data.get(CONF_CONVERT, CONF_NO_CONVERSION)
+                        CONF_CONVERT,
+                        default=self._config_entry.data.get(CONF_CONVERT, CONF_NO_CONVERSION),
                     ): vol.In(CONVERT_DICT),
                     vol.Optional(
                         CONF_REPORT_SCAN_INTERVAL,
                         default=self._config_entry.options.get(
                             CONF_REPORT_SCAN_INTERVAL,
-                            self._config_entry.data.get(CONF_REPORT_SCAN_INTERVAL, DEFAULT_REPORT_UPDATE_INTERVAL),
+                            self._config_entry.data.get(
+                                CONF_REPORT_SCAN_INTERVAL,
+                                DEFAULT_REPORT_UPDATE_INTERVAL,
+                            ),
                         ),
                     ): cv.positive_int,
                     vol.Optional(
                         CONF_SCAN_INTERVAL,
                         default=self._config_entry.options.get(
-                            CONF_SCAN_INTERVAL, self._config_entry.data.get(CONF_SCAN_INTERVAL, DEFAULT_UPDATE_INTERVAL)
+                            CONF_SCAN_INTERVAL,
+                            self._config_entry.data.get(CONF_SCAN_INTERVAL, DEFAULT_UPDATE_INTERVAL),
                         ),
                     ): cv.positive_int,
                     vol.Optional(

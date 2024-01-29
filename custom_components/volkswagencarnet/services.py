@@ -149,7 +149,11 @@ class SchedulerService:
         departure_datetime = service_call.data.get("departure_datetime", None)
         weekday_mask = service_call.data.get("weekday_mask", None)
 
-        timers: dict[int, Timer] = {1: data.get_schedule(1), 2: data.get_schedule(2), 3: data.get_schedule(3)}
+        timers: dict[int, Timer] = {
+            1: data.get_schedule(1),
+            2: data.get_schedule(2),
+            3: data.get_schedule(3),
+        }
         if frequency is not None:
             timers[timer_id].timerFrequency = frequency
             if frequency == "single":
