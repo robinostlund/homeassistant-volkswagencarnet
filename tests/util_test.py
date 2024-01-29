@@ -12,7 +12,11 @@ from homeassistant.const import (
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers import device_registry
 
-from custom_components.volkswagencarnet import VolkswagenCoordinator, SchedulerService, util
+from custom_components.volkswagencarnet import (
+    VolkswagenCoordinator,
+    SchedulerService,
+    util,
+)
 from custom_components.volkswagencarnet.const import (
     DOMAIN,
     CONF_VEHICLE,
@@ -37,7 +41,9 @@ async def test_get_coordinator(hass: HomeAssistant):
     }
 
     # We want to skip the actual setup flow here
-    with patch.object(homeassistant.config_entries.ConfigEntries, "async_setup") as flow, patch.object(
+    with patch.object(
+        homeassistant.config_entries.ConfigEntries, "async_setup"
+    ) as flow, patch.object(
         homeassistant.config_entries.ConfigEntries, "_async_schedule_save"
     ):
         f: Future = Future()
@@ -51,7 +57,9 @@ async def test_get_coordinator(hass: HomeAssistant):
 
     identifiers: set[tuple[str, str]] = {tuple(["volkswagencarnet", dev_id])}  # type: ignore
 
-    dev_entry = registry.async_get_or_create(config_entry_id=config_entry.entry_id, identifiers=identifiers)
+    dev_entry = registry.async_get_or_create(
+        config_entry_id=config_entry.entry_id, identifiers=identifiers
+    )
 
     res = await util.get_coordinator(hass=hass, config_entry=config_entry)
     assert m_coord == res

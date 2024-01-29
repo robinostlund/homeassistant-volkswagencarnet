@@ -2,7 +2,11 @@
 import logging
 from typing import Union
 
-from homeassistant.components.binary_sensor import DEVICE_CLASSES, BinarySensorEntity, BinarySensorDeviceClass
+from homeassistant.components.binary_sensor import (
+    DEVICE_CLASSES,
+    BinarySensorEntity,
+    BinarySensorDeviceClass,
+)
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity import EntityCategory
@@ -13,7 +17,9 @@ from .const import DATA_KEY, DATA, DOMAIN, UPDATE_CALLBACK
 _LOGGER = logging.getLogger(__name__)
 
 
-async def async_setup_platform(hass: HomeAssistant, config: ConfigEntry, async_add_entities, discovery_info=None):
+async def async_setup_platform(
+    hass: HomeAssistant, config: ConfigEntry, async_add_entities, discovery_info=None
+):
     """Set up the Volkswagen binary sensors platform."""
     if discovery_info is None:
         return
@@ -33,7 +39,11 @@ async def async_setup_entry(hass, entry, async_add_devices):
                 attribute=instrument.attr,
                 callback=hass.data[DOMAIN][entry.entry_id][UPDATE_CALLBACK],
             )
-            for instrument in (instrument for instrument in data.instruments if instrument.component == "binary_sensor")
+            for instrument in (
+                instrument
+                for instrument in data.instruments
+                if instrument.component == "binary_sensor"
+            )
         )
 
     return True

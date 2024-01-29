@@ -15,7 +15,9 @@ from .const import DATA, DATA_KEY, DOMAIN, UPDATE_CALLBACK
 _LOGGER = logging.getLogger(__name__)
 
 
-async def async_setup_platform(hass: HomeAssistant, config, async_add_entities, discovery_info=None):
+async def async_setup_platform(
+    hass: HomeAssistant, config, async_add_entities, discovery_info=None
+):
     """Set up the volkswagen switch platform."""
     if discovery_info is None:
         return
@@ -54,7 +56,11 @@ async def async_setup_entry(hass: HomeAssistant, entry, async_add_devices):
                 instrument=instrument,
                 callback=hass.data[DOMAIN][entry.entry_id][UPDATE_CALLBACK],
             )
-            for instrument in (instrument for instrument in data.instruments if instrument.component == "switch")
+            for instrument in (
+                instrument
+                for instrument in data.instruments
+                if instrument.component == "switch"
+            )
         )
     return True
 
@@ -62,7 +68,14 @@ async def async_setup_entry(hass: HomeAssistant, entry, async_add_devices):
 class VolkswagenSwitch(VolkswagenEntity, ToggleEntity):
     """Representation of a Volkswagen WeConnect Switch."""
 
-    def __init__(self, data: VolkswagenData, vin: str, component: str, attribute: str, callback=None):
+    def __init__(
+        self,
+        data: VolkswagenData,
+        vin: str,
+        component: str,
+        attribute: str,
+        callback=None,
+    ):
         """Initialize switch."""
         super().__init__(data, vin, component, attribute, callback)
 
@@ -108,7 +121,10 @@ class VolkswagenSwitch(VolkswagenEntity, ToggleEntity):
     @property
     def extra_state_attributes(self) -> dict[str, Any]:
         """Return extra state attributes."""
-        return {**super().extra_state_attributes, **(self.instrument.attributes if self.instrument is not None else {})}
+        return {
+            **super().extra_state_attributes,
+            **(self.instrument.attributes if self.instrument is not None else {}),
+        }
 
 
 class VolkswagenDepartureTimer(VolkswagenSwitch):
@@ -122,7 +138,14 @@ class VolkswagenDepartureTimer(VolkswagenSwitch):
         """Disable timer."""
         super().turn_off()
 
-    def __init__(self, data: VolkswagenData, vin: str, component: str, attribute: str, callback=None):
+    def __init__(
+        self,
+        data: VolkswagenData,
+        vin: str,
+        component: str,
+        attribute: str,
+        callback=None,
+    ):
         """Initialize class."""
         super().__init__(data, vin, component, attribute, callback)
         _LOGGER.debug("Departure Timer initialized")
@@ -153,8 +176,8 @@ class VolkswagenDepartureTimer(VolkswagenSwitch):
                 ).astimezone(pytz.timezone(self.hass.config.time_zone))
                 attribs["departure_time"] = d.strftime("%H:%M")
             else:
-                d = datetime.strptime(attribs["departure_time"], "%Y-%m-%dT%H:%M").replace(
-                    tzinfo=timezone.utc, second=0, microsecond=0
-                )
+                d = datetime.strptime(
+                    attribs["departure_time"], "%Y-%m-%dT%H:%M"
+                ).replace(tzinfo=timezone.utc, second=0, microsecond=0)
                 attribs["departure_time"] = d
         return attribs

@@ -41,10 +41,18 @@ from .hass_mocks import MockConfigEntry
 async def test_call_service(conn: MagicMock, hass: HomeAssistant):
     """Test service call."""
     e = MockConfigEntry(
-        data={CONF_VEHICLE: "xyz", CONF_USERNAME: "", CONF_PASSWORD: "", CONF_DEBUG: True, CONF_REGION: "ZZ"}
+        data={
+            CONF_VEHICLE: "xyz",
+            CONF_USERNAME: "",
+            CONF_PASSWORD: "",
+            CONF_DEBUG: True,
+            CONF_REGION: "ZZ",
+        }
     )
 
-    c: VolkswagenCoordinator = VolkswagenCoordinator(hass=hass, entry=e, update_interval=timedelta(minutes=10))
+    c: VolkswagenCoordinator = VolkswagenCoordinator(
+        hass=hass, entry=e, update_interval=timedelta(minutes=10)
+    )
     c.connection.vehicles = [MagicMock(Vehicle)]
     c.connection.vehicles[0].vin = "XYZ"
 
@@ -67,9 +75,9 @@ async def test_call_service(conn: MagicMock, hass: HomeAssistant):
     target_temp = 24.5
     data = {"device_id": e.entry_id, "target_temperature": target_temp}
 
-    with patch("custom_components.volkswagencarnet.services.get_coordinator_by_device_id") as m, patch.object(
-        c.connection, "getTimers"
-    ) as get_timers:
+    with patch(
+        "custom_components.volkswagencarnet.services.get_coordinator_by_device_id"
+    ) as m, patch.object(c.connection, "getTimers") as get_timers:
         m.return_value = c
         timer_profiles = [
             TimerProfile(
@@ -97,20 +105,32 @@ async def test_call_service(conn: MagicMock, hass: HomeAssistant):
                 departureTimeOfDay="07:33",
             )
         ]
-        basic_settings = BasicSettings(timestamp="2022-02-22T20:22:00Z", targetTemperature=2965, chargeMinLimit=20)
+        basic_settings = BasicSettings(
+            timestamp="2022-02-22T20:22:00Z", targetTemperature=2965, chargeMinLimit=20
+        )
         tpl = TimerProfileList(timer_profiles)
-        tp = TimersAndProfiles(timerProfileList=tpl, timerList=TimerList(timer_list), timerBasicSetting=basic_settings)
+        tp = TimersAndProfiles(
+            timerProfileList=tpl,
+            timerList=TimerList(timer_list),
+            timerBasicSetting=basic_settings,
+        )
 
         future: Future = asyncio.Future()
         future.set_result(TimerData(timersAndProfiles=tp, status={}))
         get_timers.return_value = future
 
         res = await hass.services.async_call(
-            domain=DOMAIN, service=SERVICE_SET_TIMER_BASIC_SETTINGS, service_data=data, blocking=True, limit=15
+            domain=DOMAIN,
+            service=SERVICE_SET_TIMER_BASIC_SETTINGS,
+            service_data=data,
+            blocking=True,
+            limit=15,
         )
 
         c.connection.vehicles[0].set_climatisation_temp.assert_called_once()
-        used_args = c.connection.vehicles[0].set_climatisation_temp.call_args_list[0].args[0]
+        used_args = (
+            c.connection.vehicles[0].set_climatisation_temp.call_args_list[0].args[0]
+        )
         # check that the correct VW temperature unit was set
         assert 2975 == used_args
 

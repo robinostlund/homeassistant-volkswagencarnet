@@ -40,7 +40,12 @@ DUMMY_CONFIG = {
     CONF_REGION: "XX",
     CONF_CONVERT: CONF_NO_CONVERSION,
 }
-DUMMY_OPTIONS = {CONF_CONVERT: CONF_NO_CONVERSION, CONF_DEBUG: True, CONF_REGION: "XY", CONF_REPORT_REQUEST: False}
+DUMMY_OPTIONS = {
+    CONF_CONVERT: CONF_NO_CONVERSION,
+    CONF_DEBUG: True,
+    CONF_REGION: "XY",
+    CONF_REPORT_REQUEST: False,
+}
 
 
 @patch("custom_components.volkswagencarnet.config_flow.Connection")
@@ -59,7 +64,9 @@ async def test_flow_user_init_auth_fails(m_connection, hass: HomeAssistant):
         user_input=DUMMY_CONFIG,
     )
 
-    flow: VolkswagenCarnetConfigFlow = hass.config_entries.flow._progress[result["flow_id"]]
+    flow: VolkswagenCarnetConfigFlow = hass.config_entries.flow._progress[
+        result["flow_id"]
+    ]
     with patch.object(flow._connection, "doLogin") as aaaaa:
         aaaaa.side_effect = Exception
 
@@ -72,7 +79,12 @@ async def test_flow_user_init_auth_fails(m_connection, hass: HomeAssistant):
 
 @patch("custom_components.volkswagencarnet.config_flow.get_coordinator")
 @patch("custom_components.volkswagencarnet.config_flow.get_vehicle")
-async def test_options_flow(get_vehicle: MagicMock, get_coordinator: MagicMock, hass: HomeAssistant, m_connection):
+async def test_options_flow(
+    get_vehicle: MagicMock,
+    get_coordinator: MagicMock,
+    hass: HomeAssistant,
+    m_connection,
+):
     """Test options flow."""
     m_dashboard = MagicMock(spec=Dashboard)
     m_dashboard.instruments = [
