@@ -342,6 +342,7 @@ class VolkswagenEntity(CoordinatorEntity, RestoreEntity):
             prev is None
             or str(prev.attributes.get("last_updated", None)) != str(backend_refresh_time)
             or str(self.state or STATE_UNKNOWN) != str(prev.state)
+            or self.component == "climate"
         ):
             super().async_write_ha_state()
         else:

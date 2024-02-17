@@ -1,23 +1,21 @@
 """Climate support for Volkswagen WeConnect Platform."""
+
 import logging
 
-from homeassistant.components.climate import ClimateEntity
-from homeassistant.components.climate.const import (
-    HVAC_MODE_COOL,
-    HVAC_MODE_HEAT,
-    HVAC_MODE_OFF,
-    SUPPORT_TARGET_TEMPERATURE,
+from homeassistant.components.climate import (
+    ClimateEntity,
+    ClimateEntityFeature,
+    HVACMode,
 )
 from homeassistant.const import (
     ATTR_TEMPERATURE,
-    STATE_UNKNOWN,
-    TEMP_CELSIUS,
+    UnitOfTemperature,
 )
 
-from . import VolkswagenEntity
-from .const import DATA_KEY, DATA, DOMAIN
+from . import VolkswagenEntity, VolkswagenData
+from .const import DATA_KEY, DATA, DOMAIN, UPDATE_CALLBACK
 
-SUPPORT_HVAC = [HVAC_MODE_COOL, HVAC_MODE_HEAT, HVAC_MODE_OFF]
+SUPPORT_HVAC = [HVACMode.HEAT_COOL, HVACMode.OFF]
 _LOGGER = logging.getLogger(__name__)
 
 
@@ -34,7 +32,13 @@ async def async_setup_entry(hass, entry, async_add_devices):
     coordinator = data.coordinator
     if coordinator.data is not None:
         async_add_devices(
-            VolkswagenClimate(data=data, vin=coordinator.vin, component=instrument.component, attribute=instrument.attr)
+            VolkswagenClimate(
+                data=data,
+                vin=coordinator.vin,
+                component=instrument.component,
+                attribute=instrument.attr,
+                callback=hass.data[DOMAIN][entry.entry_id][UPDATE_CALLBACK],
+            )
             for instrument in (instrument for instrument in data.instruments if instrument.component == "climate")
         )
 
@@ -44,78 +48,34 @@ async def async_setup_entry(hass, entry, async_add_devices):
 class VolkswagenClimate(VolkswagenEntity, ClimateEntity):
     """Representation of a Volkswagen WeConnect Climate."""
 
-    def set_temperature(self, **kwargs) -> None:
-        """Not implemented."""
-        raise NotImplementedError("Use async_set_temperature instead")
+    _attr_temperature_unit: str = UnitOfTemperature.CELSIUS
+    _attr_target_temperature_step: float = 0.5
+    _attr_supported_features: int = (
+        ClimateEntityFeature.TARGET_TEMPERATURE | ClimateEntityFeature.TURN_OFF | ClimateEntityFeature.TURN_ON
+    )
+    _attr_hvac_modes: list[HVACMode] = [HVACMode.HEAT_COOL, HVACMode.OFF]
+    _attr_hvac_mode: HVACMode = HVACMode.HEAT_COOL
+    _attr_min_temp: float = 15.5
+    _attr_max_temp: float = 30
+    _enable_turn_on_off_backwards_compatibility = False  # Remove after HA version 2025.1
 
-    def set_humidity(self, humidity: int) -> None:
-        """Not implemented."""
-        raise NotImplementedError
+    def __init__(self, data: VolkswagenData, vin: str, component: str, attribute: str, callback=None):
+        """Initialize switch."""
+        super().__init__(data, vin, component, attribute, callback)
+        self._update_state()
 
-    def set_fan_mode(self, fan_mode: str) -> None:
-        """Not implemented."""
-        raise NotImplementedError
-
-    def set_hvac_mode(self, hvac_mode: str) -> None:
-        """Not implemented."""
-        raise NotImplementedError("Use async_set_hvac_mode instead")
-
-    def set_swing_mode(self, swing_mode: str) -> None:
-        """Not implemented."""
-        raise NotImplementedError
-
-    def set_preset_mode(self, preset_mode: str) -> None:
-        """Not implemented."""
-        raise NotImplementedError
-
-    def turn_aux_heat_on(self) -> None:
-        """Not implemented."""
-        raise NotImplementedError
-
-    def turn_aux_heat_off(self) -> None:
-        """Not implemented."""
-        raise NotImplementedError
-
-    @property
-    def supported_features(self):
-        """Return the list of supported features."""
-        return SUPPORT_TARGET_TEMPERATURE
-
-    @property
-    def hvac_mode(self):
-        """Return hvac operation ie. heat, cool mode.
-
-        Need to be one of HVAC_MODE_*.
-        """
-        if not self.instrument.hvac_mode:
-            return HVAC_MODE_OFF
-
-        hvac_modes = {
-            "HEATING": HVAC_MODE_HEAT,
-            "COOLING": HVAC_MODE_COOL,
-        }
-        return hvac_modes.get(self.instrument.hvac_mode, HVAC_MODE_OFF)
-
-    @property
-    def hvac_modes(self):
-        """Return the list of available hvac operation modes.
-
-        Need to be a subset of HVAC_MODES.
-        """
-        return SUPPORT_HVAC
-
-    @property
-    def temperature_unit(self):
-        """Return the unit of measurement."""
-        return TEMP_CELSIUS
-
-    @property
-    def target_temperature(self):
-        """Return the temperature we try to reach."""
-        if self.instrument.target_temperature:
-            return float(self.instrument.target_temperature)
+    def _update_state(self) -> None:
+        self._attr_target_temperature = float(self.instrument.target_temperature)
+        if self.instrument.hvac_mode is True:
+            self._attr_hvac_mode = HVACMode.HEAT_COOL
         else:
-            return STATE_UNKNOWN
+            self._attr_hvac_mode = HVACMode.OFF
+
+    async def async_turn_off(self) -> None:
+        await self.async_set_hvac_mode(HVACMode.OFF)
+
+    async def async_turn_on(self) -> None:
+        await self.async_set_hvac_mode(HVACMode.HEAT_COOL)
 
     async def async_set_temperature(self, **kwargs):
         """Set new target temperatures."""
@@ -123,13 +83,15 @@ class VolkswagenClimate(VolkswagenEntity, ClimateEntity):
         temperature = kwargs.get(ATTR_TEMPERATURE)
         if temperature:
             await self.instrument.set_temperature(temperature)
+            self._update_state()
             self.notify_updated()
 
     async def async_set_hvac_mode(self, hvac_mode):
         """Set new target hvac mode."""
         _LOGGER.debug("Setting mode for: %s", self.instrument.attr)
-        if hvac_mode == HVAC_MODE_OFF:
+        if hvac_mode == HVACMode.OFF:
             await self.instrument.set_hvac_mode(False)
-        elif hvac_mode == HVAC_MODE_HEAT:
+        elif hvac_mode == HVACMode.HEAT_COOL:
             await self.instrument.set_hvac_mode(True)
+        self._update_state()
         self.notify_updated()
