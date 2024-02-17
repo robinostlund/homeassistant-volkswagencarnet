@@ -1,4 +1,5 @@
 """Timer services tests."""
+
 from asyncio import Future
 from unittest.mock import patch, MagicMock
 

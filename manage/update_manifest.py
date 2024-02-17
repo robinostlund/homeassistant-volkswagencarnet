@@ -1,4 +1,5 @@
 """Update the manifest file."""
+
 import sys
 import json
 import os
