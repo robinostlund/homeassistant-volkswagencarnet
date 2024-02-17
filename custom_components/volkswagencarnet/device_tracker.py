@@ -1,6 +1,7 @@
 """
 Support for Volkswagen WeConnect Platform
 """
+
 import logging
 
 from homeassistant.components.device_tracker import SourceType

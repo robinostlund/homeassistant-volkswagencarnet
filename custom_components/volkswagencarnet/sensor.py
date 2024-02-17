@@ -1,4 +1,5 @@
 """Sensor support for Volkswagen We Connect platform."""
+
 import logging
 from typing import Union
 

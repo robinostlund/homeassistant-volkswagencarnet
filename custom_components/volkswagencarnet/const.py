@@ -1,4 +1,5 @@
 """Common constants."""
+
 from datetime import timedelta
 
 DOMAIN = "volkswagencarnet"

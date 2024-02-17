@@ -1,4 +1,5 @@
 """Support for Volkswagen WeConnect Platform."""
+
 import logging
 import re
 from datetime import datetime, timezone
