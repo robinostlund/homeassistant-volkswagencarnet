@@ -20,11 +20,7 @@ from homeassistant.helpers.aiohttp_client import async_get_clientsession
 from homeassistant.helpers.dispatcher import async_dispatcher_connect
 from homeassistant.helpers.icon import icon_for_battery_level
 from homeassistant.helpers.restore_state import RestoreEntity
-from homeassistant.helpers.update_coordinator import (
-    DataUpdateCoordinator,
-    UpdateFailed,
-    CoordinatorEntity,
-)
+from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed, CoordinatorEntity
 from volkswagencarnet.vw_connection import Connection
 from volkswagencarnet.vw_dashboard import (
     Instrument,
@@ -324,11 +320,7 @@ class VolkswagenEntity(CoordinatorEntity, RestoreEntity):
         prev: Optional[State] = self.hass.states.get(self.entity_id)
 
         # This is not the best place to handle this, but... :shrug:..
-        if self.attribute == "requests_remaining" and self.state in [
-            -1,
-            STATE_UNAVAILABLE,
-            STATE_UNKNOWN,
-        ]:
+        if self.attribute == "requests_remaining" and self.state in [-1, STATE_UNAVAILABLE, STATE_UNKNOWN]:
             restored = prev or self.restored_state
             if restored is not None:
                 try:
@@ -350,6 +342,7 @@ class VolkswagenEntity(CoordinatorEntity, RestoreEntity):
             prev is None
             or str(prev.attributes.get("last_updated", None)) != str(backend_refresh_time)
             or str(self.state or STATE_UNKNOWN) != str(prev.state)
+            or self.component == "climate"
         ):
             super().async_write_ha_state()
         else:
@@ -560,8 +553,7 @@ class VolkswagenCoordinator(DataUpdateCoordinator):
     async def report_request(self, vehicle: Vehicle) -> None:
         """Request car to report itself an update to Volkswagen WeConnect."""
         report_interval = self.entry.options.get(
-            CONF_REPORT_SCAN_INTERVAL,
-            self.entry.data.get(CONF_REPORT_SCAN_INTERVAL, DEFAULT_REPORT_UPDATE_INTERVAL),
+            CONF_REPORT_SCAN_INTERVAL, self.entry.data.get(CONF_REPORT_SCAN_INTERVAL, DEFAULT_REPORT_UPDATE_INTERVAL)
         )
 
         if not self.report_last_updated:
