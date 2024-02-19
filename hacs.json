@@ -1,6 +1,6 @@
 {
   "name": "Volkswagen We Connect",
-  "homeassistant": "2021.12.0b1",
+  "homeassistant": "2024.2.0",
   "hide_default_branch": true,
   "zip_release": true,
   "filename": "volkswagencarnet.zip"
