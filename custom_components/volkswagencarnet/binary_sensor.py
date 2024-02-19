@@ -1,4 +1,5 @@
 """BinarySensor support for Volkswagen We Connect integration."""
+
 import logging
 from typing import Union
 

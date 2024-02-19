@@ -1,4 +1,5 @@
 """Mock helpers."""
+
 from homeassistant.config_entries import ConfigEntry, SOURCE_USER
 from homeassistant.util import uuid as uuid_util
 

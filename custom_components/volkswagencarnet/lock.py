@@ -1,4 +1,5 @@
 """Lock support for Volkswagen WeConnect Platform."""
+
 import logging
 from typing import Any
 

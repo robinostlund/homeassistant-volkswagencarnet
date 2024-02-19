@@ -1,4 +1,5 @@
 """Timer services tests."""
+
 import asyncio
 from asyncio import Future
 from datetime import timedelta
