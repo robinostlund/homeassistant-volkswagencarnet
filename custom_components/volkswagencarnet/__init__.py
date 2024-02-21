@@ -63,12 +63,8 @@ from .const import (
     CONF_NO_CONVERSION,
 )
 from .services import (
-    SchedulerService,
     ChargerService,
-    SERVICE_SET_TIMER_BASIC_SETTINGS_SCHEMA,
     SERVICE_SET_CHARGER_MAX_CURRENT_SCHEMA,
-    SERVICE_UPDATE_SCHEDULE_SCHEMA,
-    SERVICE_UPDATE_PROFILE_SCHEMA,
 )
 from .util import get_convert_conf
 
@@ -88,25 +84,6 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
 
     def register_services():
         cs = ChargerService(hass)
-        ss = SchedulerService(hass)
-        hass.services.async_register(
-            domain=DOMAIN,
-            service=SERVICE_SET_TIMER_BASIC_SETTINGS,
-            service_func=ss.set_timer_basic_settings,
-            schema=SERVICE_SET_TIMER_BASIC_SETTINGS_SCHEMA,
-        )
-        hass.services.async_register(
-            domain=DOMAIN,
-            service=SERVICE_UPDATE_SCHEDULE,
-            service_func=ss.update_schedule,
-            schema=SERVICE_UPDATE_SCHEDULE_SCHEMA,
-        )
-        hass.services.async_register(
-            domain=DOMAIN,
-            service=SERVICE_UPDATE_PROFILE,
-            service_func=ss.update_profile,
-            schema=SERVICE_UPDATE_PROFILE_SCHEMA,
-        )
         hass.services.async_register(
             domain=DOMAIN,
             service=SERVICE_SET_CHARGER_MAX_CURRENT,
