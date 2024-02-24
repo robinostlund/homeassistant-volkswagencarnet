@@ -322,6 +322,8 @@ class VolkswagenEntity(CoordinatorEntity, RestoreEntity):
             or str(self.state or STATE_UNKNOWN) != str(prev.state)
             or self.component == "climate"
         ):
+            if self.component == "climate":
+                self._update_state()
             super().async_write_ha_state()
         else:
             _LOGGER.debug(f"{self.name}: state not changed ('{prev.state}' == '{self.state}'), skipping update.")
