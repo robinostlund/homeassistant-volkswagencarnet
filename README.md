@@ -14,18 +14,18 @@
 
 ## Description
 
-Welcome to Volkswagen We Connect custom component designed for [Home Assistant](https://www.home-assistant.io) with the capability to interact with the Volkswagen We Connect service (your car).
+Welcome to Volkswagen We Connect custom component designed for [Home Assistant](https://www.home-assistant.io) with the capability to interact with the Volkswagen Connect service (your car).
 
-This custom component supports the "**non-ID" Volkswagen We Connect cars** such as the Passat, Golf, e-Golf, Tiguan etc. It requires you to have an active and working VW online subscription connected to your car. For the new electric vehicles such as the ID series this component does not work. The new ID platform uses another backend system.
+This custom component supports the **Volkswagen Connect cars** such as the Passat, Golf, e-Golf, Tiguan, ID etc. It requires you to have an active and working VW online subscription connected to your car. The new electric vehicles such as the ID series are supported as well.
 
-Most of the functionality found the "We Connect app" should be available via this integration, this includes options such as auxiliary heater control.
+Most of the functionality found the "Volkswagen Connect app" should be available via this integration, this includes options such as auxiliary heater control.
 
-Note: Some features included in Volkswagen We Connect 2019 and newer are not fully tested. This custom component should work with any models such as Golf/Passat 8.5/Tiguan etc. But please bear with me and report any fault or error as an issue.
+Note: Some features included in Volkswagen Connect 2023 and newer are not fully tested. This custom component should work with any models such as Golf/Passat 8.5/Tiguan etc. But please bear with me and report any fault or error as an issue.
 
-Please note that there has only been reports of success with this component for cars sold (and based) in the EU. Please feel free to contribue to make this component work in the US as well, we do not have access to any We Connect accounts to verify at this stage.
+Please note that there has only been reports of success with this component for cars sold (and based) in the EU. Please feel free to contribue to make this component work in the US as well, we do not have access to any Volkswagen Connect accounts to verify at this stage.
 
 ## Having issues with this custom component?
-Please, before posting an issue make sure that VW´s WeConnect service works for you via a normal web browser. Not only the login part but also make sure that the VW WeConnect service interacts with the car proper, including updating of all sensors and location. If there are problems with the VW WeConnect service this component will not work either. This custom component is only as good as the VW WeConnect service.
+Please, before posting an issue make sure that VW´s Connect service works for you via a normal web browser. Not only the login part but also make sure that the VW Connect service interacts with the car proper, including updating of all sensors and location. If there are problems with the VW Connect service this component will not work either. This custom component is only as good as the VW Connect service.
 
 ## Installation
 
@@ -39,7 +39,7 @@ Please, before posting an issue make sure that VW´s WeConnect service works for
 Do you you have [HACS](https://community.home-assistant.io/t/custom-component-hacs) installed? Just search for Volkswagen We Connect and install it direct from HACS. HACS will keep track of updates and you can easly upgrade this component to latest version.
 
 ### Install manually
-Make sure you have an account on Volkswagen We Connect.
+Make sure you have an account on Volkswagen Connect.
 
 Clone or copy the repository and copy the folder 'homeassistant-volkswagencarnet/custom_component/volkswagencarnet' into '<config dir>/custom_components'
 
@@ -48,7 +48,7 @@ Note that only the packaged releases (zip file) have the dependencies configured
 
 ## Configuration
 * Restart Home Assistant
-* Add and configure the component via the UI: Configuration > Integrations > search for "Volkswagen We Connect" and follow the wizard to configure (use your We Connect credentials)
+* Add and configure the component via the UI: Configuration > Integrations > search for "Volkswagen We Connect" and follow the wizard to configure (use your Volkswagen Connect credentials)
 * All available features of your car should be added automatically after you have selected the VIN
 
 ### Configuration flow settings
