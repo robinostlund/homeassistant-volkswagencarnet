@@ -31,6 +31,7 @@ from volkswagencarnet.vw_dashboard import (
     Switch,
     DoorLock,
     Position,
+    Number,
     TrunkLock,
 )
 from volkswagencarnet.vw_vehicle import Vehicle
@@ -55,9 +56,6 @@ from .const import (
     DEFAULT_DEBUG,
     CONF_CONVERT,
     CONF_IMPERIAL_UNITS,
-    SERVICE_SET_TIMER_BASIC_SETTINGS,
-    SERVICE_UPDATE_SCHEDULE,
-    SERVICE_UPDATE_PROFILE,
     SERVICE_SET_CHARGER_MAX_CURRENT,
     CONF_AVAILABLE_RESOURCES,
     CONF_NO_CONVERSION,
@@ -73,9 +71,6 @@ _LOGGER = logging.getLogger(__name__)
 
 def unload_services(hass: HomeAssistant):
     """Unload the services from HA."""
-    hass.services.async_remove(DOMAIN, SERVICE_SET_TIMER_BASIC_SETTINGS)
-    hass.services.async_remove(DOMAIN, SERVICE_UPDATE_SCHEDULE)
-    hass.services.async_remove(DOMAIN, SERVICE_UPDATE_PROFILE)
     hass.services.async_remove(DOMAIN, SERVICE_SET_CHARGER_MAX_CURRENT)
 
 
@@ -357,7 +352,7 @@ class VolkswagenEntity(CoordinatorEntity, RestoreEntity):
     @property
     def instrument(
         self,
-    ) -> Union[BinarySensor, Climate, DoorLock, Position, Sensor, Switch, TrunkLock, Instrument]:
+    ) -> Union[BinarySensor, Climate, DoorLock, Position, Sensor, Switch, TrunkLock, Number, Instrument]:
         """Return corresponding instrument."""
         return self.data.instrument(self.vin, self.component, self.attribute)
 
