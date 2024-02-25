@@ -44,6 +44,7 @@ COMPONENTS = {
     "device_tracker": "device_tracker",
     "switch": "switch",
     "climate": "climate",
+    "number": "number",
 }
 
 SERVICE_SET_TIMER_BASIC_SETTINGS = "set_timer_basic_settings"

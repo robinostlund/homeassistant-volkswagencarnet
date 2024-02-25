@@ -31,6 +31,7 @@ from volkswagencarnet.vw_dashboard import (
     Switch,
     DoorLock,
     Position,
+    Number,
     TrunkLock,
 )
 from volkswagencarnet.vw_vehicle import Vehicle
@@ -55,20 +56,13 @@ from .const import (
     DEFAULT_DEBUG,
     CONF_CONVERT,
     CONF_IMPERIAL_UNITS,
-    SERVICE_SET_TIMER_BASIC_SETTINGS,
-    SERVICE_UPDATE_SCHEDULE,
-    SERVICE_UPDATE_PROFILE,
     SERVICE_SET_CHARGER_MAX_CURRENT,
     CONF_AVAILABLE_RESOURCES,
     CONF_NO_CONVERSION,
 )
 from .services import (
-    SchedulerService,
     ChargerService,
-    SERVICE_SET_TIMER_BASIC_SETTINGS_SCHEMA,
     SERVICE_SET_CHARGER_MAX_CURRENT_SCHEMA,
-    SERVICE_UPDATE_SCHEDULE_SCHEMA,
-    SERVICE_UPDATE_PROFILE_SCHEMA,
 )
 from .util import get_convert_conf
 
@@ -77,9 +71,6 @@ _LOGGER = logging.getLogger(__name__)
 
 def unload_services(hass: HomeAssistant):
     """Unload the services from HA."""
-    hass.services.async_remove(DOMAIN, SERVICE_SET_TIMER_BASIC_SETTINGS)
-    hass.services.async_remove(DOMAIN, SERVICE_UPDATE_SCHEDULE)
-    hass.services.async_remove(DOMAIN, SERVICE_UPDATE_PROFILE)
     hass.services.async_remove(DOMAIN, SERVICE_SET_CHARGER_MAX_CURRENT)
 
 
@@ -88,25 +79,6 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
 
     def register_services():
         cs = ChargerService(hass)
-        ss = SchedulerService(hass)
-        hass.services.async_register(
-            domain=DOMAIN,
-            service=SERVICE_SET_TIMER_BASIC_SETTINGS,
-            service_func=ss.set_timer_basic_settings,
-            schema=SERVICE_SET_TIMER_BASIC_SETTINGS_SCHEMA,
-        )
-        hass.services.async_register(
-            domain=DOMAIN,
-            service=SERVICE_UPDATE_SCHEDULE,
-            service_func=ss.update_schedule,
-            schema=SERVICE_UPDATE_SCHEDULE_SCHEMA,
-        )
-        hass.services.async_register(
-            domain=DOMAIN,
-            service=SERVICE_UPDATE_PROFILE,
-            service_func=ss.update_profile,
-            schema=SERVICE_UPDATE_PROFILE_SCHEMA,
-        )
         hass.services.async_register(
             domain=DOMAIN,
             service=SERVICE_SET_CHARGER_MAX_CURRENT,
@@ -345,6 +317,8 @@ class VolkswagenEntity(CoordinatorEntity, RestoreEntity):
             or str(self.state or STATE_UNKNOWN) != str(prev.state)
             or self.component == "climate"
         ):
+            if self.component == "climate":
+                self._update_state()
             super().async_write_ha_state()
         else:
             _LOGGER.debug(f"{self.name}: state not changed ('{prev.state}' == '{self.state}'), skipping update.")
@@ -378,7 +352,7 @@ class VolkswagenEntity(CoordinatorEntity, RestoreEntity):
     @property
     def instrument(
         self,
-    ) -> Union[BinarySensor, Climate, DoorLock, Position, Sensor, Switch, TrunkLock, Instrument]:
+    ) -> Union[BinarySensor, Climate, DoorLock, Position, Sensor, Switch, TrunkLock, Number, Instrument]:
         """Return corresponding instrument."""
         return self.data.instrument(self.vin, self.component, self.attribute)
 
