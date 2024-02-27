@@ -14,7 +14,6 @@ from homeassistant.const import (
     CONF_USERNAME,
     EVENT_HOMEASSISTANT_STOP,
     STATE_UNKNOWN,
-    STATE_UNAVAILABLE,
 )
 from homeassistant.core import HomeAssistant, Event, callback, State
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
@@ -292,20 +291,6 @@ class VolkswagenEntity(CoordinatorEntity, RestoreEntity):
         # Get the previous state from the state machine if found
         prev: Optional[State] = self.hass.states.get(self.entity_id)
 
-        # This is not the best place to handle this, but... :shrug:..
-        if self.attribute == "requests_remaining" and self.state in [-1, STATE_UNAVAILABLE, STATE_UNKNOWN]:
-            restored = prev or self.restored_state
-            if restored is not None:
-                try:
-                    value = int(restored.state)
-                    _LOGGER.debug(f"Restoring requests remaining to '{restored.state}'")
-                    self.vehicle.requests_remaining = value
-                except ValueError:
-                    pass
-            else:
-                _LOGGER.debug(f"Not changing requests remaining to '{self.state}'")
-                return
-
         # need to persist state if:
         # - there is no previous state
         # - there is no information about when the last backend update was done
@@ -315,10 +300,7 @@ class VolkswagenEntity(CoordinatorEntity, RestoreEntity):
             prev is None
             or str(prev.attributes.get("last_updated", None)) != str(backend_refresh_time)
             or str(self.state or STATE_UNKNOWN) != str(prev.state)
-            or self.component == "climate"
         ):
-            if self.component == "climate":
-                self._update_state()
             super().async_write_ha_state()
         else:
             _LOGGER.debug(f"{self.name}: state not changed ('{prev.state}' == '{self.state}'), skipping update.")
