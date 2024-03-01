@@ -43,7 +43,6 @@ COMPONENTS = {
     "lock": "lock",
     "device_tracker": "device_tracker",
     "switch": "switch",
-    "climate": "climate",
     "number": "number",
 }
 

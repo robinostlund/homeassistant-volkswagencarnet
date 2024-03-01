@@ -24,7 +24,6 @@ from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, Upda
 from volkswagencarnet.vw_connection import Connection
 from volkswagencarnet.vw_dashboard import (
     Instrument,
-    Climate,
     BinarySensor,
     Sensor,
     Switch,
@@ -334,7 +333,7 @@ class VolkswagenEntity(CoordinatorEntity, RestoreEntity):
     @property
     def instrument(
         self,
-    ) -> Union[BinarySensor, Climate, DoorLock, Position, Sensor, Switch, TrunkLock, Number, Instrument]:
+    ) -> Union[BinarySensor, DoorLock, Position, Sensor, Switch, TrunkLock, Number, Instrument]:
         """Return corresponding instrument."""
         return self.data.instrument(self.vin, self.component, self.attribute)
 
