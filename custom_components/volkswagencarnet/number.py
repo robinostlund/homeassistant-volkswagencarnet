@@ -3,7 +3,10 @@
 import logging
 from typing import Union
 
-from homeassistant.components.number import NumberEntity
+from homeassistant.components.number import (
+    NumberEntity,
+    NumberDeviceClass,
+)
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity import EntityCategory
 
@@ -72,6 +75,14 @@ class VolkswagenNumber(VolkswagenEntity, NumberEntity):
         """Return the entity value to represent the entity state."""
         if self.instrument.state:
             return self.instrument.state
+        return None
+
+    @property
+    def device_class(self) -> Union[NumberDeviceClass, None]:
+        """Return the device class."""
+        if self.instrument.device_class is None or self.instrument.device_class in NumberDeviceClass:
+            return self.instrument.device_class
+        _LOGGER.warning(f"Unknown device class {self.instrument.device_class}")
         return None
 
     @property
