@@ -1,4 +1,6 @@
 import logging
+import asyncio
+
 from typing import Optional
 
 import homeassistant.helpers.config_validation as cv
@@ -54,8 +56,8 @@ DATA_SCHEMA = {
 
 class VolkswagenCarnetConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
     VERSION = 3
-    task_login = None
-    task_finish = None
+    task_login: asyncio.Task | None = None
+    task_finish: asyncio.Task | None = None
     entry = None
 
     def __init__(self):
@@ -152,6 +154,7 @@ class VolkswagenCarnetConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
             return self.async_show_progress(
                 step_id="login",
                 progress_action="task_login",
+                progress_task=self.task_login,
             )
 
         # noinspection PyBroadException
@@ -197,7 +200,8 @@ class VolkswagenCarnetConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
 
                 if not await self._connection.validate_login:
                     _LOGGER.debug(
-                        "Unable to login to WeConnect. Need to accept a new EULA? Try logging in to the portal: https://www.portal.volkswagen-we.com/"
+                        "Unable to login to WeConnect. Need to accept a new EULA?"
+                        "Try logging in to the portal: https://www.portal.volkswagen-we.com/"
                     )
                     errors["base"] = "cannot_connect"
                 else:
