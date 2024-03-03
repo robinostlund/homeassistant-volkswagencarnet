@@ -1,0 +1,78 @@
+{
+  "title": "Volkswagen We Connect",
+  "config": {
+    "step": {
+      "user": {
+        "title": "Konfiguracija We Connect",
+        "description": "Izpolnite informacije We Connect\n\nZa nekatere posebne možnosti, kot so zaklepanje/odklepanje in zagon/ustavitev ogrevanja motorja, je potreben S-PIN",
+        "data": {
+          "username": "E-pošta",
+          "password": "Geslo",
+          "mutable": "Odkljukajte, da naredite avto 'samo za branje'. Označite, če želite komunicirati z avtom",
+          "region": "Koda države, kjer je bil avto prodan (ISO 3155-1 / Alfa-2)",
+          "spin": "S-PIN",
+          "name": "Poimenujte svoj avto (privzeto je številka VIN)",
+          "debug": "Omogoči celotne dnevnike odpravljanja težav iz API (zahteva omogočeno beleženje odpravljanja težav v konfiguraciji)",
+          "convert": "Izberite, če želite izvesti pretvorbo enot razdalje"
+        }
+      },
+      "select_vehicle": {
+        "title": "Vozilo",
+        "description": "Najdena so bila naslednja vozila. Izberite vozilo, ki ga želite spremljati",
+        "data": {
+          "vehicle": "Številka VIN"
+        }
+      },
+      "select_instruments": {
+        "title": "Vir",
+        "description": "Izberite vire za spremljanje",
+        "data": {
+          "resources": "Viri za spremljanje"
+        }
+      },
+      "reauth_confirm": {
+        "data": {
+          "description": "Ponovno se prijavite v svoj We Connect račun. Poskrbite, da sprejmete morebitno novo licenco EULA v portalu We Connect (https://www.portal.volkswagen-we.com/), preden nadaljujete. ",
+          "email": "E-pošta",
+          "password": "Geslo"
+        }
+      }
+    },
+    "abort": {
+      "already_configured": "Avtomobil s to VIN številko je že konfiguriran",
+      "reauth_successful": "Ponovna overitev je bila uspešna"
+    },
+    "error": {
+      "cannot_connect": "Prijave v Volkswagen We Connect ni mogoče izvesti. Preverite svoje poverilnice in preverite, ali storitev deluje",
+      "cannot_update": "Pridobivanje posodobitev iz Volkswagen We Connect ni mogoče",
+      "unknown": "Prišlo je do neznane napake"
+    },
+    "progress": {
+      "task_login": "Prijava v We Connect",
+      "task_update": "Pridobivanje podatkov o vozilih"
+    }
+  },
+  "options": {
+    "step": {
+      "user": {
+        "title": "Možnosti za We Connect",
+        "description": "Nastavite intervale posodobitev",
+        "data": {
+          "report_request": "Omogoči samodejno zahtevo za poročilo",
+          "report_scan_interval": "Interval posodobitve zahteve za poročilo (dnevi)",
+          "scan_interval": "Interval posodobitve senzorjev (minute)",
+          "region": "Regija (Država, kjer je bil avto prodan)",
+          "debug": "Omogoči celotne dnevnike odpravljanja težav iz API (zahteva omogočeno beleženje odpravljanja težav v konfiguraciji)",
+          "convert": "Izberite, če želite izvesti pretvorbo enot razdalje"
+        }
+      },
+      "select_instruments": {
+        "title": "Vir",
+        "description": "Izberite vire za spremljanje",
+        "data": {
+          "resources": "Viri za spremljanje"
+        }
+      }
+    }
+  }
+}
