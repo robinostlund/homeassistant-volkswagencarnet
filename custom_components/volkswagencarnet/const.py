@@ -43,11 +43,7 @@ COMPONENTS = {
     "lock": "lock",
     "device_tracker": "device_tracker",
     "switch": "switch",
-    "climate": "climate",
     "number": "number",
 }
 
-SERVICE_SET_TIMER_BASIC_SETTINGS = "set_timer_basic_settings"
-SERVICE_UPDATE_SCHEDULE = "update_schedule"
-SERVICE_UPDATE_PROFILE = "update_profile"
 SERVICE_SET_CHARGER_MAX_CURRENT = "set_charger_max_current"

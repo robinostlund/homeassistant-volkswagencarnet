@@ -3,18 +3,20 @@
 import logging
 from typing import Union
 
-from homeassistant.components.number import NumberEntity
-from homeassistant.config_entries import ConfigEntry
+from homeassistant.components.number import (
+    NumberEntity,
+    NumberDeviceClass,
+)
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity import EntityCategory
 
-from . import VolkswagenEntity, VolkswagenData
+from . import VolkswagenEntity
 from .const import DATA_KEY, DATA, DOMAIN, UPDATE_CALLBACK
 
 _LOGGER = logging.getLogger(__name__)
 
 
-async def async_setup_platform(hass: HomeAssistant, config: ConfigEntry, async_add_entities, discovery_info=None):
+async def async_setup_platform(hass: HomeAssistant, config, async_add_entities, discovery_info=None):
     """Set up the Volkswagen number platform."""
     if discovery_info is None:
         return
@@ -43,10 +45,6 @@ async def async_setup_entry(hass, entry, async_add_devices):
 class VolkswagenNumber(VolkswagenEntity, NumberEntity):
     """Representation of a Volkswagen number."""
 
-    def __init__(self, data: VolkswagenData, vin: str, component: str, attribute: str, callback=None):
-        """Initialize switch."""
-        super().__init__(data, vin, component, attribute, callback)
-
     @property
     def native_min_value(self) -> float:
         """Return the minimum value."""
@@ -63,15 +61,29 @@ class VolkswagenNumber(VolkswagenEntity, NumberEntity):
 
     @property
     def native_step(self) -> float:
-        if self.instrument.native_step:
-            return self.instrument.native_step
-        return None
+        """Return the increment/decrement step."""
+        return self.instrument.native_step
 
     @property
     def native_unit_of_measurement(self) -> str:
         if self.instrument.unit:
             return self.instrument.unit
         return ""
+
+    @property
+    def native_value(self) -> float:
+        """Return the entity value to represent the entity state."""
+        if self.instrument.state:
+            return self.instrument.state
+        return None
+
+    @property
+    def device_class(self) -> Union[NumberDeviceClass, None]:
+        """Return the device class."""
+        if self.instrument.device_class is None or self.instrument.device_class in NumberDeviceClass:
+            return self.instrument.device_class
+        _LOGGER.warning(f"Unknown device class {self.instrument.device_class}")
+        return None
 
     @property
     def entity_category(self) -> Union[EntityCategory, str, None]:
@@ -81,13 +93,7 @@ class VolkswagenNumber(VolkswagenEntity, NumberEntity):
         if self.instrument.entity_type == "config":
             return EntityCategory.CONFIG
 
-    @property
-    def native_value(self) -> float:
-        """Return the entity value to represent the entity state."""
-        return self.instrument.state
-
     async def async_set_native_value(self, value: int) -> None:
         """Update the current value."""
-        _LOGGER.debug("Update current value to %s." % value)
         await self.instrument.set_value(value)
-        # self.notify_updated()
+        self.notify_updated()
