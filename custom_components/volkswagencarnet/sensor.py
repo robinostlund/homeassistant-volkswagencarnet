@@ -1,7 +1,6 @@
 """Sensor support for Volkswagen We Connect platform."""
 
 import logging
-from typing import Union
 
 from homeassistant.components.sensor import (
     SensorEntity,
@@ -67,7 +66,7 @@ class VolkswagenSensor(VolkswagenEntity, SensorEntity):
             return self.instrument.unit
 
     @property
-    def device_class(self) -> Union[SensorDeviceClass, None]:
+    def device_class(self) -> SensorDeviceClass | None:
         """Return the device class."""
         if self.instrument.device_class is None or self.instrument.device_class in DEVICE_CLASSES:
             return self.instrument.device_class
@@ -75,7 +74,7 @@ class VolkswagenSensor(VolkswagenEntity, SensorEntity):
         return None
 
     @property
-    def state_class(self) -> Union[SensorStateClass, None]:
+    def state_class(self) -> SensorStateClass | None:
         """Return the state class."""
         if self.instrument.state_class is None or self.instrument.state_class in STATE_CLASSES:
             return self.instrument.state_class
@@ -83,7 +82,7 @@ class VolkswagenSensor(VolkswagenEntity, SensorEntity):
         return None
 
     @property
-    def entity_category(self) -> Union[EntityCategory, str, None]:
+    def entity_category(self) -> EntityCategory | str | None:
         """Return entity category."""
         if self.instrument.entity_type == "diag":
             return EntityCategory.DIAGNOSTIC

@@ -1,7 +1,7 @@
 """Support for Volkswagen WeConnect Platform."""
 
 import logging
-from typing import Any, Union
+from typing import Any
 
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity import ToggleEntity, EntityCategory
@@ -98,7 +98,7 @@ class VolkswagenSwitch(VolkswagenEntity, ToggleEntity):
         self.notify_updated()
 
     @property
-    def entity_category(self) -> Union[EntityCategory, str, None]:
+    def entity_category(self) -> EntityCategory | str | None:
         """Return entity category."""
         if self.instrument.entity_type == "diag":
             return EntityCategory.DIAGNOSTIC
@@ -148,7 +148,7 @@ class VolkswagenDepartureTimer(VolkswagenSwitch):
         return "departure_timer"
 
     @property
-    def entity_category(self) -> Union[EntityCategory, str, None]:
+    def entity_category(self) -> EntityCategory | str | None:
         """Return entity category."""
         return EntityCategory.CONFIG
 

@@ -1,8 +1,6 @@
 import logging
 import asyncio
 
-from typing import Optional
-
 import homeassistant.helpers.config_validation as cv
 import voluptuous as vol
 from homeassistant import config_entries
@@ -62,7 +60,7 @@ class VolkswagenCarnetConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
 
     def __init__(self):
         """Initialize."""
-        self._entry: Optional[ConfigEntry] = None
+        self._entry: ConfigEntry | None = None
         self._init_info = {}
         self._errors = {}
         self._connection = None
