@@ -3,7 +3,6 @@
 import asyncio
 import logging
 from datetime import datetime, timedelta
-from typing import Any, Mapping
 
 from homeassistant.config_entries import ConfigEntry, SOURCE_REAUTH
 from homeassistant.const import (
@@ -224,7 +223,7 @@ class VolkswagenData:
         """Initialize the component state."""
         self.vehicles: set[Vehicle] = set()
         self.instruments: set[Instrument] = set()
-        self.config: Mapping[str, Any] = config.get(DOMAIN, config)
+        self.config: dict[str, object] = config.get(DOMAIN, config)
         self.names: str = self.config.get(CONF_NAME, "")
         self.coordinator: VolkswagenCoordinator | None = coordinator
 
@@ -391,7 +390,7 @@ class VolkswagenEntity(CoordinatorEntity, RestoreEntity):
         return attributes
 
     @property
-    def device_info(self) -> dict[str, Any]:
+    def device_info(self) -> dict[str, object]:
         """Return the device_info of the device."""
         return {
             "identifiers": {(DOMAIN, self.vin)},

@@ -1,7 +1,6 @@
 """Support for Volkswagen WeConnect Platform."""
 
 import logging
-from typing import Any
 
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity import ToggleEntity, EntityCategory
@@ -71,11 +70,11 @@ class VolkswagenSwitch(VolkswagenEntity, ToggleEntity):
         """Initialize switch."""
         super().__init__(data, vin, component, attribute, callback)
 
-    def turn_on(self, **kwargs: Any) -> None:
+    def turn_on(self, **kwargs: object) -> None:
         """Don't support sync methods."""
         raise NotImplementedError
 
-    def turn_off(self, **kwargs: Any) -> None:
+    def turn_off(self, **kwargs: object) -> None:
         """Don't support sync methods."""
         raise NotImplementedError
 
@@ -111,7 +110,7 @@ class VolkswagenSwitch(VolkswagenEntity, ToggleEntity):
         return self.instrument.assumed_state
 
     @property
-    def extra_state_attributes(self) -> dict[str, Any]:
+    def extra_state_attributes(self) -> dict[str, object]:
         """Return extra state attributes."""
         return {
             **super().extra_state_attributes,
@@ -122,11 +121,11 @@ class VolkswagenSwitch(VolkswagenEntity, ToggleEntity):
 class VolkswagenDepartureTimer(VolkswagenSwitch):
     """Departure timer class."""
 
-    def turn_on(self, **kwargs: Any) -> None:
+    def turn_on(self, **kwargs: object) -> None:
         """Enable timer."""
         super().turn_on()
 
-    def turn_off(self, **kwargs: Any) -> None:
+    def turn_off(self, **kwargs: object) -> None:
         """Disable timer."""
         super().turn_off()
 
@@ -153,7 +152,7 @@ class VolkswagenDepartureTimer(VolkswagenSwitch):
         return EntityCategory.CONFIG
 
     @property
-    def extra_state_attributes(self) -> dict[str, Any]:
+    def extra_state_attributes(self) -> dict[str, object]:
         """Return extra state attributes."""
         attribs = super(VolkswagenSwitch, self).extra_state_attributes
         return attribs

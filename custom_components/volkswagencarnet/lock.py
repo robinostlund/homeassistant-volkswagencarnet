@@ -1,7 +1,6 @@
 """Lock support for Volkswagen WeConnect Platform."""
 
 import logging
-from typing import Any
 
 from homeassistant.components.lock import LockEntity
 
@@ -40,15 +39,15 @@ async def async_setup_entry(hass, entry, async_add_devices):
 class VolkswagenLock(VolkswagenEntity, LockEntity):
     """Represents a Volkswagen WeConnect Lock."""
 
-    def lock(self, **kwargs: Any) -> None:
+    def lock(self, **kwargs: object) -> None:
         """Not implemented."""
         raise NotImplementedError("Use async_lock instead")
 
-    def unlock(self, **kwargs: Any) -> None:
+    def unlock(self, **kwargs: object) -> None:
         """Not implemented."""
         raise NotImplementedError("Use async_unlock instead")
 
-    def open(self, **kwargs: Any) -> None:
+    def open(self, **kwargs: object) -> None:
         """Not implemented."""
         raise NotImplementedError
 
