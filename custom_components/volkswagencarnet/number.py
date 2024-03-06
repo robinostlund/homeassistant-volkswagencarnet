@@ -1,7 +1,6 @@
 """Number support for Volkswagen We Connect integration."""
 
 import logging
-from typing import Union
 
 from homeassistant.components.number import (
     NumberEntity,
@@ -78,7 +77,7 @@ class VolkswagenNumber(VolkswagenEntity, NumberEntity):
         return None
 
     @property
-    def device_class(self) -> Union[NumberDeviceClass, None]:
+    def device_class(self) -> NumberDeviceClass | None:
         """Return the device class."""
         if self.instrument.device_class is None or self.instrument.device_class in NumberDeviceClass:
             return self.instrument.device_class
@@ -86,7 +85,7 @@ class VolkswagenNumber(VolkswagenEntity, NumberEntity):
         return None
 
     @property
-    def entity_category(self) -> Union[EntityCategory, str, None]:
+    def entity_category(self) -> EntityCategory | str | None:
         """Return entity category."""
         if self.instrument.entity_type == "diag":
             return EntityCategory.DIAGNOSTIC

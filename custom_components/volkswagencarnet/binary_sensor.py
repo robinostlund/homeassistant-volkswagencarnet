@@ -1,7 +1,6 @@
 """BinarySensor support for Volkswagen We Connect integration."""
 
 import logging
-from typing import Union
 
 from homeassistant.components.binary_sensor import (
     DEVICE_CLASSES,
@@ -54,7 +53,7 @@ class VolkswagenBinarySensor(VolkswagenEntity, BinarySensorEntity):
         return self.instrument.is_on
 
     @property
-    def device_class(self) -> Union[BinarySensorDeviceClass, str, None]:
+    def device_class(self) -> BinarySensorDeviceClass | str | None:
         """Return the device class."""
         if self.instrument.device_class in DEVICE_CLASSES:
             return self.instrument.device_class
@@ -62,7 +61,7 @@ class VolkswagenBinarySensor(VolkswagenEntity, BinarySensorEntity):
         return None
 
     @property
-    def entity_category(self) -> Union[EntityCategory, str, None]:
+    def entity_category(self) -> EntityCategory | str | None:
         """Return entity category."""
         if self.instrument.entity_type == "diag":
             return EntityCategory.DIAGNOSTIC

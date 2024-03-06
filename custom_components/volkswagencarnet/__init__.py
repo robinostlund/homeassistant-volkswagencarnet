@@ -3,7 +3,6 @@
 import asyncio
 import logging
 from datetime import datetime, timedelta
-from typing import Optional, Any, Union, Mapping
 
 from homeassistant.config_entries import ConfigEntry, SOURCE_REAUTH
 from homeassistant.const import (
@@ -220,13 +219,13 @@ async def _async_update_listener(hass: HomeAssistant, entry: ConfigEntry) -> boo
 class VolkswagenData:
     """Hold component state."""
 
-    def __init__(self, config: dict, coordinator: Optional[DataUpdateCoordinator] = None):
+    def __init__(self, config: dict, coordinator: DataUpdateCoordinator | None = None):
         """Initialize the component state."""
         self.vehicles: set[Vehicle] = set()
         self.instruments: set[Instrument] = set()
-        self.config: Mapping[str, Any] = config.get(DOMAIN, config)
+        self.config: dict[str, object] = config.get(DOMAIN, config)
         self.names: str = self.config.get(CONF_NAME, "")
-        self.coordinator: Optional[VolkswagenCoordinator] = coordinator
+        self.coordinator: VolkswagenCoordinator | None = coordinator
 
     def instrument(self, vin: str, component: str, attr: str) -> Instrument:
         """Return corresponding instrument."""
@@ -256,8 +255,8 @@ class VolkswagenData:
 class VolkswagenEntity(CoordinatorEntity, RestoreEntity):
     """Base class for all Volkswagen entities."""
 
-    last_updated: Optional[datetime] = None
-    restored_state: Optional[State] = None
+    last_updated: datetime | None = None
+    restored_state: State | None = None
 
     def __init__(
         self,
@@ -279,7 +278,7 @@ class VolkswagenEntity(CoordinatorEntity, RestoreEntity):
         self.vin: str = vin
         self.component: str = component
         self.attribute: str = attribute
-        self.coordinator: Optional[VolkswagenCoordinator] = data.coordinator
+        self.coordinator: VolkswagenCoordinator | None = data.coordinator
         self.instrument.callback = update_callbacks
         self.callback = callback
 
@@ -288,7 +287,7 @@ class VolkswagenEntity(CoordinatorEntity, RestoreEntity):
         """Write state to HA, but only if needed."""
         backend_refresh_time = self.instrument.last_refresh
         # Get the previous state from the state machine if found
-        prev: Optional[State] = self.hass.states.get(self.entity_id)
+        prev: State | None = self.hass.states.get(self.entity_id)
 
         # need to persist state if:
         # - there is no previous state
@@ -333,12 +332,12 @@ class VolkswagenEntity(CoordinatorEntity, RestoreEntity):
     @property
     def instrument(
         self,
-    ) -> Union[BinarySensor, DoorLock, Position, Sensor, Switch, TrunkLock, Number, Instrument]:
+    ) -> BinarySensor | DoorLock | Position | Sensor | Switch | TrunkLock | Number | Instrument:
         """Return corresponding instrument."""
         return self.data.instrument(self.vin, self.component, self.attribute)
 
     @property
-    def icon(self) -> Optional[str]:
+    def icon(self) -> str | None:
         """Return the icon."""
         if self.instrument.attr in ["battery_level", "charging"]:
             return icon_for_battery_level(battery_level=self.instrument.state, charging=self.vehicle.charging)
@@ -391,7 +390,7 @@ class VolkswagenEntity(CoordinatorEntity, RestoreEntity):
         return attributes
 
     @property
-    def device_info(self) -> dict[str, Any]:
+    def device_info(self) -> dict[str, object]:
         """Return the device_info of the device."""
         return {
             "identifiers": {(DOMAIN, self.vin)},
@@ -426,7 +425,7 @@ class VolkswagenCoordinator(DataUpdateCoordinator):
         self.vin = entry.data[CONF_VEHICLE].upper()
         self.entry = entry
         self.platforms: list[str] = []
-        self.report_last_updated: Optional[datetime] = None
+        self.report_last_updated: datetime | None = None
         self.connection = Connection(
             session=async_get_clientsession(hass),
             username=self.entry.data[CONF_USERNAME],
@@ -492,7 +491,7 @@ class VolkswagenCoordinator(DataUpdateCoordinator):
 
         return True
 
-    async def update(self) -> Optional[Vehicle]:
+    async def update(self) -> Vehicle | None:
         """Update status from Volkswagen WeConnect."""
         # update vehicles
         if not await self.connection.update():

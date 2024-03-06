@@ -1,11 +1,9 @@
 """Support for Volkswagen WeConnect Platform."""
 
 import logging
-from typing import Any, Union
 
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity import ToggleEntity, EntityCategory
-from volkswagencarnet.vw_dashboard import Instrument
 
 from . import VolkswagenEntity, VolkswagenData
 from .const import DATA, DATA_KEY, DOMAIN, UPDATE_CALLBACK
@@ -20,36 +18,17 @@ async def async_setup_platform(hass: HomeAssistant, config, async_add_entities, 
     async_add_entities([VolkswagenSwitch(hass.data[DATA_KEY], *discovery_info)])
 
 
-def _add_device(data: VolkswagenData, vin: str, instrument: Instrument, callback):
-    """Decide which type of switch is needed."""
-    if instrument.attr.startswith("departure_timer"):
-        return VolkswagenDepartureTimer(
-            data=data,
-            vin=vin,
-            component=instrument.component,
-            attribute=instrument.attr,
-            callback=callback,
-        )
-    else:
-        return VolkswagenSwitch(
-            data=data,
-            vin=vin,
-            component=instrument.component,
-            attribute=instrument.attr,
-            callback=callback,
-        )
-
-
 async def async_setup_entry(hass: HomeAssistant, entry, async_add_devices):
     """Add configured devices for this entity."""
     data = hass.data[DOMAIN][entry.entry_id][DATA]
     coordinator = data.coordinator
     if coordinator.data is not None:
         async_add_devices(
-            _add_device(
+            VolkswagenSwitch(
                 data=data,
                 vin=coordinator.vin,
-                instrument=instrument,
+                component=instrument.component,
+                attribute=instrument.attr,
                 callback=hass.data[DOMAIN][entry.entry_id][UPDATE_CALLBACK],
             )
             for instrument in (instrument for instrument in data.instruments if instrument.component == "switch")
@@ -71,11 +50,11 @@ class VolkswagenSwitch(VolkswagenEntity, ToggleEntity):
         """Initialize switch."""
         super().__init__(data, vin, component, attribute, callback)
 
-    def turn_on(self, **kwargs: Any) -> None:
+    def turn_on(self, **kwargs: object) -> None:
         """Don't support sync methods."""
         raise NotImplementedError
 
-    def turn_off(self, **kwargs: Any) -> None:
+    def turn_off(self, **kwargs: object) -> None:
         """Don't support sync methods."""
         raise NotImplementedError
 
@@ -98,7 +77,7 @@ class VolkswagenSwitch(VolkswagenEntity, ToggleEntity):
         self.notify_updated()
 
     @property
-    def entity_category(self) -> Union[EntityCategory, str, None]:
+    def entity_category(self) -> EntityCategory | str | None:
         """Return entity category."""
         if self.instrument.entity_type == "diag":
             return EntityCategory.DIAGNOSTIC
@@ -111,49 +90,9 @@ class VolkswagenSwitch(VolkswagenEntity, ToggleEntity):
         return self.instrument.assumed_state
 
     @property
-    def extra_state_attributes(self) -> dict[str, Any]:
+    def extra_state_attributes(self) -> dict[str, object]:
         """Return extra state attributes."""
         return {
             **super().extra_state_attributes,
             **(self.instrument.attributes if self.instrument is not None else {}),
         }
-
-
-class VolkswagenDepartureTimer(VolkswagenSwitch):
-    """Departure timer class."""
-
-    def turn_on(self, **kwargs: Any) -> None:
-        """Enable timer."""
-        super().turn_on()
-
-    def turn_off(self, **kwargs: Any) -> None:
-        """Disable timer."""
-        super().turn_off()
-
-    def __init__(
-        self,
-        data: VolkswagenData,
-        vin: str,
-        component: str,
-        attribute: str,
-        callback=None,
-    ):
-        """Initialize class."""
-        super().__init__(data, vin, component, attribute, callback)
-        _LOGGER.debug("Departure Timer initialized")
-
-    @property
-    def device_class(self) -> str:
-        """Return custom device class."""
-        return "departure_timer"
-
-    @property
-    def entity_category(self) -> Union[EntityCategory, str, None]:
-        """Return entity category."""
-        return EntityCategory.CONFIG
-
-    @property
-    def extra_state_attributes(self) -> dict[str, Any]:
-        """Return extra state attributes."""
-        attribs = super(VolkswagenSwitch, self).extra_state_attributes
-        return attribs
