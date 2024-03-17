@@ -398,6 +398,7 @@ class VolkswagenEntity(CoordinatorEntity, RestoreEntity):
             "manufacturer": "Volkswagen",
             "model": self.vehicle.model,
             "sw_version": self.vehicle.model_year,
+            "serial_number": self.vin,
         }
 
     @property
