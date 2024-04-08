@@ -18,19 +18,22 @@ Please check if the bug is already reported and add more information there inste
 -->
 
 ## Before you post a new issue - you must first check the following (and check the boxes with an "X" below)
-- [ ] 1.) Can you login using the smartphone app We Connect (not We Connect ID or We Connect GO) and interact with your car?
+- [ ] 1.) Can you login using the smartphone app Volkswagen/Volkswagen Connect and interact with your car?
 - [ ] 2.) Please make sure that you can login into https://vwid.vwgroup.io/ and make sure that any "Terms and Conditions" are all checked
 - [ ] 3.) I do not have MFA enabled.
 
 ## Environment
-
+<!--
+  MANDATORY: Fill in the following details.
+  Issues lacking those details may be subject to closure without prior notice.
+-->
 - Volkswagencarnet release with the issue:
 - Last working homeassistant-volkswagencarnet release (if known):
 - Home Assistant Core release with the issue:
 - Operating environment (Home Assistant OS/Supervised/Container/Core/venv):
 - Car model and year:
 - Country where the car was bought:
-- Valid We Connect subscription:
+- Valid VW Connect subscription:
 - Have you verified that the We Connect service works via VW´s portal?:
 
 ## Describe the bug
@@ -69,9 +72,15 @@ Please check if the bug is already reported and add more information there inste
 ## Debug information - all JSON responses from logfile
 <!--
   Turn on debug and post the results here: Paste in you link with all debug information, save to text file or use https://www.pastebin.org/
+
+  For instructions on how to enable debug logging in Home Assistant, please refer to this wiki page:
+  https://github.com/robinostlund/homeassistant-volkswagencarnet/wiki/Enabling-Debug-Logging-in-Home-Assistant
 -->
 
 ## Additional context
 <!--
   Add any other context about the problem here.
 -->
+
+## Note
+Issues lacking sufficient details or context may be subject to closure without prior notice. Detailed bug reports are essential for effective issue resolution. Thank you for your cooperation.
