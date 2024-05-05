@@ -2,7 +2,7 @@
 ![Version](https://img.shields.io/github/v/release/robinostlund/homeassistant-volkswagencarnet)
 ![PyPi](https://img.shields.io/pypi/v/volkswagencarnet?label=latest%20pypi)
 ![Downloads](https://img.shields.io/github/downloads/robinostlund/homeassistant-volkswagencarnet/total)
-![CodeStyle](https://img.shields.io/badge/code%20style-black-black)
+![CodeStyle](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json)
 ![Known Vulnerabilities](https://snyk.io/test/github/robinostlund/homeassistant-volkswagencarnet/badge.svg)
 [![CodeQL](https://github.com/robinostlund/homeassistant-volkswagencarnet/actions/workflows/codeql-analysis.yml/badge.svg)](https://github.com/robinostlund/homeassistant-volkswagencarnet/actions/workflows/codeql-analysis.yml)
 
