@@ -58,8 +58,6 @@
         "title": "Opções para Volkswagen Connect",
         "description": "Configurar intervalos de atualização",
         "data": {
-          "report_request": "Ativar solicitação de relatório automático",
-          "report_scan_interval": "Intervalo de atualização da solicitação de relatório (dias)",
           "scan_interval": "Intervalo de atualização dos sensores (minutos)",
           "region": "Região (o país onde o carro foi vendido)",
           "debug": "Habilitar logs de depuração completos da API (requer log de depuração habilitado nas configurações)",

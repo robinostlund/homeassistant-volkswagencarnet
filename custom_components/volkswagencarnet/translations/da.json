@@ -58,8 +58,6 @@
         "title": "Volkswagen Connect indstillinger",
         "description": "Konfigurer opdateringsinterval",
         "data": {
-          "report_request": "Slå automatisk rapportforespørgsel til",
-          "report_scan_interval": "Rapport forespørgselsinterval (dage)",
           "scan_interval": "Sensor opdateringsinterval (minutter)",
           "region": "Region (Landet hvor bilen blev solgt)",
           "debug": "Tillad fuld fejlfindingslog fra API (kræver at fejlfindingslogføring er slået til)",

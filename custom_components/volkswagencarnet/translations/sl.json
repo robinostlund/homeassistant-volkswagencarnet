@@ -58,8 +58,6 @@
         "title": "Možnosti za Volkswagen Connect",
         "description": "Nastavite intervale posodobitev",
         "data": {
-          "report_request": "Omogoči samodejno zahtevo za poročilo",
-          "report_scan_interval": "Interval posodobitve zahteve za poročilo (dnevi)",
           "scan_interval": "Interval posodobitve senzorjev (minute)",
           "region": "Regija (Država, kjer je bil avto prodan)",
           "debug": "Omogoči celotne dnevnike odpravljanja težav iz API (zahteva omogočeno beleženje odpravljanja težav v konfiguraciji)",

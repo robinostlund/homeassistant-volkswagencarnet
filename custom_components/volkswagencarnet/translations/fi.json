@@ -58,8 +58,6 @@
         "title": "Volkswagen Connect Asetukset",
         "description": "Aseta päivitysväli",
         "data": {
-          "report_request": "Ota automaattinen raporttipäivitys käyttöön",
-          "report_scan_interval": "Raportointiväli (päivissä)",
           "scan_interval": "Anturidatan päivitysväli (minuuteissa)",
           "region": "Maa jossa ajoneuvo myytiin (ISO 3155-1 / Alpha-2)",
           "debug": "Ota täysi API:n debuglogitus käyttöön (debug-taso pitää olla asetettu)",

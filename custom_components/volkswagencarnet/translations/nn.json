@@ -58,8 +58,6 @@
         "title": "Val for Volkswagen Connect",
         "description": "Konfigurer oppdateringsintervall",
         "data": {
-          "report_request": "Aktiver automatisk rapportforespurnad",
-          "report_scan_interval": "Oppdateringsintervall for rapportforespurnad (dagar)",
           "scan_interval": "Oppdateringsintervall for sensorar (minutt)",
           "region": "Region (landet der bilen vart solgt)",
           "debug": "Skru på debug logger frå API (krev at debug logging er skrudd på i konfigurasjonen",

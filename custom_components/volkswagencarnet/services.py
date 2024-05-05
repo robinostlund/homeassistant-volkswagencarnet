@@ -1,7 +1,9 @@
 """Services exposed to Home Assistant."""
 
 import logging
+
 import voluptuous as vol
+
 from homeassistant.core import HomeAssistant, ServiceCall
 from homeassistant.helpers import config_validation as cv
 
@@ -12,7 +14,9 @@ _LOGGER = logging.getLogger(__name__)
 SERVICE_SET_CHARGER_MAX_CURRENT_SCHEMA = vol.Schema(
     {
         vol.Optional("device_id"): vol.All(cv.string, vol.Length(min=32, max=32)),
-        vol.Optional("max_current"): vol.In([5, 10, 13, 16, 32, "5", "10", "13", "16", "32", "reduced", "max"]),
+        vol.Optional("max_current"): vol.In(
+            [5, 10, 13, 16, 32, "5", "10", "13", "16", "32", "reduced", "max"]
+        ),
     },
     extra=vol.ALLOW_EXTRA,  # FIXME, should not be needed
 )
@@ -21,13 +25,15 @@ SERVICE_SET_CHARGER_MAX_CURRENT_SCHEMA = vol.Schema(
 class ChargerService:
     """Charger services class."""
 
-    def __init__(self, hass: HomeAssistant):
+    def __init__(self, hass: HomeAssistant) -> None:
         """Init."""
         self.hass: HomeAssistant = hass
 
     async def set_charger_max_current(self, service_call: ServiceCall) -> bool:
         """Service for setting max charging current."""
-        c = await get_coordinator_by_device_id(self.hass, service_call.data.get("device_id"))
+        c = await get_coordinator_by_device_id(
+            self.hass, service_call.data.get("device_id")
+        )
         v = get_vehicle(c)
 
         # parse service call

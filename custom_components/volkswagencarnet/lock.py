@@ -1,16 +1,19 @@
-"""Lock support for Volkswagen WeConnect Platform."""
+"""Lock support for Volkswagen Connect Platform."""
 
 import logging
 
 from homeassistant.components.lock import LockEntity
+from homeassistant.core import HomeAssistant
 
 from . import VolkswagenEntity
-from .const import DATA_KEY, DATA, DOMAIN
+from .const import DATA, DATA_KEY, DOMAIN
 
 _LOGGER = logging.getLogger(__name__)
 
 
-async def async_setup_platform(hass, config, async_add_entities, discovery_info=None):
+async def async_setup_platform(
+    hass: HomeAssistant, config, async_add_entities, discovery_info=None
+):
     """Perform platform setup."""
     if discovery_info is None:
         return
@@ -18,7 +21,7 @@ async def async_setup_platform(hass, config, async_add_entities, discovery_info=
     async_add_entities([VolkswagenLock(hass.data[DATA_KEY], *discovery_info)])
 
 
-async def async_setup_entry(hass, entry, async_add_devices):
+async def async_setup_entry(hass: HomeAssistant, entry, async_add_devices):
     """Perform entity setup."""
     data = hass.data[DOMAIN][entry.entry_id][DATA]
     coordinator = data.coordinator
@@ -30,14 +33,18 @@ async def async_setup_entry(hass, entry, async_add_devices):
                 component=instrument.component,
                 attribute=instrument.attr,
             )
-            for instrument in (instrument for instrument in data.instruments if instrument.component == "lock")
+            for instrument in (
+                instrument
+                for instrument in data.instruments
+                if instrument.component == "lock"
+            )
         )
 
     return True
 
 
 class VolkswagenLock(VolkswagenEntity, LockEntity):
-    """Represents a Volkswagen WeConnect Lock."""
+    """Represents a Volkswagen Connect Lock."""
 
     def lock(self, **kwargs: object) -> None:
         """Not implemented."""
@@ -54,7 +61,7 @@ class VolkswagenLock(VolkswagenEntity, LockEntity):
     @property
     def is_locked(self):
         """Return true if lock is locked."""
-        _LOGGER.debug("Getting state of %s" % self.instrument.attr)
+        _LOGGER.debug("Getting state of %s", self.instrument.attr)
         return self.instrument.is_locked
 
     async def async_lock(self, **kwargs):

@@ -58,8 +58,6 @@
         "title": "Alternativer for Volkswagen Connect",
         "description": "Konfigurer oppdateringsintervaller",
         "data": {
-          "report_request": "Aktiver automatisk rapportforespørsel",
-          "report_scan_interval": "Oppdateringsintervall for rapportforespørsel (dager)",
           "scan_interval": "Sensorenes oppdateringsintervall (minutter)",
           "region": "Region (landet der bilen ble solgt)",
           "debug": "Aktiver fullstendige feilsøkingslogger fra API (krever feilsøkingslogging aktivert i config)",

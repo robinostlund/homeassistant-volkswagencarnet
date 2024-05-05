@@ -1,30 +1,35 @@
-"""BinarySensor support for Volkswagen We Connect integration."""
+"""BinarySensor support for Volkswagen Connect integration."""
 
 import logging
 
 from homeassistant.components.binary_sensor import (
     DEVICE_CLASSES,
-    BinarySensorEntity,
     BinarySensorDeviceClass,
+    BinarySensorEntity,
 )
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity import EntityCategory
 
 from . import VolkswagenEntity
-from .const import DATA_KEY, DATA, DOMAIN, UPDATE_CALLBACK
+from .const import DATA, DATA_KEY, DOMAIN, UPDATE_CALLBACK
 
 _LOGGER = logging.getLogger(__name__)
 
 
-async def async_setup_platform(hass: HomeAssistant, config: ConfigEntry, async_add_entities, discovery_info=None):
+async def async_setup_platform(
+    hass: HomeAssistant,
+    config: ConfigEntry,
+    async_add_entities,
+    discovery_info=None,
+):
     """Set up the Volkswagen binary sensors platform."""
     if discovery_info is None:
         return
     async_add_entities([VolkswagenBinarySensor(hass.data[DATA_KEY], *discovery_info)])
 
 
-async def async_setup_entry(hass, entry, async_add_devices):
+async def async_setup_entry(hass: HomeAssistant, entry, async_add_devices):
     """Set up the Volkswagen binary sensor."""
     data = hass.data[DOMAIN][entry.entry_id][DATA]
     coordinator = data.coordinator
@@ -37,7 +42,11 @@ async def async_setup_entry(hass, entry, async_add_devices):
                 attribute=instrument.attr,
                 callback=hass.data[DOMAIN][entry.entry_id][UPDATE_CALLBACK],
             )
-            for instrument in (instrument for instrument in data.instruments if instrument.component == "binary_sensor")
+            for instrument in (
+                instrument
+                for instrument in data.instruments
+                if instrument.component == "binary_sensor"
+            )
         )
 
     return True
@@ -49,7 +58,7 @@ class VolkswagenBinarySensor(VolkswagenEntity, BinarySensorEntity):
     @property
     def is_on(self):
         """Return True if the binary sensor is on."""
-        _LOGGER.debug("Getting state of %s" % self.instrument.attr)
+        _LOGGER.debug("Getting state of %s", self.instrument.attr)
         return self.instrument.is_on
 
     @property
@@ -57,7 +66,7 @@ class VolkswagenBinarySensor(VolkswagenEntity, BinarySensorEntity):
         """Return the device class."""
         if self.instrument.device_class in DEVICE_CLASSES:
             return self.instrument.device_class
-        _LOGGER.warning(f"Unknown device class {self.instrument.device_class}")
+        _LOGGER.warning("Unknown device class %s", self.instrument.device_class)
         return None
 
     @property

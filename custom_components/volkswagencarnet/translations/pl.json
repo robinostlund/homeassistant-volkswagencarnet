@@ -58,8 +58,6 @@
         "title": "Opcje Volkswagen Connect",
         "description": "Skonfiguruj częstotliwość aktualizacji",
         "data": {
-          "report_request": "Włącz automatyczne żądanie raportu",
-          "report_scan_interval": "Częstotliwość aktualizacji żądania raportu (dni)",
           "scan_interval": "Częstotliwość aktualizacji czujników (minuty)",
           "region": "Region (kraj, w którym samochód został sprzedany)",
           "debug": "Włącz pełne dzienniki debugowania z interfejsu API (wymaga włączenia rejestrowania debugowania w konfiguracji)",

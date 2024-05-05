@@ -16,8 +16,6 @@ CONF_IMPERIAL_UNITS = "imperial_units"
 CONF_NO_CONVERSION = "no_conversion"
 CONF_CONVERT = "convert"
 CONF_VEHICLE = "vehicle"
-CONF_REPORT_REQUEST = "report_request"
-CONF_REPORT_SCAN_INTERVAL = "report_scan_interval"
 CONF_DEBUG = "debug"
 CONF_AVAILABLE_RESOURCES = "available_resources"
 
@@ -29,7 +27,6 @@ SIGNAL_STATE_UPDATED = f"{DOMAIN}.updated"
 
 MIN_UPDATE_INTERVAL = timedelta(minutes=1)
 DEFAULT_UPDATE_INTERVAL = 5
-DEFAULT_REPORT_UPDATE_INTERVAL = 1
 
 CONVERT_DICT = {
     CONF_NO_CONVERSION: "No conversion",

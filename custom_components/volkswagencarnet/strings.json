@@ -58,8 +58,6 @@
         "title": "Options for Volkswagen Connect",
         "description": "Configure update intervals",
         "data": {
-          "report_request": "Enable automatic report request",
-          "report_scan_interval": "Report request update interval (days)",
           "scan_interval": "Sensors update interval (minutes)",
           "region": "Region (The country where the car was sold)",
           "debug": "Enable full debug logs from API (requires debug logging enabled in config)",
