@@ -64,7 +64,9 @@ async def test_flow_user_init_auth_fails(m_connection, hass: HomeAssistant):
         user_input=DUMMY_CONFIG,
     )
 
-    flow: VolkswagenCarnetConfigFlow = hass.config_entries.flow._progress[result["flow_id"]]
+    flow: VolkswagenCarnetConfigFlow = hass.config_entries.flow._progress[
+        result["flow_id"]
+    ]
     with patch.object(flow._connection, "doLogin") as aaaaa:
         aaaaa.side_effect = Exception
 
