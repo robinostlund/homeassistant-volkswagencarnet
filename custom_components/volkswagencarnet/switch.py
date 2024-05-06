@@ -52,7 +52,7 @@ class VolkswagenSwitch(VolkswagenEntity, ToggleEntity):
         vin: str,
         component: str,
         attribute: str,
-        callback: None,
+        callback=None,
     ) -> None:
         """Initialize switch."""
         super().__init__(data, vin, component, attribute, callback)
