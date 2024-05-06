@@ -280,7 +280,7 @@ class VolkswagenEntity(CoordinatorEntity, RestoreEntity):
         vin: str,
         component: str,
         attribute: str,
-        callback: None,  # pylint: disable=redefined-outer-name
+        callback=None,  # pylint: disable=redefined-outer-name
     ) -> None:
         """Initialize the entity."""
         # Pass coordinator to CoordinatorEntity.
