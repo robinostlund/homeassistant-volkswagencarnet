@@ -194,7 +194,7 @@ class VolkswagenCarnetConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         self.entry = entry
         return await self.async_step_reauth_confirm()
 
-    async def async_step_reauth_confirm(self, user_input: dict | None) -> dict:
+    async def async_step_reauth_confirm(self, user_input=None) -> dict:
         """Handle re-authentication with Volkswagen Connect."""
         errors: dict = {}
 
