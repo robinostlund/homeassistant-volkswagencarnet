@@ -285,20 +285,9 @@ These templates create a new sensor with kilometers converted to miles. Add to y
 ```
 
 ## Enable debug logging
-```yaml
-logger:
-    default: info
-    logs:
-        volkswagencarnet: debug
-        dashboard: debug
-        custom_components.volkswagencarnet: debug
-        custom_components.volkswagencarnet.climate: debug
-        custom_components.volkswagencarnet.lock: debug
-        custom_components.volkswagencarnet.device_tracker: debug
-        custom_components.volkswagencarnet.switch: debug
-        custom_components.volkswagencarnet.binary_sensor: debug
-        custom_components.volkswagencarnet.sensor: debug
- ```
+
+Check out this Wiki page:
+https://github.com/robinostlund/homeassistant-volkswagencarnet/wiki/Enabling-Debug-Logging-in-Home-Assistant
 
 ## Lovelace Card
 
