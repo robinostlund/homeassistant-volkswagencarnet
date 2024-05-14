@@ -1,7 +1,7 @@
 
 [![buy me a coffee](https://www.buymeacoffee.com/assets/img/custom_images/yellow_img.png)](https://www.buymeacoffee.com/robinostlund)
 
-This platform plugin allows you to see some information from volkswagen carnet related to your car that has a valid carnet subscription.
+This integration allows you to interact with the Volkswagen Connect service (your car) (EU ONLY).
 
 {%- if selected_tag == "master" %}
 ## This is a development version!
