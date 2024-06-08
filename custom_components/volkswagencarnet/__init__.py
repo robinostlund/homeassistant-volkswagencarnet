@@ -33,6 +33,7 @@ from volkswagencarnet.vw_dashboard import (
     Instrument,
     Number,
     Position,
+    Select,
     Sensor,
     Switch,
     TrunkLock,
@@ -55,33 +56,17 @@ from .const import (
     DEFAULT_DEBUG,
     DEFAULT_UPDATE_INTERVAL,
     DOMAIN,
-    SERVICE_SET_CHARGER_MAX_CURRENT,
     SIGNAL_STATE_UPDATED,
     UNDO_UPDATE_LISTENER,
     UPDATE_CALLBACK,
 )
-from .services import SERVICE_SET_CHARGER_MAX_CURRENT_SCHEMA, ChargerService
 from .util import get_convert_conf
 
 _LOGGER = logging.getLogger(__name__)
 
 
-def unload_services(hass: HomeAssistant):
-    """Unload the services from HA."""
-    hass.services.async_remove(DOMAIN, SERVICE_SET_CHARGER_MAX_CURRENT)
-
-
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     """Perform Volkswagen Connect component setup."""
-
-    def register_services():
-        cs = ChargerService(hass)
-        hass.services.async_register(
-            domain=DOMAIN,
-            service=SERVICE_SET_CHARGER_MAX_CURRENT,
-            service_func=cs.set_charger_max_current,
-            schema=SERVICE_SET_CHARGER_MAX_CURRENT_SCHEMA,
-        )
 
     scan_interval_conf = entry.options.get(
         CONF_SCAN_INTERVAL, entry.data.get(CONF_SCAN_INTERVAL, DEFAULT_UPDATE_INTERVAL)
@@ -139,8 +124,6 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
             hass.config_entries.async_forward_entry_setup(entry, component)
         )
 
-    register_services()
-
     return True
 
 
@@ -191,8 +174,6 @@ async def async_setup(hass: HomeAssistant, config: dict) -> bool:
 
 async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry):
     """Unload a config entry."""
-    _LOGGER.debug("Removing services")
-    unload_services(hass)
     _LOGGER.debug("Removing update listener")
     hass.data[DOMAIN][entry.entry_id][UNDO_UPDATE_LISTENER]()
 
@@ -264,8 +245,7 @@ class VolkswagenData:
 
         if vehicle.vin:
             return vehicle.vin
-        else:
-            return ""
+        return ""
 
 
 class VolkswagenEntity(CoordinatorEntity, RestoreEntity):
@@ -365,6 +345,7 @@ class VolkswagenEntity(CoordinatorEntity, RestoreEntity):
         BinarySensor
         | DoorLock
         | Position
+        | Select
         | Sensor
         | Switch
         | TrunkLock

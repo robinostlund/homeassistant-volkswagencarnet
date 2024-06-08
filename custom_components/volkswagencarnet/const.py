@@ -39,8 +39,7 @@ COMPONENTS = {
     "binary_sensor": "binary_sensor",
     "lock": "lock",
     "device_tracker": "device_tracker",
+    "select": "select",
     "switch": "switch",
     "number": "number",
 }
-
-SERVICE_SET_CHARGER_MAX_CURRENT = "set_charger_max_current"
