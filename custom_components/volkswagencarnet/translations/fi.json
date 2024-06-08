@@ -1,10 +1,10 @@
 {
-  "title": "Volkswagen We Connect",
+  "title": "Volkswagen Connect",
   "config": {
     "step": {
       "user": {
-        "title": "We Connect Asetukset",
-        "description": "Täydennä We Connect tiedot\n\nS-PIN vaaditaan joihinkin toimintoihin, esim. lukituksen hallintaan ja polttomoottorin lämmityksen käynnistämiseen",
+        "title": "Volkswagen Connect Asetukset",
+        "description": "Täydennä Volkswagen Connect tiedot\n\nS-PIN vaaditaan joihinkin toimintoihin, esim. lukituksen hallintaan ja polttomoottorin lämmityksen käynnistämiseen",
         "data": {
           "username": "Sähköposti",
           "password": "Salasana",
@@ -32,7 +32,7 @@
       },
       "reauth_confirm": {
         "data": {
-          "description": "Kirjausu uudelleen WeConnectiin. Varmista että olet hyväksynyt mahdolliset uudet WeConnect portaalin käyttöehdot (https://www.portal.volkswagen-we.com/) ensin. ",
+          "description": "Kirjausu uudelleen Volkswagen Connectiin. Varmista että olet hyväksynyt mahdolliset uudet Volkswagen Connect portaalin käyttöehdot (https://www.myvolkswagen.net/) ensin. ",
           "username": "Sähköposti",
           "password": "Salasana"
         }
@@ -43,23 +43,21 @@
       "reauth_successful": "Uudelleenautentikointi onnistui"
     },
     "error": {
-      "cannot_connect": "Kirjautuminen Volkswagen We Connect-palveluun epäonnistui, tarkista käyttäjätiedot sekä varmista että palvelu on käytössä ja toimii",
-      "cannot_update": "Tietojen päivitys Volkswagen We Connect-palvelusta epäonnistui",
+      "cannot_connect": "Kirjautuminen Volkswagen Connect-palveluun epäonnistui, tarkista käyttäjätiedot sekä varmista että palvelu on käytössä ja toimii",
+      "cannot_update": "Tietojen päivitys Volkswagen Connect-palvelusta epäonnistui",
       "unknown": "[%key:common::config_flow::error::unknown%]"
     },
     "progress": {
-      "task_login": "Kirjaudutaan We Connect-palveluun",
+      "task_login": "Kirjaudutaan Volkswagen Connect-palveluun",
       "task_update": "Haetaan ajoneuvoja"
     }
   },
   "options": {
     "step": {
       "user": {
-        "title": "We Connect Asetukset",
+        "title": "Volkswagen Connect Asetukset",
         "description": "Aseta päivitysväli",
         "data": {
-          "report_request": "Ota automaattinen raporttipäivitys käyttöön",
-          "report_scan_interval": "Raportointiväli (päivissä)",
           "scan_interval": "Anturidatan päivitysväli (minuuteissa)",
           "region": "Maa jossa ajoneuvo myytiin (ISO 3155-1 / Alpha-2)",
           "debug": "Ota täysi API:n debuglogitus käyttöön (debug-taso pitää olla asetettu)",

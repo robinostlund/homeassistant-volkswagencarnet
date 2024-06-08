@@ -2,25 +2,23 @@
 ![Version](https://img.shields.io/github/v/release/robinostlund/homeassistant-volkswagencarnet)
 ![PyPi](https://img.shields.io/pypi/v/volkswagencarnet?label=latest%20pypi)
 ![Downloads](https://img.shields.io/github/downloads/robinostlund/homeassistant-volkswagencarnet/total)
-![CodeStyle](https://img.shields.io/badge/code%20style-black-black)
+![CodeStyle](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json)
 ![Known Vulnerabilities](https://snyk.io/test/github/robinostlund/homeassistant-volkswagencarnet/badge.svg)
 [![CodeQL](https://github.com/robinostlund/homeassistant-volkswagencarnet/actions/workflows/codeql-analysis.yml/badge.svg)](https://github.com/robinostlund/homeassistant-volkswagencarnet/actions/workflows/codeql-analysis.yml)
 
 
 
-# Volkswagen We Connect - An Home Assistant custom component to interact with the We Connect service
+# Volkswagen Connect - An Home Assistant custom component to interact with the VW Connect service. (EU ONLY)
 
 [![buy me a coffee](https://www.buymeacoffee.com/assets/img/custom_images/yellow_img.png)](https://www.buymeacoffee.com/robinostlund)
 
 ## Description
 
-Welcome to Volkswagen We Connect custom component designed for [Home Assistant](https://www.home-assistant.io) with the capability to interact with the Volkswagen Connect service (your car).
+Welcome to Volkswagen Connect custom component designed for [Home Assistant](https://www.home-assistant.io) with the capability to interact with the Volkswagen Connect service (your car).
 
 This custom component supports the **Volkswagen Connect cars** such as the Passat, Golf, e-Golf, Tiguan, ID etc. It requires you to have an active and working VW online subscription connected to your car. The new electric vehicles such as the ID series are supported as well.
 
 Most of the functionality found the "Volkswagen Connect app" should be available via this integration, this includes options such as auxiliary heater control.
-
-Note: Some features included in Volkswagen Connect 2023 and newer are not fully tested. This custom component should work with any models such as Golf/Passat 8.5/Tiguan etc. But please bear with me and report any fault or error as an issue.
 
 Please note that there has only been reports of success with this component for cars sold (and based) in the EU. Please feel free to contribue to make this component work in the US as well, we do not have access to any Volkswagen Connect accounts to verify at this stage.
 
@@ -36,7 +34,7 @@ Please, before posting an issue make sure that VW´s Connect service works for y
 * Add the component again as per below (install+configuration)
 
 ### Install with HACS (recommended)
-Do you you have [HACS](https://community.home-assistant.io/t/custom-component-hacs) installed? Just search for Volkswagen We Connect and install it direct from HACS. HACS will keep track of updates and you can easly upgrade this component to latest version.
+Do you you have [HACS](https://community.home-assistant.io/t/custom-component-hacs) installed? Just search for Volkswagen Connect and install it direct from HACS. HACS will keep track of updates and you can easly upgrade this component to latest version.
 
 ### Install manually
 Make sure you have an account on Volkswagen Connect.
@@ -48,12 +46,12 @@ Note that only the packaged releases (zip file) have the dependencies configured
 
 ## Configuration
 * Restart Home Assistant
-* Add and configure the component via the UI: Configuration > Integrations > search for "Volkswagen We Connect" and follow the wizard to configure (use your Volkswagen Connect credentials)
+* Add and configure the component via the UI: Configuration > Integrations > search for "Volkswagen Connect" and follow the wizard to configure (use your Volkswagen Connect credentials)
 * All available features of your car should be added automatically after you have selected the VIN
 
 ### Configuration flow settings
 * Name your car - Enter a custom name, defaults to VIN (Optional)
-* Username/Password - We Connect (Required)
+* Username/Password - Volkswagen Connect (Required)
 * Region - The country where the car was sold (Required)
 * Mutable - If enabled you can interact with the car, if disabled only data from the car will be presented (Optional)
 * S-PIN - Required for some specific options such as lock/unlock (Optional)
@@ -287,20 +285,9 @@ These templates create a new sensor with kilometers converted to miles. Add to y
 ```
 
 ## Enable debug logging
-```yaml
-logger:
-    default: info
-    logs:
-        volkswagencarnet: debug
-        dashboard: debug
-        custom_components.volkswagencarnet: debug
-        custom_components.volkswagencarnet.climate: debug
-        custom_components.volkswagencarnet.lock: debug
-        custom_components.volkswagencarnet.device_tracker: debug
-        custom_components.volkswagencarnet.switch: debug
-        custom_components.volkswagencarnet.binary_sensor: debug
-        custom_components.volkswagencarnet.sensor: debug
- ```
+
+Check out this Wiki page:
+https://github.com/robinostlund/homeassistant-volkswagencarnet/wiki/Enabling-Debug-Logging-in-Home-Assistant
 
 ## Lovelace Card
 

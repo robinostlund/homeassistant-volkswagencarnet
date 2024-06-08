@@ -1,78 +1,76 @@
 {
-    "title": "Volkswagen We Connect",
-    "config": {
-      "step": {
-        "user": {
-          "title": "We Connect konfigurasjon",
-          "description": "Fyll inn We Connect informasion\n\nS-PIN er nødvendig for enkelte valg som å låse opp/igjen, og starte/stoppe oppvarming med drivstoff",
-          "data": {
-            "username": "E-post",
-            "password": "Passord",
-            "mutable": "Fjern hake for å bare lese verdier. Hak av dersom du vil sende kommandoer til bilen",
-            "region": "Landkode for landet der bilen ble solgt (ISO 3155-1 / Alpha-2)",
-            "spin": "S-PIN",
-            "name": "Gi bilen et kallenavn (Standard er VIN number)",
-            "debug": "Aktiver full debug-logg fra API (krever feilsøkingslogging aktivert i config)",
-            "convert": "Velg om du vil gjøre noen avstandsenhetskonverteringer"
-          }
-        },
-        "select_vehicle": {
-          "title": "Kjøretøy",
-          "description": "Følgende kjøretøy ble funnet. Velg kjøretøyet du ønsker å overvåke",
-          "data": {
-            "vehicle": "VIN nummer"
-          }
-        },
-        "select_instruments": {
-          "title": "Instrumenter",
-          "description": "Velg instrumenter som skal overvåkes",
-          "data": {
-            "resources": "Velg ressurser som skal overvåkes"
-          }
-        },
-        "reauth_confirm": {
-          "data": {
-            "description": "Autentiser på nytt med WeConnect-kontoen din. Sørg for å godta enhver ny EULA i WeConnect-portalen (https://www.portal.volkswagen-we.com/) før du fortsetter.",
-            "username": "E-post",
-            "password": "Passord"
-          }
+  "title": "Volkswagen Connect",
+  "config": {
+    "step": {
+      "user": {
+        "title": "Volkswagen Connect konfigurasjon",
+        "description": "Fyll inn Volkswagen Connect informasion\n\nS-PIN er nødvendig for enkelte valg som å låse opp/igjen, og starte/stoppe oppvarming med drivstoff",
+        "data": {
+          "username": "E-post",
+          "password": "Passord",
+          "mutable": "Fjern hake for å bare lese verdier. Hak av dersom du vil sende kommandoer til bilen",
+          "region": "Landkode for landet der bilen ble solgt (ISO 3155-1 / Alpha-2)",
+          "spin": "S-PIN",
+          "name": "Gi bilen et kallenavn (Standard er VIN number)",
+          "debug": "Aktiver full debug-logg fra API (krever feilsøkingslogging aktivert i config)",
+          "convert": "Velg om du vil gjøre noen avstandsenhetskonverteringer"
         }
       },
-      "abort": {
-        "already_configured": "Bil med dette VIN-nummeret er allerede konfigurert",
-        "reauth_successful": "Re-autentisering var vellykket"
+      "select_vehicle": {
+        "title": "Kjøretøy",
+        "description": "Følgende kjøretøy ble funnet. Velg kjøretøyet du ønsker å overvåke",
+        "data": {
+          "vehicle": "VIN nummer"
+        }
       },
-      "error": {
-        "cannot_connect": "Kunne ikke logge på Volkswagen We Connect, sjekk legitimasjonen din og bekreft at tjenesten fungerer",
-        "cannot_update": "Kunne ikke søke etter oppdatering fra Volkswagen We Connect",
-        "unknown": "[%key:common::config_flow::error::unknown%]"
+      "select_instruments": {
+        "title": "Instrumenter",
+        "description": "Velg instrumenter som skal overvåkes",
+        "data": {
+          "resources": "Velg ressurser som skal overvåkes"
+        }
       },
-      "progress": {
-        "task_login": "Logger på We Connect",
-        "task_update": "Henter kjøretøy"
+      "reauth_confirm": {
+        "data": {
+          "description": "Autentiser på nytt med Volkswagen Connect-kontoen din. Sørg for å godta enhver ny EULA i Volkswagen Connect-portalen (https://www.myvolkswagen.net/) før du fortsetter.",
+          "username": "E-post",
+          "password": "Passord"
+        }
       }
     },
-    "options": {
-      "step": {
-        "user": {
-          "title": "Alternativer for We Connect",
-          "description": "Konfigurer oppdateringsintervaller",
-          "data": {
-            "report_request": "Aktiver automatisk rapportforespørsel",
-            "report_scan_interval": "Oppdateringsintervall for rapportforespørsel (dager)",
-            "scan_interval": "Sensorenes oppdateringsintervall (minutter)",
-            "region": "Region (landet der bilen ble solgt)",
-            "debug": "Aktiver fullstendige feilsøkingslogger fra API (krever feilsøkingslogging aktivert i config)",
-            "convert": "Velg om du vil gjøre noen avstandsenhetskonverteringer"
-          }
-        },
-        "select_instruments": {
-          "title": "Instrumenter",
-          "description": "Velg instrumenter som skal overvåkes",
-          "data": {
-            "resources": "Velg ressurser som skal overvåkes"
-          }
+    "abort": {
+      "already_configured": "Bil med dette VIN-nummeret er allerede konfigurert",
+      "reauth_successful": "Re-autentisering var vellykket"
+    },
+    "error": {
+      "cannot_connect": "Kunne ikke logge på Volkswagen Connect, sjekk legitimasjonen din og bekreft at tjenesten fungerer",
+      "cannot_update": "Kunne ikke søke etter oppdatering fra Volkswagen Connect",
+      "unknown": "[%key:common::config_flow::error::unknown%]"
+    },
+    "progress": {
+      "task_login": "Logger på Volkswagen Connect",
+      "task_update": "Henter kjøretøy"
+    }
+  },
+  "options": {
+    "step": {
+      "user": {
+        "title": "Alternativer for Volkswagen Connect",
+        "description": "Konfigurer oppdateringsintervaller",
+        "data": {
+          "scan_interval": "Sensorenes oppdateringsintervall (minutter)",
+          "region": "Region (landet der bilen ble solgt)",
+          "debug": "Aktiver fullstendige feilsøkingslogger fra API (krever feilsøkingslogging aktivert i config)",
+          "convert": "Velg om du vil gjøre noen avstandsenhetskonverteringer"
+        }
+      },
+      "select_instruments": {
+        "title": "Instrumenter",
+        "description": "Velg instrumenter som skal overvåkes",
+        "data": {
+          "resources": "Velg ressurser som skal overvåkes"
         }
       }
     }
   }
+}

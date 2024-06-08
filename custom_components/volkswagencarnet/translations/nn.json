@@ -1,10 +1,10 @@
 {
-  "title": "Volkswagen We Connect",
+  "title": "Volkswagen Connect",
   "config": {
     "step": {
       "user": {
-        "title": "We Connect konfigurasjon",
-        "description": "Fyll inn We Connect informasjon\n\nS-PIN er påkrevd for nokre val som for eksempel låsing/opplåsing og start/stopp av motorvarmar",
+        "title": "Volkswagen Connect konfigurasjon",
+        "description": "Fyll inn Volkswagen Connect informasjon\n\nS-PIN er påkrevd for nokre val som for eksempel låsing/opplåsing og start/stopp av motorvarmar",
         "data": {
           "username": "E-post",
           "password": "Passord",
@@ -32,7 +32,7 @@
       },
       "reauth_confirm": {
         "data": {
-          "description": "Autentiser deg på nytt med WeConnect-kontoen din. Pass på at du godtar einkvar ny EULA i WeConnect-portalen (https://www.portal.volkswagen-we.com/) før du går vidare.",
+          "description": "Autentiser deg på nytt med Volkswagen Connect-kontoen din. Pass på at du godtar einkvar ny EULA i Volkswagen Connect-portalen (https://www.myvolkswagen.net/) før du går vidare.",
           "username": "E-post",
           "password": "Passord"
         }
@@ -43,23 +43,21 @@
       "reauth_successful": "Re-autentisering var vellykka"
     },
     "error": {
-      "cannot_connect": "Klarte ikkje å logge inn på Volkswagen We Connect, sjekk brukarnamn/passord og verifiser at tenesta fungerer",
-      "cannot_update": "Klarte ikkje å hente oppdatering frå Volkswagen We Connect",
+      "cannot_connect": "Klarte ikkje å logge inn på Volkswagen Connect, sjekk brukarnamn/passord og verifiser at tenesta fungerer",
+      "cannot_update": "Klarte ikkje å hente oppdatering frå Volkswagen Connect",
       "unknown": "[%key:common::config_flow::error::unknown%]"
     },
     "progress": {
-      "task_login": "Loggar inn på We Connect",
+      "task_login": "Loggar inn på Volkswagen Connect",
       "task_update": "Hentar køyretøy"
     }
   },
   "options": {
     "step": {
       "user": {
-        "title": "Val for We Connect",
+        "title": "Val for Volkswagen Connect",
         "description": "Konfigurer oppdateringsintervall",
         "data": {
-          "report_request": "Aktiver automatisk rapportforespurnad",
-          "report_scan_interval": "Oppdateringsintervall for rapportforespurnad (dagar)",
           "scan_interval": "Oppdateringsintervall for sensorar (minutt)",
           "region": "Region (landet der bilen vart solgt)",
           "debug": "Skru på debug logger frå API (krev at debug logging er skrudd på i konfigurasjonen",

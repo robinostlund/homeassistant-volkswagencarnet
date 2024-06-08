@@ -1,10 +1,10 @@
 {
-  "title": "Volkswagen We Connect",
+  "title": "Volkswagen Connect",
   "config": {
     "step": {
       "user": {
-        "title": "We Connect konfiguration",
-        "description": "Udfyld We Connect detaljer\n\nS-PIN kræves for visse optioner som f.eks. lås/oplås samt start/stop af kabinevarmer",
+        "title": "Volkswagen Connect konfiguration",
+        "description": "Udfyld Volkswagen Connect detaljer\n\nS-PIN kræves for visse optioner som f.eks. lås/oplås samt start/stop af kabinevarmer",
         "data": {
           "username": "Email",
           "password": "Adgangskode",
@@ -32,7 +32,7 @@
       },
       "reauth_confirm": {
         "data": {
-          "description": "Log ind igen med din We Connect konto. Vær sikker på at acceptere nye EULA i We Connect portalen (https://www.portal.volkswagen-we.com/) før du fortsætter. ",
+          "description": "Log ind igen med din Volkswagen Connect konto. Vær sikker på at acceptere nye EULA i Volkswagen Connect portalen (https://www.myvolkswagen.net/) før du fortsætter. ",
           "email": "Email",
           "password": "Adgangskode"
         }
@@ -43,23 +43,21 @@
       "reauth_successful": "Log ind var succesfuld"
     },
     "error": {
-      "cannot_connect": "Der kunne ikke logges ind i Volkswagen We Connect, venligst kontroller dine log ind oplysninger og at servicen svarer",
-      "cannot_update": "Kunne ikke hente opdatering fra Volkswagen We Connect",
+      "cannot_connect": "Der kunne ikke logges ind i Volkswagen Connect, venligst kontroller dine log ind oplysninger og at servicen svarer",
+      "cannot_update": "Kunne ikke hente opdatering fra Volkswagen Connect",
       "unknown": "Der opstod en ukendt fejl"
     },
     "progress": {
-      "task_login": "Logger ind til We Connect",
+      "task_login": "Logger ind til Volkswagen Connect",
       "task_update": "Henter køretøjer"
     }
   },
   "options": {
     "step": {
       "user": {
-        "title": "We Connect indstillinger",
+        "title": "Volkswagen Connect indstillinger",
         "description": "Konfigurer opdateringsinterval",
         "data": {
-          "report_request": "Slå automatisk rapportforespørgsel til",
-          "report_scan_interval": "Rapport forespørgselsinterval (dage)",
           "scan_interval": "Sensor opdateringsinterval (minutter)",
           "region": "Region (Landet hvor bilen blev solgt)",
           "debug": "Tillad fuld fejlfindingslog fra API (kræver at fejlfindingslogføring er slået til)",

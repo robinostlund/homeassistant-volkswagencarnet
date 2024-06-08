@@ -1,10 +1,10 @@
 {
-  "title": "Volkswagen We Connect",
+  "title": "Volkswagen Connect",
   "config": {
     "step": {
       "user": {
-        "title": "We Connect Configuration",
-        "description": "Fill in We Connect information\n\nS-PIN is required for some specific options such as lock/unlock and combustion engine heating start/stop",
+        "title": "Volkswagen Connect Configuration",
+        "description": "Fill in Volkswagen Connect information\n\nS-PIN is required for some specific options such as lock/unlock and combustion engine heating start/stop",
         "data": {
           "username": "[%key:common::config_flow::data::email%]",
           "password": "[%key:common::config_flow::data::password%]",
@@ -32,7 +32,7 @@
       },
       "reauth_confirm": {
         "data": {
-          "description": "Re-authenticate with your We Connect account. Make sure to accept any new EULA in the We Connect portal (https://www.portal.volkswagen-we.com/) before proceeding. ",
+          "description": "Re-authenticate with your Volkswagen Connect account. Make sure to accept any new EULA in the Volkswagen Connect portal (https://www.myvolkswagen.net/) before proceeding. ",
           "email": "[%key:common::config_flow::data::email%]",
           "password": "[%key:common::config_flow::data::password%]"
         }
@@ -43,23 +43,21 @@
       "reauth_successful": "[%key:common::config_flow::abort::reauth_successful%]"
     },
     "error": {
-      "cannot_connect": "Could not login to Volkswagen We Connect, please check your credentials and verify that the service is working",
-      "cannot_update": "Could not query update from Volkswagen We Connect",
+      "cannot_connect": "Could not login to Volkswagen Connect, please check your credentials and verify that the service is working",
+      "cannot_update": "Could not query update from Volkswagen Connect",
       "unknown": "[%key:common::config_flow::error::unknown%]"
     },
     "progress": {
-      "task_login": "Logging in to We Connect",
+      "task_login": "Logging in to Volkswagen Connect",
       "task_update": "Fetching vehicles"
     }
   },
   "options": {
     "step": {
       "user": {
-        "title": "Options for We Connect",
+        "title": "Options for Volkswagen Connect",
         "description": "Configure update intervals",
         "data": {
-          "report_request": "Enable automatic report request",
-          "report_scan_interval": "Report request update interval (days)",
           "scan_interval": "Sensors update interval (minutes)",
           "region": "Region (The country where the car was sold)",
           "debug": "Enable full debug logs from API (requires debug logging enabled in config)",

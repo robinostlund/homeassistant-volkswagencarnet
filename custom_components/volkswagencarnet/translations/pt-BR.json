@@ -1,10 +1,10 @@
 {
-  "title": "Volkswagen We Connect",
+  "title": "Volkswagen Connect",
   "config": {
     "step": {
       "user": {
-        "title": "Configurações We Connect",
-        "description": "Preencha as informações do We Connect\n\nS-PIN é necessário para algumas opções específicas, como travar/desbloquear e partida/parada do aquecimento do motor de combustão",
+        "title": "Configurações Volkswagen Connect",
+        "description": "Preencha as informações do Volkswagen Connect\n\nS-PIN é necessário para algumas opções específicas, como travar/desbloquear e partida/parada do aquecimento do motor de combustão",
         "data": {
           "username": "Email",
           "password": "Senha",
@@ -32,7 +32,7 @@
       },
       "reauth_confirm": {
         "data": {
-          "description": "Re-autentique com sua conta WeConnect. Certifique-se de aceitar qualquer novo EULA no portal WeConnect (https://www.portal.volkswagen-we.com/) antes de continuar. ",
+          "description": "Re-autentique com sua conta Volkswagen Connect. Certifique-se de aceitar qualquer novo EULA no portal Volkswagen Connect (https://www.myvolkswagen.net/) antes de continuar. ",
           "username": "Email",
           "password": "Senha"
         }
@@ -43,23 +43,21 @@
       "reauth_successful": "A re-autenticação foi bem-sucedida"
     },
     "error": {
-      "cannot_connect": "Não foi possível fazer login no Volkswagen We Connect, verifique suas credenciais e verifique se o serviço está funcionando",
-      "cannot_update": "Não foi possível consultar a atualização do Volkswagen We Connect",
+      "cannot_connect": "Não foi possível fazer login no Volkswagen Connect, verifique suas credenciais e verifique se o serviço está funcionando",
+      "cannot_update": "Não foi possível consultar a atualização do Volkswagen Connect",
       "unknown": "[%key:common::config_flow::error::unknown%]"
     },
     "progress": {
-      "task_login": "Entrando no We Connect",
+      "task_login": "Entrando no Volkswagen Connect",
       "task_update": "Buscando veículos"
     }
   },
   "options": {
     "step": {
       "user": {
-        "title": "Opções para We Connect",
+        "title": "Opções para Volkswagen Connect",
         "description": "Configurar intervalos de atualização",
         "data": {
-          "report_request": "Ativar solicitação de relatório automático",
-          "report_scan_interval": "Intervalo de atualização da solicitação de relatório (dias)",
           "scan_interval": "Intervalo de atualização dos sensores (minutos)",
           "region": "Região (o país onde o carro foi vendido)",
           "debug": "Habilitar logs de depuração completos da API (requer log de depuração habilitado nas configurações)",

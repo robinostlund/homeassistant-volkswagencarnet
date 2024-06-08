@@ -13,7 +13,9 @@ def update_manifest():
             version = sys.argv[index + 1]
 
     # read manifest
-    with open(f"{os.getcwd()}/custom_components/volkswagencarnet/manifest.json") as manifestfile:
+    with open(
+        f"{os.getcwd()}/custom_components/volkswagencarnet/manifest.json"
+    ) as manifestfile:
         manifest = json.load(manifestfile)
 
     # set version in manifest
@@ -27,7 +29,9 @@ def update_manifest():
     manifest["requirements"] = requirements
 
     # save manifest
-    with open(f"{os.getcwd()}/custom_components/volkswagencarnet/manifest.json", "w") as manifestfile:
+    with open(
+        f"{os.getcwd()}/custom_components/volkswagencarnet/manifest.json", "w"
+    ) as manifestfile:
         manifestfile.write(json.dumps(manifest, indent=4, sort_keys=False))
 
     # print output

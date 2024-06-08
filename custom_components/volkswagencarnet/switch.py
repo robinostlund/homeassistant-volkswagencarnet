@@ -1,17 +1,19 @@
-"""Support for Volkswagen WeConnect Platform."""
+"""Support for Volkswagen Connect Platform."""
 
 import logging
 
 from homeassistant.core import HomeAssistant
-from homeassistant.helpers.entity import ToggleEntity, EntityCategory
+from homeassistant.helpers.entity import EntityCategory, ToggleEntity
 
-from . import VolkswagenEntity, VolkswagenData
+from . import VolkswagenData, VolkswagenEntity
 from .const import DATA, DATA_KEY, DOMAIN, UPDATE_CALLBACK
 
 _LOGGER = logging.getLogger(__name__)
 
 
-async def async_setup_platform(hass: HomeAssistant, config, async_add_entities, discovery_info=None):
+async def async_setup_platform(
+    hass: HomeAssistant, config, async_add_entities, discovery_info=None
+):
     """Set up the volkswagen switch platform."""
     if discovery_info is None:
         return
@@ -31,14 +33,19 @@ async def async_setup_entry(hass: HomeAssistant, entry, async_add_devices):
                 attribute=instrument.attr,
                 callback=hass.data[DOMAIN][entry.entry_id][UPDATE_CALLBACK],
             )
-            for instrument in (instrument for instrument in data.instruments if instrument.component == "switch")
+            for instrument in (
+                instrument
+                for instrument in data.instruments
+                if instrument.component == "switch"
+            )
         )
     return True
 
 
 class VolkswagenSwitch(VolkswagenEntity, ToggleEntity):
-    """Representation of a Volkswagen WeConnect Switch."""
+    """Representation of a Volkswagen Connect Switch."""
 
+    # pylint: disable=useless-parent-delegation
     def __init__(
         self,
         data: VolkswagenData,
@@ -46,7 +53,7 @@ class VolkswagenSwitch(VolkswagenEntity, ToggleEntity):
         component: str,
         attribute: str,
         callback=None,
-    ):
+    ) -> None:
         """Initialize switch."""
         super().__init__(data, vin, component, attribute, callback)
 
@@ -61,18 +68,18 @@ class VolkswagenSwitch(VolkswagenEntity, ToggleEntity):
     @property
     def is_on(self):
         """Return true if switch is on."""
-        _LOGGER.debug("Getting state of %s" % self.instrument.attr)
+        _LOGGER.debug("Getting state of %s", self.instrument.attr)
         return self.instrument.state
 
     async def async_turn_on(self, **kwargs):
         """Turn the switch on."""
-        _LOGGER.debug("Turning ON %s." % self.instrument.attr)
+        _LOGGER.debug("Turning ON %s", self.instrument.attr)
         await self.instrument.turn_on()
         self.notify_updated()
 
     async def async_turn_off(self, **kwargs):
         """Turn the switch off."""
-        _LOGGER.debug("Turning OFF %s." % self.instrument.attr)
+        _LOGGER.debug("Turning OFF %s", self.instrument.attr)
         await self.instrument.turn_off()
         self.notify_updated()
 

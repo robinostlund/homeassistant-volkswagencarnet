@@ -1,28 +1,27 @@
-"""Number support for Volkswagen We Connect integration."""
+"""Number support for Volkswagen Connect integration."""
 
 import logging
 
-from homeassistant.components.number import (
-    NumberEntity,
-    NumberDeviceClass,
-)
+from homeassistant.components.number import NumberDeviceClass, NumberEntity
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity import EntityCategory
 
 from . import VolkswagenEntity
-from .const import DATA_KEY, DATA, DOMAIN, UPDATE_CALLBACK
+from .const import DATA, DATA_KEY, DOMAIN, UPDATE_CALLBACK
 
 _LOGGER = logging.getLogger(__name__)
 
 
-async def async_setup_platform(hass: HomeAssistant, config, async_add_entities, discovery_info=None):
+async def async_setup_platform(
+    hass: HomeAssistant, config, async_add_entities, discovery_info=None
+):
     """Set up the Volkswagen number platform."""
     if discovery_info is None:
         return
     async_add_entities([VolkswagenNumber(hass.data[DATA_KEY], *discovery_info)])
 
 
-async def async_setup_entry(hass, entry, async_add_devices):
+async def async_setup_entry(hass: HomeAssistant, entry, async_add_devices):
     """Set up the Volkswagen number."""
     data = hass.data[DOMAIN][entry.entry_id][DATA]
     coordinator = data.coordinator
@@ -35,7 +34,11 @@ async def async_setup_entry(hass, entry, async_add_devices):
                 attribute=instrument.attr,
                 callback=hass.data[DOMAIN][entry.entry_id][UPDATE_CALLBACK],
             )
-            for instrument in (instrument for instrument in data.instruments if instrument.component == "number")
+            for instrument in (
+                instrument
+                for instrument in data.instruments
+                if instrument.component == "number"
+            )
         )
 
     return True
@@ -65,6 +68,7 @@ class VolkswagenNumber(VolkswagenEntity, NumberEntity):
 
     @property
     def native_unit_of_measurement(self) -> str:
+        """Return unit of measurement."""
         if self.instrument.unit:
             return self.instrument.unit
         return ""
@@ -79,9 +83,12 @@ class VolkswagenNumber(VolkswagenEntity, NumberEntity):
     @property
     def device_class(self) -> NumberDeviceClass | None:
         """Return the device class."""
-        if self.instrument.device_class is None or self.instrument.device_class in NumberDeviceClass:
+        if (
+            self.instrument.device_class is None
+            or self.instrument.device_class in NumberDeviceClass
+        ):
             return self.instrument.device_class
-        _LOGGER.warning(f"Unknown device class {self.instrument.device_class}")
+        _LOGGER.warning("Unknown device class %s", self.instrument.device_class)
         return None
 
     @property

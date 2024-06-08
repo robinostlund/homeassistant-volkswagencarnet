@@ -1,10 +1,10 @@
 {
-  "title": "Volkswagen We Connect",
+  "title": "Volkswagen Connect",
   "config": {
     "step": {
       "user": {
-        "title": "Konfiguracja We Connect",
-        "description": "Wypełnij informacje dla We Connect\n\nS-PIN jest wymagany w przypadku niektórych opcji, takich jak blokowanie/odblokowywanie auta i włączanie/wyłączanie silnika",
+        "title": "Konfiguracja Connect",
+        "description": "Wypełnij informacje dla Volkswagen Connect\n\nS-PIN jest wymagany w przypadku niektórych opcji, takich jak blokowanie/odblokowywanie auta i włączanie/wyłączanie silnika",
         "data": {
           "username": "Email",
           "password": "Hasło",
@@ -32,7 +32,7 @@
       },
       "reauth_confirm": {
         "data": {
-          "description": "Ponownie uwierzytelnij się do swojego konta We Connect. Przed kontynuowaniem należy zaakceptować każdą nową umowę EULA w portalu We Connect (https://www.portal.volkswagen-we.com/).",
+          "description": "Ponownie uwierzytelnij się do swojego konta Volkswagen Connect. Przed kontynuowaniem należy zaakceptować każdą nową umowę EULA w portalu Volkswagen Connect (https://www.myvolkswagen.net/).",
           "username": "Email",
           "password": "Hasło"
         }
@@ -43,23 +43,21 @@
       "reauth_successful": "Ponowne uwierzytelnienie powiodło się"
     },
     "error": {
-      "cannot_connect": "Nie można zalogować się do Volkswagen We Connect, sprawdź wpisane dane logowania i sprawdź, czy usługa działa",
-      "cannot_update": "Nie można zaktualizować danych Volkswagen We Connect",
+      "cannot_connect": "Nie można zalogować się do Volkswagen Connect, sprawdź wpisane dane logowania i sprawdź, czy usługa działa",
+      "cannot_update": "Nie można zaktualizować danych Volkswagen Connect",
       "unknown": "[%key:common::config_flow::error::unknown%]"
     },
     "progress": {
-      "task_login": "Logowanie do We Connect",
+      "task_login": "Logowanie do Volkswagen Connect",
       "task_update": "Pobieranie listy pojazdów"
     }
   },
   "options": {
     "step": {
       "user": {
-        "title": "Opcje We Connect",
+        "title": "Opcje Volkswagen Connect",
         "description": "Skonfiguruj częstotliwość aktualizacji",
         "data": {
-          "report_request": "Włącz automatyczne żądanie raportu",
-          "report_scan_interval": "Częstotliwość aktualizacji żądania raportu (dni)",
           "scan_interval": "Częstotliwość aktualizacji czujników (minuty)",
           "region": "Region (kraj, w którym samochód został sprzedany)",
           "debug": "Włącz pełne dzienniki debugowania z interfejsu API (wymaga włączenia rejestrowania debugowania w konfiguracji)",
