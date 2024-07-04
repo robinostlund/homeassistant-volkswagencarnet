@@ -118,11 +118,8 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         UNDO_UPDATE_LISTENER: entry.add_update_listener(_async_update_listener),
     }
 
-    for component in components:
-        coordinator.platforms.append(component)
-        hass.async_create_task(
-            hass.config_entries.async_forward_entry_setup(entry, component)
-        )
+    coordinator.platforms.extend(components)
+    await hass.config_entries.async_forward_entry_setups(entry, components)
 
     return True
 
