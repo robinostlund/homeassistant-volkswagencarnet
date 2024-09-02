@@ -1,0 +1,66 @@
+{
+  "title": "Volkswagen Connect",
+  "config": {
+    "step": {
+      "user": {
+        "description": "Fyll i Volkswagen Connect-information\n\nS-PIN krävs för vissa specifika alternativ, såsom låsning/upplåsning och start/stopp av uppvärmning",
+        "data": {
+          "username": "Email",
+          "password": "Lösenord",
+          "mutable": "Avmarkera för att göra bilen 'skrivskyddad'. Låt vara markerad för att kunna interagera med bilen",
+          "region": "Landskod där bilen var såld (ISO 3155-1 / Alpha-2)",
+          "spin": "S-PIN",
+          "name": "Namge din bil (Standardinställningen är VIN-nummer)",
+          "convert": "Välj om du vill göra några omvandlingar av avståndsenheter"
+        }
+      },
+      "select_vehicle": {
+        "title": "Fordon",
+        "description": "Följande fordon hittades. Vänligen välj det fordon du vill övervaka.",
+        "data": {
+          "vehicle": "VIN-nummer"
+        }
+      },
+      "select_instruments": {
+        "title": "Resurser",
+        "description": "Välj de resurser du vill övervaka.",
+        "data": {
+          "resources": "Resurser att övervaka"
+        }
+      },
+      "reauth_confirm": {
+        "data": {
+          "description": "Autentisera med ditt Volkswagen Connect-konto. Se till att acceptera eventuella nya användarvillkor i Volkswagen Connect-portalen (https://www.myvolkswagen.net/) innan du fortsätter ",
+          "email": "Email",
+          "password": "Lösenord"
+        }
+      }
+    },
+    "abort": {
+      "already_configured": "Bilen med det här VIN-numret är redan konfigurerad.",
+      "reauth_successful": "Autentiseringen blev godkänd"
+    },
+    "error": {
+      "cannot_connect": "Det gick inte att logga in på Volkswagen Connect. Vänligen kontrollera dina inloggningsuppgifter och verifiera att tjänsten fungerar",
+      "cannot_update": "Det gick inte att hämta uppdatering från Volkswagen Connect.",
+      "unknown": "Ett okänt fel har inträffat.d"
+    },
+    "progress": {
+      "task_login": "Loggar in på Volkswagen Connect",
+      "task_update": "Hämtar fordon"
+    }
+  },
+  "options": {
+    "step": {
+      "user": {
+        "title": "Alternativ för Volkswagen Connect",
+        "description": "Konfigurera uppdateringsintervall",
+        "data": {
+          "scan_interval": "Sensorernas uppdateringsintervall (minuter)",
+          "region": "Region (landet där bilen såldes)",
+          "convert": "Välj om du vill göra några omvandlingar av avståndsenheter"
+        }
+      }
+    }
+  }
+}
