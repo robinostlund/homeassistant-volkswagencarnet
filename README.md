@@ -58,6 +58,9 @@ Note that only the packaged releases (zip file) have the dependencies configured
 * Distance unit conversion - Select if you wish to use "Swedish mil" or Imperial Miles instead of KM (Optional, default is KM)
 ![image](https://user-images.githubusercontent.com/53381142/117341181-b8e24d00-ae99-11eb-84af-7661e9170492.png)
 
+Note that the Volkswagen API has a connection limit of 480 calls/day, which correspond to the default 5 minute interval. 
+If you also want to use the app, or be able to force refresh, increase this interval to make space for that.
+
 ## Entities
 
 This plugin creates entities in the format `DOMAIN.NAME_ENTITY`. Not all entities are created for all make, year and models, for example pure electric cars will not have entities only applicable to cars with a combustion engine.
