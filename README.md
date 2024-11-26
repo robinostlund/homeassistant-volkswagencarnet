@@ -76,7 +76,7 @@ Save these automations in your automations file `<config dir>/automations.yaml`
   triggers:
     - trigger: state
       entity_id: device_tracker.vw_carid
-  action:    
+  action:
     - action: notify.ios_my_ios_device
       data_template:
         title: "Passat GTE Position Changed"
