@@ -73,11 +73,11 @@ Save these automations in your automations file `<config dir>/automations.yaml`
 - id: notify_volkswagen_position_change
   description: Notify when position has been changed
   alias: VW position changed notification
-  trigger:
-    - platform: state
+  triggers:
+    - trigger: state
       entity_id: device_tracker.vw_carid
-  action:
-    - service: notify.ios_my_ios_device
+  action:    
+    - action: notify.ios_my_ios_device
       data_template:
         title: "Passat GTE Position Changed"
         message: |
@@ -102,17 +102,17 @@ Save these automations in your automations file `<config dir>/automations.yaml`
 - id: notify_volkswagen_climatisation
   description: Notify when climatisation state changes
   alias: VW climatisation notifications
-  trigger:
-    - platform: state
+  triggers:
+    - trigger: state
       entity_id: switch.vw_carid_electric_climatisation
       from: 'off'
       to: 'on'
-    - platform: state
+    - trigger: state
       entity_id: switch.vw_carid_electric_climatisation
       from: 'on'
       to: 'off'
   action:
-    - service: notify.ios_my_ios_device
+    - action: notify.ios_my_ios_device
       data_template:
         title: "VW Car Climatisation State"
         message: |
@@ -130,20 +130,20 @@ Save these automations in your automations file `<config dir>/automations.yaml`
 - id: notify_volkswagen_charging
   description: Notify when charging state changes
   alias: VW charging notifications
-  trigger:
-    - platform: state
+  triggers:
+    - trigger: state
       entity_id: switch.vw_carid_charging
       from: 'off'
       to: 'on'
 
-    - platform: state
+    - trigger: state
       entity_id: switch.vw_carid_charging
       from: 'on'
       to: 'off'
   action:
     # delay so charging time gets updated
     - delay: '00:00:05'
-    - service: notify.ios_my_ios_device
+    - action: notify.ios_my_ios_device
       data_template:
         title: "VW Car Charging State"
         message: |
@@ -162,12 +162,12 @@ Save these automations in your automations file `<config dir>/automations.yaml`
 - id: notify_volkswagen_battery_full
   description: Notify when battery is fully charged
   alias: VW battery level full Notifications
-  trigger:
-    - platform: numeric_state
+  triggers:
+    - trigger: numeric_state
       entity_id: sensor.vw_carid_battery_level
       above: 99
   action:
-    - service: notify.ios_my_ios_device
+    - action: notify.ios_my_ios_device
       data_template:
         title: "Passat GTE Fully Charged"
         message: |
@@ -184,9 +184,9 @@ Save these automations in your automations file `<config dir>/automations.yaml`
 ```yaml
 - id: 'notify_volkswagen_car_is_unlocked'
   alias: VW is at home and unlocked
-  trigger:
-    - entity_id: binary_sensor.vw_carid_external_power
-      platform: state
+  triggers:
+    - trigger: state
+      entity_id: binary_sensor.vw_carid_external_power
       to: 'on'
       for: 00:10:00
   condition:
@@ -201,17 +201,17 @@ Save these automations in your automations file `<config dir>/automations.yaml`
       before: '21:00:00'
   action:
     # Notification via push message to smartphone
-    - service: notify.device
+    - action: notify.device
       data:
         message: "The car is unlocked!"
         target:
           - device/my_device
     # Notification via smart speaker (kitchen)
-    - service: media_player.volume_set
+    - action: media_player.volume_set
       data:
         entity_id: media_player.kitchen
         volume_level: '0.6'
-    - service: tts.google_translate_say
+    - action: tts.google_translate_say
       data:
         entity_id: media_player.kitchen
         message: "My Lord, the car is unlocked. Please attend this this issue at your earliest inconvenience!"
