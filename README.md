@@ -76,7 +76,7 @@ Save these automations in your automations file `<config dir>/automations.yaml`
   triggers:
     - trigger: state
       entity_id: device_tracker.vw_carid
-  action:
+  actions:
     - action: notify.ios_my_ios_device
       data_template:
         title: "Passat GTE Position Changed"
@@ -111,7 +111,7 @@ Save these automations in your automations file `<config dir>/automations.yaml`
       entity_id: switch.vw_carid_electric_climatisation
       from: 'on'
       to: 'off'
-  action:
+  actions:
     - action: notify.ios_my_ios_device
       data_template:
         title: "VW Car Climatisation State"
@@ -140,7 +140,7 @@ Save these automations in your automations file `<config dir>/automations.yaml`
       entity_id: switch.vw_carid_charging
       from: 'on'
       to: 'off'
-  action:
+  actions:
     # delay so charging time gets updated
     - delay: '00:00:05'
     - action: notify.ios_my_ios_device
@@ -166,7 +166,7 @@ Save these automations in your automations file `<config dir>/automations.yaml`
     - trigger: numeric_state
       entity_id: sensor.vw_carid_battery_level
       above: 99
-  action:
+  actions:
     - action: notify.ios_my_ios_device
       data_template:
         title: "Passat GTE Fully Charged"
@@ -199,7 +199,7 @@ Save these automations in your automations file `<config dir>/automations.yaml`
     - condition: time
       after: '07:00:00'
       before: '21:00:00'
-  action:
+  actions:
     # Notification via push message to smartphone
     - action: notify.device
       data:
