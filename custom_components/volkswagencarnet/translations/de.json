@@ -1,0 +1,76 @@
+{
+  "title": "Volkswagen Connect",
+  "config": {
+    "step": {
+      "user": {
+        "title": "Volkswagen Connect Konfiguration",
+        "description": "Volkswagen Connect Informationen\n\nDer S-PIN wird für einige spezifische Optionen benötigt, wie z. B. das Verriegeln/Entriegeln und das Starten/Stoppen der Heizung.",
+        "data": {
+          "username": "E-Mail",
+          "password": "Passwort",
+          "mutable": "Deaktivieren, um das Auto auf 'Nur-Lesen' zu setzen. Aktiviert lassen, um mit dem Auto zu interagieren.",
+          "region": "Ländercode, in dem das Auto verkauft wurde (ISO 3155-1 / Alpha-2)",
+          "spin": "S-PIN",
+          "name": "Benenne dein Auto (standardmäßig die VIN-Nummer)",
+          "debug": "Aktiviere die Debug-Logs der API (erfordert aktivierte Debug-Protokollierung in der Konfiguration)",
+          "convert": "Wähle, ob du eine Umrechnung der Entfernungseinheiten vornehmen möchtest"
+        }
+      },
+      "select_vehicle": {
+        "title": "Fahrzeug",
+        "description": "Die folgenden Fahrzeuge wurden gefunden. Bitte wähle das Fahrzeug aus, das du überwachen möchtest.",
+        "data": {
+          "vehicle": "Fahrgestellnummer (VIN)"
+        }
+      },
+      "select_instruments": {
+        "title": "Ressourcen",
+        "description": "Wähle die Ressourcen aus, die überwacht werden sollen.",
+        "data": {
+          "resources": "Zu überwachende Ressourcen"
+        }
+      },
+      "reauth_confirm": {
+        "data": {
+          "description": "Melde dich erneut mit deinem Volkswagen Connect-Konto an. Stelle sicher, dass du alle neuen EULA im Volkswagen Connect-Portal (https://www.myvolkswagen.net/) akzeptiert hast, bevor du fortfährst.",
+          "email": "E-Mail",
+          "password": "Passwort"
+        }
+      }
+    },
+    "abort": {
+      "already_configured": "Ein Auto mit dieser VIN ist bereits konfiguriert.",
+      "reauth_successful": "Die erneute Authentifizierung war erfolgreich."
+    },
+    "error": {
+      "cannot_connect": "Anmeldung bei Volkswagen Connect nicht möglich. Bitte überprüfe deine Zugangsdaten und stelle sicher, dass der Dienst verfügbar ist.",
+      "cannot_update": "Abrufen von Updates von Volkswagen Connect nicht möglich.",
+      "unknown": "Ein unbekannter Fehler ist aufgetreten."
+    },
+    "progress": {
+      "task_login": "Anmeldung bei Volkswagen Connect",
+      "task_update": "Fahrzeuge werden abgerufen"
+    }
+  },
+  "options": {
+    "step": {
+      "user": {
+        "title": "Optionen für Volkswagen Connect",
+        "description": "Aktualisierungsintervall konfigurieren",
+        "data": {
+          "scan_interval": "Aktualisierungsintervall der Sensoren (Minuten)",
+          "region": "Region (Das Land, in dem das Auto verkauft wurde)",
+          "debug": "Vollständige Debug-Logs der API aktivieren (erfordert aktivierte Debug-Protokollierung in der Konfiguration)",
+          "convert": "Wählen, ob du Umrechnungen von Entfernungseinheiten vornehmen möchtest"
+        }
+      },
+      "select_instruments": {
+        "title": "Ressourcen",
+        "description": "Wähle die Ressourcen aus, die überwacht werden sollen.",
+        "data": {
+          "resources": "Zu überwachende Ressourcen"
+        }
+      }
+    }
+  }
+}
