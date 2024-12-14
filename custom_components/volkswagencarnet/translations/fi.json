@@ -32,7 +32,7 @@
       },
       "reauth_confirm": {
         "data": {
-          "description": "Kirjausu uudelleen Volkswagen Connectiin. Varmista että olet hyväksynyt mahdolliset uudet Volkswagen Connect portaalin käyttöehdot (https://www.myvolkswagen.net/) ensin. ",
+          "description": "Kirjausu uudelleen Volkswagen Connectiin. Varmista että olet hyväksynyt mahdolliset uudet Volkswagen Connect portaalin käyttöehdot (https://www.myvolkswagen.net/) ensin.",
           "username": "Sähköposti",
           "password": "Salasana"
         }

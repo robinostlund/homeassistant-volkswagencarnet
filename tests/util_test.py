@@ -42,10 +42,11 @@ async def test_get_coordinator(hass: HomeAssistant):
     }
 
     # We want to skip the actual setup flow here
-    with patch.object(
-        homeassistant.config_entries.ConfigEntries, "async_setup"
-    ) as flow, patch.object(
-        homeassistant.config_entries.ConfigEntries, "_async_schedule_save"
+    with (
+        patch.object(homeassistant.config_entries.ConfigEntries, "async_setup") as flow,
+        patch.object(
+            homeassistant.config_entries.ConfigEntries, "_async_schedule_save"
+        ),
     ):
         f: Future = Future()
         f.set_result(True)

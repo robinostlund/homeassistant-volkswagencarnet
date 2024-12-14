@@ -32,7 +32,7 @@
       },
       "reauth_confirm": {
         "data": {
-          "description": "Ponovno se prijavite v svoj Volkswagen Connect račun. Poskrbite, da sprejmete morebitno novo licenco EULA v portalu Volkswagen Connect (https://www.myvolkswagen.net/), preden nadaljujete. ",
+          "description": "Ponovno se prijavite v svoj Volkswagen Connect račun. Poskrbite, da sprejmete morebitno novo licenco EULA v portalu Volkswagen Connect (https://www.myvolkswagen.net/), preden nadaljujete.",
           "email": "E-pošta",
           "password": "Geslo"
         }

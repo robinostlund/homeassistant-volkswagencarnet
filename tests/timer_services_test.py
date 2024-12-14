@@ -76,9 +76,12 @@ async def test_call_service(conn: MagicMock, hass: HomeAssistant):
     target_temp = 24.5
     data = {"device_id": e.entry_id, "target_temperature": target_temp}
 
-    with patch(
-        "custom_components.volkswagencarnet.services.get_coordinator_by_device_id"
-    ) as m, patch.object(c.connection, "getTimers") as get_timers:
+    with (
+        patch(
+            "custom_components.volkswagencarnet.services.get_coordinator_by_device_id"
+        ) as m,
+        patch.object(c.connection, "getTimers") as get_timers,
+    ):
         m.return_value = c
         timer_profiles = [
             TimerProfile(

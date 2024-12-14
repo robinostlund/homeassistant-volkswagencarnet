@@ -32,7 +32,7 @@
       },
       "reauth_confirm": {
         "data": {
-          "description": "Log ind igen med din Volkswagen Connect konto. Vær sikker på at acceptere nye EULA i Volkswagen Connect portalen (https://www.myvolkswagen.net/) før du fortsætter. ",
+          "description": "Log ind igen med din Volkswagen Connect konto. Vær sikker på at acceptere nye EULA i Volkswagen Connect portalen (https://www.myvolkswagen.net/) før du fortsætter.",
           "email": "Email",
           "password": "Adgangskode"
         }
