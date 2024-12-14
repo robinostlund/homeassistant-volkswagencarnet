@@ -32,7 +32,7 @@
       },
       "reauth_confirm": {
         "data": {
-          "description": "Повторно войдите в свою учетную запись Volkswagen Connect. Перед продолжением обязательно примите новое лицензионное соглашение с конечным пользователем на портале Volkswagen Connect (https://www.myvolkswagen.net/). ",
+          "description": "Повторно войдите в свою учетную запись Volkswagen Connect. Перед продолжением обязательно примите новое лицензионное соглашение с конечным пользователем на портале Volkswagen Connect (https://www.myvolkswagen.net/).",
           "email": "Email",
           "password": "Password"
         }
