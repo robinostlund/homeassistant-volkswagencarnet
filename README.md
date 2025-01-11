@@ -60,9 +60,6 @@ Note that only the packaged releases (zip file) have the dependencies configured
 
 Note that the Volkswagen API has a connection limit of 480 calls/day (one call every 3rd minute). The default interval of 5 minutes in this integration will leave only 192 calls for other applications, such as the VW app, which might not be enough. If you want to use the app alongside this integration, it is recommended to raise this interval to 10 minutes.
 
-, which correspond to a request every 3rd minute. Tthe default 5 minute interval. 
-If you also want to use the app, or be able to force refresh, increase this interval to make space for that.
-
 ## Entities
 
 This plugin creates entities in the format `DOMAIN.NAME_ENTITY`. Not all entities are created for all make, year and models, for example pure electric cars will not have entities only applicable to cars with a combustion engine.
