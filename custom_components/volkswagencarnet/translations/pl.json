@@ -9,7 +9,7 @@
           "username": "Email",
           "password": "Hasło",
           "mutable": "Usuń zaznaczenie, aby samochód był „tylko do odczytu”. Jeśli je zostawisz będziesz mógł wejść w interakcję z samochodem",
-          "region": "Kod kraju, w którym samochód został sprzedany (ISO 3155-1 / Alpha-2)",
+          "region": "Kod kraju, w którym samochód został sprzedany (ISO 3166-1 alpha-2)",
           "spin": "S-PIN",
           "name": "Nazwij swój samochód (domyślnie numer VIN)",
           "debug": "Włącz pełne dzienniki debugowania z interfejsu API (wymaga włączenia rejestrowania debugowania w konfiguracji)",

@@ -9,7 +9,7 @@
           "username": "E-Mail",
           "password": "Passwort",
           "mutable": "Deaktivieren, um das Auto auf 'Nur-Lesen' zu setzen. Aktiviert lassen, um mit dem Auto zu interagieren.",
-          "region": "Ländercode, in dem das Auto verkauft wurde (ISO 3155-1 / Alpha-2)",
+          "region": "Ländercode, in dem das Auto verkauft wurde (ISO 3166-1 alpha-2)",
           "spin": "S-PIN",
           "name": "Benenne dein Auto (standardmäßig die VIN-Nummer)",
           "debug": "Aktiviere die Debug-Logs der API (erfordert aktivierte Debug-Protokollierung in der Konfiguration)",
