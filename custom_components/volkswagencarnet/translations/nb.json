@@ -9,7 +9,7 @@
           "username": "E-post",
           "password": "Passord",
           "mutable": "Fjern hake for å bare lese verdier. Hak av dersom du vil sende kommandoer til bilen",
-          "region": "Landkode for landet der bilen ble solgt (ISO 3155-1 / Alpha-2)",
+          "region": "Landkode for landet der bilen ble solgt (ISO 3166-1 alpha-2)",
           "spin": "S-PIN",
           "name": "Gi bilen et kallenavn (Standard er VIN number)",
           "debug": "Aktiver full debug-logg fra API (krever feilsøkingslogging aktivert i config)",

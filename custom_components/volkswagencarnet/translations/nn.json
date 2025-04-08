@@ -9,7 +9,7 @@
           "username": "E-post",
           "password": "Passord",
           "mutable": "Ta vekk krysset for å gjere bilen 'read only'. Behald krysset om du vil gjere endringar mot bilen",
-          "region": "Landskode der bilen vart solgt (ISO 3155-1 / Aplha-2)",
+          "region": "Landskode der bilen vart solgt (ISO 3166-1 alpha-2)",
           "spin": "S-PIN",
           "name": "Gje bilen ditt eit navn (elles blir navnet det same som VIN nummeret)",
           "debug": "Skru på debug logger frå API (krev at debug logging er skrudd på i konfigurasjonen",

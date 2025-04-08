@@ -9,7 +9,7 @@
           "username": "Email",
           "password": "Senha",
           "mutable": "Desmarque para tornar o carro 'somente leitura'. Mantenha marcado para interagir com o carro",
-          "region": "Código do país onde o carro foi vendido (ISO 3155-1 / Alpha-2)",
+          "region": "Código do país onde o carro foi vendido (ISO 3166-1 alpha-2)",
           "spin": "S-PIN",
           "name": "Nome do carro (o padrão é o número VIN)",
           "debug": "Habilitar logs de depuração completos da API (requer log de depuração habilitado nas configurações)",
