@@ -397,6 +397,7 @@ class VolkswagenEntity(CoordinatorEntity, RestoreEntity):
         attributes = dict(
             self.instrument.attributes,
             model=f"{self.vehicle.model}/{self.vehicle.model_year}",
+            vin=self.vin,
             last_updated=self.instrument.last_refresh,
         )
 
