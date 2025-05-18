@@ -1,0 +1,76 @@
+{
+  "title": "Volkswagen Connect",
+  "config": {
+    "step": {
+      "user": {
+        "title": "Configuration ce Volkswagen Connect",
+        "description": "Remplissez les informations Volkswagen Connect\n\nLe S-PIN est requis pour certaines options spécifiques telles que le verrouillage/déverrouillage et le démarrage/arrêt du chauffage du moteur thermique",
+        "data": {
+          "username": "E-mail",
+          "password": "Mot de passe",
+          "mutable": "Décochez cette case pour rendre la voiture 'en lecture seule'. Maintenez-la cochée pour interagir avec la voiture.",
+          "region": "Code du pays où la voiture a été vendue (ISO 3166-1 alpha-2)",
+          "spin": "S-PIN",
+          "name": "Nommez votre voiture (par défaut, le numéro VIN)",
+          "debug": "Activer les journaux de débogage complets à partir de l'API (nécessite l'activation de la journalisation de débogage dans la configuration)",
+          "convert": "Sélectionnez si vous souhaitez effectuer des conversions d'unités de distance"
+        }
+      },
+      "select_vehicle": {
+        "title": "Vehicule",
+        "description": "Les véhicules suivants ont été trouvés. Veuillez sélectionner le véhicule que vous souhaitez surveiller.",
+        "data": {
+          "vehicle": "Numéro VIN"
+        }
+      },
+      "select_instruments": {
+        "title": "Ressources",
+        "description": "Sélectionnez les ressources à surveiller",
+        "data": {
+          "resources": "Ressources à surveiller"
+        }
+      },
+      "reauth_confirm": {
+        "data": {
+          "description": "Réauthentifiez-vous avec votre compte Volkswagen Connect. Assurez-vous d'accepter tout nouveau CLUF sur le portail Volkswagen Connect (https://www.myvolkswagen.net/) avant de continuer.",
+          "email": "E-mail",
+          "password": "Mot de passe"
+        }
+      }
+    },
+    "abort": {
+      "already_configured": "La voiture avec ce VIN est déjà configurée",
+      "reauth_successful": "La réauthentification a réussi"
+    },
+    "error": {
+      "cannot_connect": "Impossible de se connecter à Volkswagen Connect, veuillez vérifier vos informations d'identification et vérifier que le service fonctionne",
+      "cannot_update": "Impossible d'interroger la mise à jour depuis Volkswagen Connect",
+      "unknown": "Une erreur inconnue s'est produite"
+    },
+    "progress": {
+      "task_login": "Connexion à Volkswagen Connect",
+      "task_update": "Récupérer des véhicules"
+    }
+  },
+  "options": {
+    "step": {
+      "user": {
+        "title": "Options pour Volkswagen Connect",
+        "description": "Configurer les intervalles de mise à jour",
+        "data": {
+          "scan_interval": "Intervalle de mise à jour des capteurs (minutes)",
+          "region": "Région (le pays où la voiture a été vendue)",
+          "debug": "Activer les journaux de débogage complets à partir de l'API (nécessite l'activation de la journalisation de débogage dans la configuration)",
+          "convert": "Sélectionnez si vous souhaitez effectuer des conversions d'unités de distance"
+        }
+      },
+      "select_instruments": {
+        "title": "Ressources",
+        "description": "Sélectionnez les ressources à surveiller",
+        "data": {
+          "resources": "Ressources à surveiller"
+        }
+      }
+    }
+  }
+}
