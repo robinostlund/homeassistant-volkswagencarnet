@@ -27,7 +27,7 @@ jobs:
           zip volkswagencarnet.zip -r ./
 
       - name: Upload zip to release
-        uses: svenstaro/upload-release-action@2.9.0
+        uses: svenstaro/upload-release-action@2.11.2
         with:
           repo_token: ${{ secrets.GITHUB_TOKEN }}
           file: ./custom_components/volkswagencarnet/volkswagencarnet.zip
