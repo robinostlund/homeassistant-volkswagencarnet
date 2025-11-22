@@ -4,7 +4,7 @@ import asyncio
 from datetime import datetime, timedelta
 import logging
 
-from homeassistant.config_entries import SOURCE_REAUTH, ConfigEntry
+from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import (
     CONF_NAME,
     CONF_PASSWORD,
@@ -78,11 +78,8 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     coordinator.async_add_listener(coordinator.async_update_listener)
 
     if not await coordinator.async_login():
-        await hass.config_entries.flow.async_init(
-            DOMAIN,
-            context={"source": SOURCE_REAUTH},
-            data=entry,
-        )
+        await hass.entry.async_start_reauth(hass)
+
         return False
 
     hass.bus.async_listen_once(EVENT_HOMEASSISTANT_STOP, coordinator.async_logout)
