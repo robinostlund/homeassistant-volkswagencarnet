@@ -78,7 +78,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     coordinator.async_add_listener(coordinator.async_update_listener)
 
     if not await coordinator.async_login():
-        await hass.entry.async_start_reauth(hass)
+        entry.async_start_reauth(hass)
 
         return False
 
