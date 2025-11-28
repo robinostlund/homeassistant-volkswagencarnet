@@ -12,6 +12,8 @@
 
 [![buy me a coffee](https://www.buymeacoffee.com/assets/img/custom_images/yellow_img.png)](https://www.buymeacoffee.com/robinostlund)
 
+<a href="https://ko-fi.com/stickpin"><img src="https://storage.ko-fi.com/cdn/generated/zfskfgqnf/rest-3bdd3131646d5937693c77b2f9ea98dc-lc8zuk8j.jpg" alt="buy me a coffee" style="width:200px; height:auto;"></a>
+
 ## Description
 
 Welcome to Volkswagen Connect custom component designed for [Home Assistant](https://www.home-assistant.io) with the capability to interact with the Volkswagen Connect service (your car).
