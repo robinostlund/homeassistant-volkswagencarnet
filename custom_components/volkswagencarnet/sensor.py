@@ -94,6 +94,17 @@ class VolkswagenSensor(VolkswagenEntity, SensorEntity):
         return None
 
     @property
+    def suggested_display_precision(self):
+        """Return suggested display precision for UI."""
+        if (
+            self.instrument is not None
+            and getattr(self.instrument, "device_class", None)
+            == SensorDeviceClass.DISTANCE
+        ):
+            return 0
+        return None
+
+    @property
     def entity_category(self) -> EntityCategory | str | None:
         """Return entity category."""
         if self.instrument.entity_type == "diag":
