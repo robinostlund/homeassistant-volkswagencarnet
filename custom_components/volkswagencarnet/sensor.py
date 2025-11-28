@@ -102,6 +102,12 @@ class VolkswagenSensor(VolkswagenEntity, SensorEntity):
             == SensorDeviceClass.DISTANCE
         ):
             return 0
+        if (
+            self.instrument is not None
+            and getattr(self.instrument, "device_class", None)
+            == SensorDeviceClass.VOLUME
+        ):
+            return 1
         return None
 
     @property
