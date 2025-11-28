@@ -68,22 +68,29 @@ async def async_setup_scanner(
 class VolkswagenDeviceTracker(VolkswagenEntity, TrackerEntity):
     """Representation of a Volkswagen Device Tracker."""
 
+    # Entity attributes (Home Assistant 2024+)
+    _attr_has_entity_name = True
+    _attr_source_type = SourceType.GPS
+    _attr_icon = "mdi:car"
+
     @property
-    def latitude(self) -> float:
+    def latitude(self) -> float | None:
         """Return latitude value of the device."""
-        return self.instrument.state[0]
+        try:
+            return self.instrument.state[0]
+        except (TypeError, IndexError):
+            _LOGGER.warning(
+                "Invalid state for %s: %s", self.instrument.attr, self.instrument.state
+            )
+            return None
 
     @property
-    def longitude(self) -> float:
+    def longitude(self) -> float | None:
         """Return longitude value of the device."""
-        return self.instrument.state[1]
-
-    @property
-    def source_type(self):
-        """Return the source type, eg gps or router, of the device."""
-        return SourceType.GPS
-
-    @property
-    def icon(self):
-        """Return the icon."""
-        return "mdi:car"
+        try:
+            return self.instrument.state[1]
+        except (TypeError, IndexError):
+            _LOGGER.warning(
+                "Invalid state for %s: %s", self.instrument.attr, self.instrument.state
+            )
+            return None

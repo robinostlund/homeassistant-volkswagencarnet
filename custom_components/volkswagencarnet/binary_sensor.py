@@ -3,7 +3,6 @@
 import logging
 
 from homeassistant.components.binary_sensor import (
-    DEVICE_CLASSES,
     BinarySensorDeviceClass,
     BinarySensorEntity,
 )
@@ -55,24 +54,44 @@ async def async_setup_entry(hass: HomeAssistant, entry, async_add_devices):
 class VolkswagenBinarySensor(VolkswagenEntity, BinarySensorEntity):
     """Representation of a Volkswagen Binary Sensor."""
 
-    @property
-    def is_on(self):
-        """Return True if the binary sensor is on."""
-        _LOGGER.debug("Getting state of %s", self.instrument.attr)
-        return self.instrument.is_on
+    # Entity attributes (Home Assistant 2024+)
+    _attr_has_entity_name = True
 
-    @property
-    def device_class(self) -> BinarySensorDeviceClass | str | None:
-        """Return the device class."""
-        if self.instrument.device_class in DEVICE_CLASSES:
-            return self.instrument.device_class
-        _LOGGER.warning("Unknown device class %s", self.instrument.device_class)
+    def __init__(self, *args, **kwargs):
+        """Initialize the binary sensor."""
+        super().__init__(*args, **kwargs)
+        # Set attributes based on instrument
+        self._attr_device_class = self._get_device_class()
+        self._attr_entity_category = self._get_entity_category()
+
+    def _get_device_class(self) -> BinarySensorDeviceClass | None:
+        """Get device class from instrument."""
+        try:
+            device_class_str = self.instrument.device_class
+            if device_class_str is None:
+                return None
+            return BinarySensorDeviceClass(device_class_str)
+        except ValueError:
+            _LOGGER.warning(
+                "Unknown device class '%s' for %s",
+                self.instrument.device_class,
+                self.instrument.attr,
+            )
+            return None
+
+    def _get_entity_category(self) -> EntityCategory | None:
+        """Get entity category from instrument."""
+        entity_type = self.instrument.entity_type
+
+        if entity_type == "diag":
+            return EntityCategory.DIAGNOSTIC
+        if entity_type == "config":
+            return EntityCategory.CONFIG
+
         return None
 
     @property
-    def entity_category(self) -> EntityCategory | str | None:
-        """Return entity category."""
-        if self.instrument.entity_type == "diag":
-            return EntityCategory.DIAGNOSTIC
-        if self.instrument.entity_type == "config":
-            return EntityCategory.CONFIG
+    def is_on(self) -> bool:
+        """Return True if the binary sensor is on."""
+        _LOGGER.debug("Getting state of %s", self.instrument.attr)
+        return self.instrument.is_on
