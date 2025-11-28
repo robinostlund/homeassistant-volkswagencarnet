@@ -96,18 +96,20 @@ class VolkswagenSensor(VolkswagenEntity, SensorEntity):
     @property
     def suggested_display_precision(self):
         """Return suggested display precision for UI."""
-        if (
-            self.instrument is not None
-            and getattr(self.instrument, "device_class", None)
-            == SensorDeviceClass.DISTANCE
-        ):
-            return 0
-        if (
-            self.instrument is not None
-            and getattr(self.instrument, "device_class", None)
-            == SensorDeviceClass.VOLUME
-        ):
-            return 1
+        if self.instrument is not None:
+            device_class = getattr(self.instrument, "device_class", None)
+            if device_class in (
+                SensorDeviceClass.DISTANCE,
+                SensorDeviceClass.SPEED,
+            ):
+                return 0
+        if self.instrument is not None:
+            device_class = getattr(self.instrument, "device_class", None)
+            if device_class in (
+                SensorDeviceClass.VOLUME,
+                SensorDeviceClass.ENERGY_DISTANCE,
+            ):
+                return 1
         return None
 
     @property
