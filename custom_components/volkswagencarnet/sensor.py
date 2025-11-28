@@ -106,8 +106,9 @@ class VolkswagenSensor(VolkswagenEntity, SensorEntity):
         if self.instrument is not None:
             device_class = getattr(self.instrument, "device_class", None)
             if device_class in (
-                SensorDeviceClass.VOLUME,
                 SensorDeviceClass.ENERGY_DISTANCE,
+                SensorDeviceClass.POWER,
+                SensorDeviceClass.VOLUME,
             ):
                 return 1
         return None
