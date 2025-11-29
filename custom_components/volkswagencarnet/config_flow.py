@@ -1,3 +1,5 @@
+"""Config flow for Volkswagen Connect integration."""
+
 import asyncio
 import logging
 
@@ -13,6 +15,7 @@ from homeassistant.const import (
     CONF_USERNAME,
 )
 from homeassistant.core import callback
+from homeassistant.data_entry_flow import FlowResult
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
 import homeassistant.helpers.config_validation as cv
 from homeassistant.helpers.entity_registry import async_get
@@ -40,39 +43,36 @@ from .util import get_coordinator, get_vehicle
 
 _LOGGER = logging.getLogger(__name__)
 
-DATA_SCHEMA = {
-    vol.Optional(CONF_NAME, default=""): str,
-    vol.Required(CONF_USERNAME, default=""): str,
-    vol.Required(CONF_PASSWORD, default=""): str,
-    vol.Optional(CONF_SPIN, default=""): str,
-    vol.Optional(CONF_REGION, default=DEFAULT_REGION): str,
-    vol.Optional(CONF_MUTABLE, default=True): cv.boolean,
-    vol.Optional(CONF_CONVERT, default=CONF_NO_CONVERSION): vol.In(CONVERT_DICT),
-    vol.Optional(CONF_DEBUG, default=DEFAULT_DEBUG): cv.boolean,
-}
+DATA_SCHEMA = vol.Schema(
+    {
+        vol.Optional(CONF_NAME, default=""): str,
+        vol.Required(CONF_USERNAME, default=""): str,
+        vol.Required(CONF_PASSWORD, default=""): str,
+        vol.Optional(CONF_SPIN, default=""): str,
+        vol.Optional(CONF_REGION, default=DEFAULT_REGION): str,
+        vol.Optional(CONF_MUTABLE, default=True): cv.boolean,
+        vol.Optional(CONF_CONVERT, default=CONF_NO_CONVERSION): vol.In(CONVERT_DICT),
+        vol.Optional(CONF_DEBUG, default=DEFAULT_DEBUG): cv.boolean,
+    }
+)
 
 
 class VolkswagenCarnetConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
-    """Config Flow."""
+    """Config Flow for Volkswagen Connect."""
 
     VERSION = 3
-    task_login: asyncio.Task | None = None
-    task_finish: asyncio.Task | None = None
-    entry = None
 
     def __init__(self) -> None:
-        """Initialize."""
+        """Initialize config flow."""
         self._entry: ConfigEntry | None = None
-        self._init_info = {}
-        self._errors = {}
-        self._connection = None
-        self._session = None
+        self._init_info: dict = {}
+        self._errors: dict[str, str] = {}
+        self._connection: Connection | None = None
+        self.task_login: asyncio.Task | None = None
 
-    async def async_step_user(self, user_input=None):
+    async def async_step_user(self, user_input: dict | None = None) -> FlowResult:
         """Handle user step."""
         if user_input is not None:
-            self.task_login = None
-            self.task_finish = None
             self._errors = {}
             self._init_info = user_input
 
@@ -88,29 +88,66 @@ class VolkswagenCarnetConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
             return await self.async_step_login()
 
         return self.async_show_form(
-            step_id="user", data_schema=vol.Schema(DATA_SCHEMA), errors=self._errors
+            step_id="user",
+            data_schema=DATA_SCHEMA,
+            errors=self._errors,
         )
 
-    # noinspection PyBroadException
-    async def _async_task_login(self):
+    async def _async_task_login(self) -> None:
+        """Handle login task."""
         try:
+            assert self._connection is not None
             await self._connection.doLogin()
-        except Exception as e:  # pylint: disable=broad-exception-caught
-            _LOGGER.error("Failed to login due to error: %s", str(e))
+        except Exception as err:  # pylint: disable=broad-exception-caught
+            _LOGGER.error("Failed to login due to error: %s", err)
             self._errors["base"] = "cannot_connect"
+            return
 
         if not self._connection.logged_in:
             self._errors["base"] = "cannot_connect"
+            return
 
         self.hass.async_create_task(
             self.hass.config_entries.flow.async_configure(flow_id=self.flow_id)
         )
 
-    async def async_step_select_vehicle(self, user_input=None):
+    async def async_step_login(self, user_input: dict | None = None) -> FlowResult:
+        """Handle login step."""
+        if not self.task_login:
+            self.task_login = self.hass.async_create_task(self._async_task_login())
+
+            return self.async_show_progress(
+                step_id="login",
+                progress_action="task_login",
+                progress_task=self.task_login,
+            )
+
+        try:
+            await self.task_login
+        except Exception as err:  # pylint: disable=broad-exception-caught
+            _LOGGER.error("Login task failed: %s", err)
+            return self.async_abort(reason="cannot_connect")
+
+        if self._errors:
+            return self.async_show_progress_done(next_step_id="user")
+
+        assert self._connection is not None
+        for vehicle in self._connection.vehicles:
+            _LOGGER.info("Found vehicle with VIN: %s", vehicle.vin)
+
+        self._init_info["CONF_VEHICLES"] = {
+            vehicle.vin: vehicle.dashboard().instruments
+            for vehicle in self._connection.vehicles
+        }
+
+        return self.async_show_progress_done(next_step_id="select_vehicle")
+
+    async def async_step_select_vehicle(
+        self, user_input: dict | None = None
+    ) -> FlowResult:
         """Handle select vehicle step."""
         if user_input is not None:
             self._init_info[CONF_VEHICLE] = user_input[CONF_VEHICLE]
-
             return await self.async_step_select_instruments()
 
         vin_numbers = self._init_info["CONF_VEHICLES"].keys()
@@ -120,7 +157,9 @@ class VolkswagenCarnetConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
             data_schema=vol.Schema({vol.Required(CONF_VEHICLE): vol.In(vin_numbers)}),
         )
 
-    async def async_step_select_instruments(self, user_input=None):
+    async def async_step_select_instruments(
+        self, user_input: dict | None = None
+    ) -> FlowResult:
         """Handle select instruments step."""
         instruments = self._init_info["CONF_VEHICLES"][self._init_info[CONF_VEHICLE]]
         instruments_dict = {
@@ -128,10 +167,9 @@ class VolkswagenCarnetConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         }
 
         if user_input is not None:
-            # self._init_info[CONF_RESOURCES] = user_input[CONF_RESOURCES]
             self._init_info.pop("CONF_VEHICLES", None)
 
-            if self._init_info[CONF_NAME] is None or self._init_info[CONF_NAME] == "":
+            if not self._init_info[CONF_NAME]:
                 self._init_info[CONF_NAME] = self._init_info[CONF_VEHICLE]
 
             await self.async_set_unique_id(self._init_info[CONF_VEHICLE])
@@ -159,97 +197,66 @@ class VolkswagenCarnetConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
             last_step=True,
         )
 
-    async def async_step_login(self, user_input=None):
-        """Handle login step."""
-        if not self.task_login:
-            self.task_login = self.hass.async_create_task(self._async_task_login())
-
-            return self.async_show_progress(
-                step_id="login",
-                progress_action="task_login",
-                progress_task=self.task_login,
-            )
-
-        # noinspection PyBroadException
-        try:
-            await self.task_login
-        except Exception:  # pylint: disable=broad-exception-caught
-            return self.async_abort(reason="Failed to connect to Volkswagen Connect")
-
-        if self._errors:
-            return self.async_show_progress_done(next_step_id="user")
-
-        for vehicle in self._connection.vehicles:
-            _LOGGER.info("Found data for VIN: %s from Volkswagen Connect", vehicle.vin)
-
-        self._init_info["CONF_VEHICLES"] = {
-            vehicle.vin: vehicle.dashboard().instruments
-            for vehicle in self._connection.vehicles
-        }
-
-        return self.async_show_progress_done(next_step_id="select_vehicle")
-
-    async def async_step_reauth(self, user_input=None):
+    async def async_step_reauth(self, user_input: dict | None = None) -> FlowResult:
         """Handle reauth for Volkswagen Connect."""
         entry_id = self.context.get("entry_id")
-        self.entry = self.hass.config_entries.async_get_entry(entry_id)
+        self._entry = self.hass.config_entries.async_get_entry(entry_id)
         return await self.async_step_reauth_confirm()
 
-    async def async_step_reauth_confirm(self, user_input=None) -> dict:
+    async def async_step_reauth_confirm(
+        self, user_input: dict | None = None
+    ) -> FlowResult:
         """Handle re-authentication with Volkswagen Connect."""
-        errors: dict = {}
+        errors: dict[str, str] = {}
 
         if user_input is not None:
-            _LOGGER.debug("Creating connection to Volkswagen Connect")
+            assert self._entry is not None
+            _LOGGER.debug("Creating connection to Volkswagen Connect for reauth")
             self._connection = Connection(
                 session=async_get_clientsession(self.hass),
                 username=user_input[CONF_USERNAME],
                 password=user_input[CONF_PASSWORD],
-                fulldebug=self.entry.options.get(
-                    CONF_DEBUG, self.entry.data.get(CONF_DEBUG, DEFAULT_DEBUG)
+                fulldebug=self._entry.options.get(
+                    CONF_DEBUG, self._entry.data.get(CONF_DEBUG, DEFAULT_DEBUG)
                 ),
-                country=self.entry.options.get(
-                    CONF_REGION, self.entry.data[CONF_REGION]
+                country=self._entry.options.get(
+                    CONF_REGION, self._entry.data[CONF_REGION]
                 ),
             )
 
-            # noinspection PyBroadException
             try:
                 await self._connection.doLogin()
 
                 if not await self._connection.validate_login:
-                    _LOGGER.debug(
-                        "Unable to login to Volkswagen Connect. Need to accept a new EULA?"
+                    _LOGGER.warning(
+                        "Unable to login to Volkswagen Connect. "
+                        "May need to accept a new EULA. "
                         "Try logging in to the portal: https://www.myvolkswagen.net/"
                     )
                     errors["base"] = "cannot_connect"
                 else:
-                    data = self.entry.data.copy()
+                    data = self._entry.data.copy()
                     self.hass.config_entries.async_update_entry(
-                        self.entry,
+                        self._entry,
                         data={
                             **data,
                             CONF_USERNAME: user_input[CONF_USERNAME],
                             CONF_PASSWORD: user_input[CONF_PASSWORD],
                         },
                     )
-                    self.hass.async_create_task(
-                        self.hass.config_entries.async_reload(self.entry.entry_id)
-                    )
-
+                    await self.hass.config_entries.async_reload(self._entry.entry_id)
                     return self.async_abort(reason="reauth_successful")
-            except Exception as e:  # pylint: disable=broad-exception-caught
-                _LOGGER.error("Failed to login due to error: %s", str(e))
-                return self.async_abort(
-                    reason="Failed to connect to Volkswagen Connect"
-                )
+            except Exception as err:  # pylint: disable=broad-exception-caught
+                _LOGGER.error("Failed to login during reauth: %s", err)
+                errors["base"] = "cannot_connect"
 
+        assert self._entry is not None
         return self.async_show_form(
             step_id="reauth_confirm",
             data_schema=vol.Schema(
                 {
                     vol.Required(
-                        CONF_USERNAME, default=self.entry.data[CONF_USERNAME]
+                        CONF_USERNAME, default=self._entry.data[CONF_USERNAME]
                     ): str,
                     vol.Required(CONF_PASSWORD): str,
                 }
@@ -259,29 +266,27 @@ class VolkswagenCarnetConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
 
     @staticmethod
     @callback
-    def async_get_options_flow(config_entry):
+    def async_get_options_flow(config_entry: ConfigEntry):
         """Get the options flow for this handler."""
         return VolkswagenCarnetOptionsFlowHandler(config_entry)
 
 
 class VolkswagenCarnetOptionsFlowHandler(config_entries.OptionsFlow):
-    """Handle Plaato options."""
+    """Handle Volkswagen Connect options."""
 
     def __init__(self, config_entry: ConfigEntry) -> None:
-        """Initialize domain options flow."""
+        """Initialize options flow."""
         super().__init__()
-        self._session = None
-        self._errors = {}
+        self._config_entry = config_entry
+        self._errors: dict[str, str] = {}
+        self._data: dict = {}
 
-        self._config_entry: ConfigEntry = config_entry
-        self._data = {}
-
-    async def async_step_init(self, user_input=None):
+    async def async_step_init(self, user_input: dict | None = None) -> FlowResult:
         """Manage the options."""
         return await self.async_step_user()
 
-    async def async_step_user(self, user_input=None):
-        """Manage the options."""
+    async def async_step_user(self, user_input: dict | None = None) -> FlowResult:
+        """Handle user options step."""
         if user_input is not None:
             self._data = user_input
             return await self.async_step_select_instruments()
@@ -322,64 +327,67 @@ class VolkswagenCarnetOptionsFlowHandler(config_entries.OptionsFlow):
             ),
         )
 
-    async def async_step_select_instruments(self, user_input=None):
-        """Manage select instruments."""
+    async def async_step_select_instruments(
+        self, user_input: dict | None = None
+    ) -> FlowResult:
+        """Handle select instruments step."""
         coordinator = await get_coordinator(self.hass, self._config_entry)
         data = self._config_entry.as_dict()
 
-        v: Vehicle = get_vehicle(coordinator=coordinator)
-        d = v.dashboard()
-
+        vehicle: Vehicle = get_vehicle(coordinator=coordinator)
+        instruments = vehicle.dashboard().instruments
         instruments_dict = {
-            instrument.attr: instrument.name for instrument in d.instruments
+            instrument.attr: instrument.name for instrument in instruments
         }
 
         if user_input is not None:
-            options = {
-                **data["options"],
-                CONF_RESOURCES: user_input[CONF_RESOURCES],
-                CONF_AVAILABLE_RESOURCES: instruments_dict,
-            }
+            old_resources = set(data.get("options", {}).get(CONF_RESOURCES, []))
+            new_resources = set(user_input[CONF_RESOURCES])
 
-            removed_resources = set(data.get("options", {}).get("resources", {})) - set(
-                options[CONF_RESOURCES]
-            )
-            added_resources = set(options[CONF_RESOURCES]) - set(
-                data.get("options", {}).get("resources", {})
-            )
+            removed_resources = old_resources - new_resources
+            added_resources = new_resources - old_resources
 
-            _LOGGER.info(
-                "Adding resources: %s, removing resources: %s",
-                added_resources,
-                removed_resources,
-            )
+            if removed_resources or added_resources:
+                _LOGGER.info(
+                    "Resources changed - adding: %s, removing: %s",
+                    added_resources,
+                    removed_resources,
+                )
 
-            # Need to recreate entitiesin some cases
-            # Some resource was removed
-            recreate_entities = len(removed_resources) > 0
-            # distance conversion was changed
-            recreate_entities = recreate_entities or self._data[
-                CONF_CONVERT
-            ] != data.get("data", {}).get(CONF_CONVERT, "")
+            # Recreate entities if resources changed or conversion changed
+            old_convert = data.get("data", {}).get(CONF_CONVERT, CONF_NO_CONVERSION)
+            new_convert = self._data.get(CONF_CONVERT, CONF_NO_CONVERSION)
+            recreate_entities = bool(removed_resources) or (old_convert != new_convert)
 
             if recreate_entities:
+                _LOGGER.debug("Recreating entities due to configuration changes")
                 entity_registry = async_get(self.hass)
-                # Remove all HA entities because we don't know which entities a resource has created :/
-                # All entities will be recreated automatically anyway.
                 entity_registry.async_clear_config_entry(self._config_entry.entry_id)
 
             # Update data with input from previous steps
-            data.get("data").update(self._data)
-            # Update the data first
+            data["data"].update(self._data)
+
+            # Update config entry data
             self.hass.config_entries.async_update_entry(
                 self._config_entry,
                 data={**data["data"]},
             )
 
             # Set options
-            return self.async_create_entry(title="", data=options)
+            return self.async_create_entry(
+                title="",
+                data={
+                    **data.get("options", {}),
+                    CONF_RESOURCES: user_input[CONF_RESOURCES],
+                    CONF_AVAILABLE_RESOURCES: instruments_dict,
+                },
+            )
 
-        selected = {i for i in instruments_dict if i in data["options"][CONF_RESOURCES]}
+        selected = {
+            i
+            for i in instruments_dict
+            if i in data.get("options", {}).get(CONF_RESOURCES, [])
+        }
 
         return self.async_show_form(
             step_id="select_instruments",

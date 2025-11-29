@@ -2,8 +2,9 @@
 
 import logging
 
+from homeassistant.components.switch import SwitchEntity
 from homeassistant.core import HomeAssistant
-from homeassistant.helpers.entity import EntityCategory, ToggleEntity
+from homeassistant.helpers.entity import EntityCategory
 
 from . import VolkswagenData, VolkswagenEntity
 from .const import DATA, DATA_KEY, DOMAIN, UPDATE_CALLBACK
@@ -42,10 +43,12 @@ async def async_setup_entry(hass: HomeAssistant, entry, async_add_devices):
     return True
 
 
-class VolkswagenSwitch(VolkswagenEntity, ToggleEntity):
+class VolkswagenSwitch(VolkswagenEntity, SwitchEntity):
     """Representation of a Volkswagen Connect Switch."""
 
-    # pylint: disable=useless-parent-delegation
+    # Entity attributes (Home Assistant 2024+)
+    _attr_has_entity_name = True
+
     def __init__(
         self,
         data: VolkswagenData,
@@ -56,45 +59,46 @@ class VolkswagenSwitch(VolkswagenEntity, ToggleEntity):
     ) -> None:
         """Initialize switch."""
         super().__init__(data, vin, component, attribute, callback)
+        # Set attributes based on instrument
+        self._attr_entity_category = self._get_entity_category()
+        self._attr_assumed_state = self.instrument.assumed_state
 
-    def turn_on(self, **kwargs: object) -> None:
-        """Don't support sync methods."""
-        raise NotImplementedError
+    def _get_entity_category(self) -> EntityCategory | None:
+        """Get entity category from instrument."""
+        entity_type = self.instrument.entity_type
 
-    def turn_off(self, **kwargs: object) -> None:
-        """Don't support sync methods."""
-        raise NotImplementedError
+        if entity_type == "diag":
+            return EntityCategory.DIAGNOSTIC
+        if entity_type == "config":
+            return EntityCategory.CONFIG
+
+        return None
 
     @property
-    def is_on(self):
+    def is_on(self) -> bool | None:
         """Return true if switch is on."""
         _LOGGER.debug("Getting state of %s", self.instrument.attr)
         return self.instrument.state
 
-    async def async_turn_on(self, **kwargs):
+    async def async_turn_on(self, **kwargs: object) -> None:
         """Turn the switch on."""
-        _LOGGER.debug("Turning ON %s", self.instrument.attr)
-        await self.instrument.turn_on()
-        self.notify_updated()
+        try:
+            _LOGGER.debug("Turning ON %s", self.instrument.attr)
+            await self.instrument.turn_on()
+            self.notify_updated()
+        except Exception as err:
+            _LOGGER.error("Failed to turn on %s: %s", self.instrument.attr, err)
+            raise
 
-    async def async_turn_off(self, **kwargs):
+    async def async_turn_off(self, **kwargs: object) -> None:
         """Turn the switch off."""
-        _LOGGER.debug("Turning OFF %s", self.instrument.attr)
-        await self.instrument.turn_off()
-        self.notify_updated()
-
-    @property
-    def entity_category(self) -> EntityCategory | str | None:
-        """Return entity category."""
-        if self.instrument.entity_type == "diag":
-            return EntityCategory.DIAGNOSTIC
-        if self.instrument.entity_type == "config":
-            return EntityCategory.CONFIG
-
-    @property
-    def assumed_state(self):
-        """Return state assumption."""
-        return self.instrument.assumed_state
+        try:
+            _LOGGER.debug("Turning OFF %s", self.instrument.attr)
+            await self.instrument.turn_off()
+            self.notify_updated()
+        except Exception as err:
+            _LOGGER.error("Failed to turn off %s: %s", self.instrument.attr, err)
+            raise
 
     @property
     def extra_state_attributes(self) -> dict[str, object]:

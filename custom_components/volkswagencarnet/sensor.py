@@ -3,8 +3,6 @@
 import logging
 
 from homeassistant.components.sensor import (
-    DEVICE_CLASSES,
-    STATE_CLASSES,
     SensorDeviceClass,
     SensorEntity,
     SensorStateClass,
@@ -54,69 +52,95 @@ async def async_setup_entry(hass: HomeAssistant, entry, async_add_devices):
 class VolkswagenSensor(VolkswagenEntity, SensorEntity):
     """Representation of a Volkswagen Connect Sensor."""
 
+    # Entity attributes (Home Assistant 2024+)
+    _attr_has_entity_name = True
+
+    def __init__(self, *args, **kwargs):
+        """Initialize the sensor entity."""
+        super().__init__(*args, **kwargs)
+        # Set attributes based on instrument
+        self._attr_native_unit_of_measurement = self._get_unit()
+        self._attr_device_class = self._get_device_class()
+        self._attr_state_class = self._get_state_class()
+        self._attr_suggested_display_precision = self._get_suggested_precision()
+        self._attr_entity_category = self._get_entity_category()
+
+    def _get_unit(self) -> str | None:
+        """Get unit of measurement from instrument."""
+        return self.instrument.unit or None
+
+    def _get_device_class(self) -> SensorDeviceClass | None:
+        """Get device class from instrument."""
+        try:
+            device_class = self.instrument.device_class
+            if device_class is None:
+                return None
+
+            # Validate against SensorDeviceClass enum
+            return SensorDeviceClass(device_class)
+        except ValueError:
+            _LOGGER.warning(
+                "Unknown device class '%s' for %s",
+                self.instrument.device_class,
+                self.instrument.attr,
+            )
+            return None
+
+    def _get_state_class(self) -> SensorStateClass | None:
+        """Get state class from instrument."""
+        try:
+            state_class = self.instrument.state_class
+            if state_class is None:
+                return None
+
+            # Validate against SensorStateClass enum
+            return SensorStateClass(state_class)
+        except ValueError:
+            _LOGGER.warning(
+                "Unknown state class '%s' for %s",
+                self.instrument.state_class,
+                self.instrument.attr,
+            )
+            return None
+
+    def _get_suggested_precision(self) -> int | None:
+        """Get suggested display precision for UI."""
+        device_class = self.instrument.device_class
+
+        # No decimal places for distance and speed
+        if device_class in (
+            SensorDeviceClass.DISTANCE,
+            SensorDeviceClass.SPEED,
+        ):
+            return 0
+
+        # One decimal place for energy consumption, power, and volume
+        if device_class in (
+            SensorDeviceClass.ENERGY_DISTANCE,
+            SensorDeviceClass.POWER,
+            SensorDeviceClass.VOLUME,
+        ):
+            return 1
+
+        return None
+
+    def _get_entity_category(self) -> EntityCategory | None:
+        """Get entity category from instrument."""
+        entity_type = self.instrument.entity_type
+
+        if entity_type == "diag":
+            return EntityCategory.DIAGNOSTIC
+        if entity_type == "config":
+            return EntityCategory.CONFIG
+
+        return None
+
     @property
     def native_value(self):
         """Return the state of the sensor."""
-        if self.instrument is not None:
-            _LOGGER.debug("Getting state of %s", self.instrument.attr)
-        else:
-            _LOGGER.debug("Getting state of of a broken entity?")
-            return ""
+        if self.instrument is None:
+            _LOGGER.warning("Getting state of a broken entity")
+            return None
 
+        _LOGGER.debug("Getting state of %s", self.instrument.attr)
         return self.instrument.state
-
-    @property
-    def native_unit_of_measurement(self):
-        """Return the unit of measurement."""
-        if self.instrument.unit:
-            return self.instrument.unit
-
-    @property
-    def device_class(self) -> SensorDeviceClass | None:
-        """Return the device class."""
-        if (
-            self.instrument.device_class is None
-            or self.instrument.device_class in DEVICE_CLASSES
-        ):
-            return self.instrument.device_class
-        _LOGGER.warning("Unknown device class %s", self.instrument.device_class)
-        return None
-
-    @property
-    def state_class(self) -> SensorStateClass | None:
-        """Return the state class."""
-        if (
-            self.instrument.state_class is None
-            or self.instrument.state_class in STATE_CLASSES
-        ):
-            return self.instrument.state_class
-        _LOGGER.warning("Unknown state class %s", self.instrument.state_class)
-        return None
-
-    @property
-    def suggested_display_precision(self):
-        """Return suggested display precision for UI."""
-        if self.instrument is not None:
-            device_class = getattr(self.instrument, "device_class", None)
-            if device_class in (
-                SensorDeviceClass.DISTANCE,
-                SensorDeviceClass.SPEED,
-            ):
-                return 0
-        if self.instrument is not None:
-            device_class = getattr(self.instrument, "device_class", None)
-            if device_class in (
-                SensorDeviceClass.ENERGY_DISTANCE,
-                SensorDeviceClass.POWER,
-                SensorDeviceClass.VOLUME,
-            ):
-                return 1
-        return None
-
-    @property
-    def entity_category(self) -> EntityCategory | str | None:
-        """Return entity category."""
-        if self.instrument.entity_type == "diag":
-            return EntityCategory.DIAGNOSTIC
-        if self.instrument.entity_type == "config":
-            return EntityCategory.CONFIG

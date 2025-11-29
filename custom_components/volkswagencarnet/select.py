@@ -1,4 +1,4 @@
-"""Number support for Volkswagen Connect integration."""
+"""Select support for Volkswagen Connect integration."""
 
 import logging
 
@@ -47,29 +47,52 @@ async def async_setup_entry(hass: HomeAssistant, entry, async_add_devices):
 class VolkswagenSelect(VolkswagenEntity, SelectEntity):
     """Representation of a Volkswagen select."""
 
-    @property
-    def options(self) -> list:
-        """Return the options list."""
-        if self.instrument.options:
-            return self.instrument.options
+    # Entity attributes (Home Assistant 2024+)
+    _attr_has_entity_name = True
+
+    def __init__(self, *args, **kwargs):
+        """Initialize the select entity."""
+        super().__init__(*args, **kwargs)
+        # Set attributes based on instrument
+        self._attr_options = self._get_options()
+        self._attr_entity_category = self._get_entity_category()
+
+    def _get_options(self) -> list[str] | None:
+        """Get options from instrument."""
+        options = self.instrument.options
+        if options:
+            return list(options)
         return None
 
-    @property
-    def current_option(self) -> str:
-        """Return the current option."""
-        if self.instrument.current_option:
-            return self.instrument.current_option
-        return None
+    def _get_entity_category(self) -> EntityCategory | None:
+        """Get entity category from instrument."""
+        entity_type = self.instrument.entity_type
 
-    @property
-    def entity_category(self) -> EntityCategory | str | None:
-        """Return entity category."""
-        if self.instrument.entity_type == "diag":
+        if entity_type == "diag":
             return EntityCategory.DIAGNOSTIC
-        if self.instrument.entity_type == "config":
+        if entity_type == "config":
             return EntityCategory.CONFIG
+
+        return None
+
+    @property
+    def current_option(self) -> str | None:
+        """Return the current option."""
+        current = self.instrument.current_option
+        if current:
+            return str(current)
+        return None
 
     async def async_select_option(self, option: str) -> None:
         """Update the current value."""
-        await self.instrument.set_value(option)
-        self.notify_updated()
+        try:
+            await self.instrument.set_value(option)
+            self.notify_updated()
+        except Exception as err:
+            _LOGGER.error(
+                "Failed to set option for %s to %s: %s",
+                self.instrument.attr,
+                option,
+                err,
+            )
+            raise

@@ -46,30 +46,29 @@ async def async_setup_entry(hass: HomeAssistant, entry, async_add_devices):
 class VolkswagenLock(VolkswagenEntity, LockEntity):
     """Represents a Volkswagen Connect Lock."""
 
-    def lock(self, **kwargs: object) -> None:
-        """Not implemented."""
-        raise NotImplementedError("Use async_lock instead")
-
-    def unlock(self, **kwargs: object) -> None:
-        """Not implemented."""
-        raise NotImplementedError("Use async_unlock instead")
-
-    def open(self, **kwargs: object) -> None:
-        """Not implemented."""
-        raise NotImplementedError
+    # Entity attributes (Home Assistant 2024+)
+    _attr_has_entity_name = True
 
     @property
-    def is_locked(self):
+    def is_locked(self) -> bool | None:
         """Return true if lock is locked."""
         _LOGGER.debug("Getting state of %s", self.instrument.attr)
         return self.instrument.is_locked
 
-    async def async_lock(self, **kwargs):
+    async def async_lock(self, **kwargs: object) -> None:
         """Lock the car."""
-        await self.instrument.lock()
-        self.notify_updated()
+        try:
+            await self.instrument.lock()
+            self.notify_updated()
+        except Exception as err:
+            _LOGGER.error("Failed to lock %s: %s", self.instrument.attr, err)
+            raise
 
-    async def async_unlock(self, **kwargs):
+    async def async_unlock(self, **kwargs: object) -> None:
         """Unlock the car."""
-        await self.instrument.unlock()
-        self.notify_updated()
+        try:
+            await self.instrument.unlock()
+            self.notify_updated()
+        except Exception as err:
+            _LOGGER.error("Failed to unlock %s: %s", self.instrument.attr, err)
+            raise
