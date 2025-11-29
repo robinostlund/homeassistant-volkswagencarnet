@@ -12,7 +12,7 @@
 
 [![buy me a coffee](https://www.buymeacoffee.com/assets/img/custom_images/yellow_img.png)](https://www.buymeacoffee.com/robinostlund)
 
-[![buy me a coffee](resources/stickpin_kofi.jpeg)](https://ko-fi.com/stickpin)
+[![buy me a coffee](https://raw.githubusercontent.com/robinostlund/homeassistant-volkswagencarnet/master/resources/stickpin_kofi.jpeg)](https://ko-fi.com/stickpin)
 
 ## Description
 
