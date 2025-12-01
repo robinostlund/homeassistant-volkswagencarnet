@@ -43,7 +43,7 @@
       "reauth_successful": "Re-authentication was successful"
     },
     "error": {
-      "cannot_connect": "Could not login to Volkswagen Connect, please check your credentials and verify that the service is working",
+      "cannot_connect": "Could not login to Volkswagen Connect, please check your credentials and verify that the service is working. This can be caused by an update to terms and conditions, try logging in using the app or https://www.myvolkswagen.net/.",
       "cannot_update": "Could not query update from Volkswagen Connect",
       "unknown": "An unknown error occurred"
     },
