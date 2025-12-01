@@ -501,6 +501,7 @@ class VolkswagenCoordinator(DataUpdateCoordinator):
         vehicle = await self.update()
 
         if vehicle is None:
+            self.entry.async_start_reauth(self.hass)
             raise UpdateFailed(
                 "Failed to update Volkswagen Connect. Need to accept EULA? "
                 "Try logging in to the portal: https://www.myvolkswagen.net/"

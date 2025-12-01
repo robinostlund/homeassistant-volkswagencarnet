@@ -227,7 +227,7 @@ class VolkswagenCarnetConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
             try:
                 await self._connection.doLogin()
 
-                if not await self._connection.validate_login:
+                if not await self._connection.validate_login():
                     _LOGGER.warning(
                         "Unable to login to Volkswagen Connect. "
                         "May need to accept a new EULA. "
