@@ -1,2 +1,2 @@
 pytz
-volkswagencarnet==5.1.9
+volkswagencarnet==5.2.0
