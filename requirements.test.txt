@@ -3,4 +3,3 @@ flake8
 freezegun
 homeassistant>=2022.03.2
 pytest-homeassistant-custom-component>=0.7.1
-types-pytz
