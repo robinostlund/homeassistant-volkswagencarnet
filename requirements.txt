@@ -1,2 +1,1 @@
-pytz
-volkswagencarnet==5.2.0
+volkswagencarnet==5.2.1
