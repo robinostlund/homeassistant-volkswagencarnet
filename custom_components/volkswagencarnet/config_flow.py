@@ -75,6 +75,7 @@ class VolkswagenCarnetConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         if user_input is not None:
             self._errors = {}
             self._init_info = user_input
+            self.task_login = None
 
             _LOGGER.debug("Creating connection to Volkswagen Connect")
             self._connection = Connection(
@@ -149,6 +150,11 @@ class VolkswagenCarnetConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         if user_input is not None:
             self._init_info[CONF_VEHICLE] = user_input[CONF_VEHICLE]
             return await self.async_step_select_instruments()
+
+        # Check if vehicles were discovered
+        if "CONF_VEHICLES" not in self._init_info:
+            _LOGGER.debug("No vehicles found in init info, restarting flow")
+            return await self.async_step_user()
 
         vin_numbers = self._init_info["CONF_VEHICLES"].keys()
         return self.async_show_form(
