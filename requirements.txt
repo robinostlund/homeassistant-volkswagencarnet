@@ -1,1 +1,1 @@
-volkswagencarnet==5.2.5
+volkswagencarnet==5.2.6
