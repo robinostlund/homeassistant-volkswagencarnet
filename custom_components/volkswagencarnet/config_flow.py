@@ -27,14 +27,12 @@ from volkswagencarnet.vw_vehicle import Vehicle
 from .const import (
     CONF_AVAILABLE_RESOURCES,
     CONF_CONVERT,
-    CONF_DEBUG,
     CONF_MUTABLE,
     CONF_NO_CONVERSION,
     CONF_REGION,
     CONF_SPIN,
     CONF_VEHICLE,
     CONVERT_DICT,
-    DEFAULT_DEBUG,
     DEFAULT_REGION,
     DEFAULT_UPDATE_INTERVAL,
     DOMAIN,
@@ -52,7 +50,6 @@ DATA_SCHEMA = vol.Schema(
         vol.Optional(CONF_REGION, default=DEFAULT_REGION): str,
         vol.Optional(CONF_MUTABLE, default=True): cv.boolean,
         vol.Optional(CONF_CONVERT, default=CONF_NO_CONVERSION): vol.In(CONVERT_DICT),
-        vol.Optional(CONF_DEBUG, default=DEFAULT_DEBUG): cv.boolean,
     }
 )
 
@@ -82,7 +79,6 @@ class VolkswagenCarnetConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                 session=async_get_clientsession(self.hass),
                 username=self._init_info[CONF_USERNAME],
                 password=self._init_info[CONF_PASSWORD],
-                fulldebug=self._init_info.get(CONF_DEBUG, DEFAULT_DEBUG),
                 country=self._init_info[CONF_REGION],
             )
 
@@ -222,9 +218,6 @@ class VolkswagenCarnetConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                 session=async_get_clientsession(self.hass),
                 username=user_input[CONF_USERNAME],
                 password=user_input[CONF_PASSWORD],
-                fulldebug=self._entry.options.get(
-                    CONF_DEBUG, self._entry.data.get(CONF_DEBUG, DEFAULT_DEBUG)
-                ),
                 country=self._entry.options.get(
                     CONF_REGION, self._entry.data[CONF_REGION]
                 ),
@@ -301,13 +294,6 @@ class VolkswagenCarnetOptionsFlowHandler(config_entries.OptionsFlow):
             step_id="user",
             data_schema=vol.Schema(
                 {
-                    vol.Optional(
-                        CONF_DEBUG,
-                        default=self._config_entry.options.get(
-                            CONF_DEBUG,
-                            self._config_entry.data.get(CONF_DEBUG, DEFAULT_DEBUG),
-                        ),
-                    ): cv.boolean,
                     vol.Optional(
                         CONF_CONVERT,
                         default=self._config_entry.data.get(

@@ -45,7 +45,6 @@ from .const import (
     COMPONENTS,
     CONF_AVAILABLE_RESOURCES,
     CONF_CONVERT,
-    CONF_DEBUG,
     CONF_IMPERIAL_UNITS,
     CONF_MUTABLE,
     CONF_NO_CONVERSION,
@@ -54,7 +53,6 @@ from .const import (
     CONF_SPIN,
     CONF_VEHICLE,
     DATA,
-    DEFAULT_DEBUG,
     DEFAULT_UPDATE_INTERVAL,
     DOMAIN,
     SIGNAL_STATE_UPDATED,
@@ -479,9 +477,6 @@ class VolkswagenCoordinator(DataUpdateCoordinator):
             session=async_get_clientsession(hass),
             username=self.entry.data[CONF_USERNAME],
             password=self.entry.data[CONF_PASSWORD],
-            fulldebug=self.entry.options.get(
-                CONF_DEBUG, self.entry.data.get(CONF_DEBUG, DEFAULT_DEBUG)
-            ),
             country=self.entry.options.get(CONF_REGION, self.entry.data[CONF_REGION]),
         )
 

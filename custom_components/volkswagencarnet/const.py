@@ -6,7 +6,6 @@ DOMAIN = "volkswagencarnet"
 DATA_KEY = DOMAIN
 
 DEFAULT_REGION = "DE"
-DEFAULT_DEBUG = False
 
 CONF_REGION = "region"
 CONF_MUTABLE = "mutable"
@@ -16,7 +15,6 @@ CONF_IMPERIAL_UNITS = "imperial_units"
 CONF_NO_CONVERSION = "no_conversion"
 CONF_CONVERT = "convert"
 CONF_VEHICLE = "vehicle"
-CONF_DEBUG = "debug"
 CONF_AVAILABLE_RESOURCES = "available_resources"
 
 UPDATE_CALLBACK = "update_callback"
