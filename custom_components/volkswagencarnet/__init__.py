@@ -20,10 +20,10 @@ from homeassistant.helpers.aiohttp_client import async_get_clientsession
 from homeassistant.helpers.dispatcher import async_dispatcher_connect
 from homeassistant.helpers.icon import icon_for_battery_level
 from homeassistant.helpers.restore_state import RestoreEntity
+from homeassistant.exceptions import ConfigEntryAuthFailed
 from homeassistant.helpers.update_coordinator import (
     CoordinatorEntity,
     DataUpdateCoordinator,
-    UpdateFailed,
 )
 
 # pylint: disable=no-name-in-module,hass-relative-import
@@ -497,7 +497,7 @@ class VolkswagenCoordinator(DataUpdateCoordinator):
 
         if vehicle is None:
             self.entry.async_start_reauth(self.hass)
-            raise UpdateFailed(
+            raise ConfigEntryAuthFailed(
                 "Failed to update Volkswagen Connect. Need to accept EULA? "
                 "Try logging in to the portal: https://www.myvolkswagen.net/"
             )
