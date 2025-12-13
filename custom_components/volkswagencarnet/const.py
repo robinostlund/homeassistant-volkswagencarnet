@@ -39,5 +39,6 @@ COMPONENTS = {
     "device_tracker": "device_tracker",
     "select": "select",
     "switch": "switch",
+    "climate": "climate",
     "number": "number",
 }
