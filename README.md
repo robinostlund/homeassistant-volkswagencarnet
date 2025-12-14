@@ -69,7 +69,7 @@ Note that only the packaged releases (zip file) have the dependencies configured
 * Distance unit conversion - Select if you wish to use "Swedish mil" or Imperial Miles instead of KM (Optional, default is KM)
 ![image](https://raw.githubusercontent.com/robinostlund/homeassistant-volkswagencarnet/master/resources/integration_config.png)
 
-Note that the Volkswagen API has a connection limit of 480 calls/day (one call every 3rd minute). The default interval of 5 minutes in this integration will leave only 192 calls for other applications, such as the VW app, which might not be enough. If you want to use the app alongside this integration, it is recommended to raise this interval to 10 minutes. This can be changed by selecting **Configure** for the integration in Home Assistant, and them modifying the value **Sensors update interval (minutes)**.
+> **Note:** The Volkswagen API has a connection limit of **480 calls per day** (approximately one call every 3 minutes). The default update interval of **5 minutes** in this integration will use 288 calls per day, leaving only **192 calls** available for other applications, such as the official VW app — which may not be sufficient. If you plan to use the VW app alongside this integration, it is recommended to **increase the update interval to 10 minutes**. You can adjust this by going to the integration in Home Assistant, selecting **Configure**, and then modifying the **Sensors update interval (minutes)**.
 
 ## Having Issues with This Component?
 
