@@ -10,6 +10,7 @@
   "integration_type": "hub",
   "iot_class": "cloud_polling",
   "issue_tracker": "https://github.com/robinostlund/homeassistant-volkswagencarnet/issues",
+  "loggers": ["volkswagencarnet"],
   "requirements": [],
   "version": "v0.0.0"
 }
