@@ -67,6 +67,7 @@ Note that only the packaged releases (zip file) have the dependencies configured
 * Mutable - If enabled you can interact with the car, if disabled only data from the car will be presented (Optional)
 * S-PIN - Required for some specific options such as lock/unlock (Optional)
 * Distance unit conversion - Select if you wish to use "Swedish mil" or Imperial Miles instead of KM (Optional, default is KM)
+
 ![image](https://raw.githubusercontent.com/robinostlund/homeassistant-volkswagencarnet/master/resources/integration_config.png)
 
 > **Note:** The Volkswagen API has a connection limit of **480 calls per day** (approximately one call every 3 minutes). The default update interval of **5 minutes** in this integration will use 288 calls per day, leaving only **192 calls** available for other applications, such as the official VW app — which may not be sufficient. If you plan to use the VW app alongside this integration, it is recommended to **increase the update interval to 10 minutes**. You can adjust this by going to the integration in Home Assistant, selecting **Configure**, and then modifying the **Sensors update interval (minutes)**.
