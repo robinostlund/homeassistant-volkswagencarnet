@@ -60,6 +60,7 @@ class VolkswagenClimate(VolkswagenEntity, ClimateEntity):
     _attr_min_temp = 15.5
     _attr_max_temp = 30
     _attr_translation_key = "climate"
+    _attr_has_entity_name = True
     _enable_turn_on_off_backwards_compatibility = False
 
     def __init__(

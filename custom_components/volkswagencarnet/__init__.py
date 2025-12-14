@@ -76,6 +76,14 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     coordinator = VolkswagenCoordinator(hass, entry, update_interval)
     coordinator.async_add_listener(coordinator.async_update_listener)
 
+    # Sync volkswagencarnet library log level with integration log level
+    volkswagencarnet_logger = logging.getLogger("volkswagencarnet")
+    if _LOGGER.isEnabledFor(logging.DEBUG):
+        volkswagencarnet_logger.setLevel(logging.DEBUG)
+        _LOGGER.debug("Enabled DEBUG logging for volkswagencarnet library")
+    else:
+        volkswagencarnet_logger.setLevel(logging.INFO)
+
     if not await coordinator.async_login():
         _LOGGER.warning("Failed to login, triggering reauth")
         entry.async_start_reauth(hass)
