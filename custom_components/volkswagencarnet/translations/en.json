@@ -56,12 +56,13 @@
     "step": {
       "user": {
         "title": "Options for Volkswagen Connect",
-        "description": "Configure update intervals",
+        "description": "Configure Volkswagen Connect settings",
         "data": {
-          "scan_interval": "Sensors update interval (minutes)",
+          "spin": "S-PIN (required for lock/unlock and heating)",
           "region": "Region (The country where the car was sold)",
-          "debug": "Enable full debug logs from API (requires debug logging enabled in config)",
-          "convert": "Select if you want to make any distance unit conversions"
+          "mutable": "Enable car control (uncheck for read-only mode)",
+          "convert": "Select if you want to make any distance unit conversions",
+          "scan_interval": "Sensors update interval (minutes)"
         }
       },
       "select_instruments": {

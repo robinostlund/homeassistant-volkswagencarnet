@@ -32,6 +32,7 @@ from volkswagencarnet.vw_dashboard import (
     BinarySensor,
     DoorLock,
     Instrument,
+    Climate,
     Number,
     Position,
     Select,
@@ -301,7 +302,16 @@ class VolkswagenEntity(CoordinatorEntity, RestoreEntity):
     @callback
     def async_write_ha_state(self) -> None:
         """Write state to HA, but only if needed."""
-        backend_refresh_time = self.instrument.last_refresh
+        try:
+            backend_refresh_time = self.instrument.last_refresh
+        except ValueError:
+            # Instrument not found - mark as unavailable
+            _LOGGER.debug(
+                "Instrument not found for entity %s, marking as unavailable",
+                self.entity_id,
+            )
+            super().async_write_ha_state()
+            return
         # Get the previous state from the state machine if found
         prev: State | None = self.hass.states.get(self.entity_id)
 
@@ -364,6 +374,7 @@ class VolkswagenEntity(CoordinatorEntity, RestoreEntity):
         self,
     ) -> (
         BinarySensor
+        | Climate
         | DoorLock
         | Position
         | Select
@@ -446,9 +457,17 @@ class VolkswagenEntity(CoordinatorEntity, RestoreEntity):
     @property
     def available(self) -> bool:
         """Return if entity is available."""
-        if self.coordinator is not None:
-            return self.coordinator.last_update_success
-        return True
+        try:
+            # Check if instrument exists
+            _ = self.instrument
+            return (
+                super().available
+                and self.coordinator.last_update_success
+                and self.instrument is not None
+            )
+        except ValueError:
+            # Instrument not found (disabled or not supported)
+            return False
 
     @property
     def unique_id(self) -> str:

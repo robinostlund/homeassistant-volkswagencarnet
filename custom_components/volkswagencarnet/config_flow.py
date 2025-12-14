@@ -295,6 +295,20 @@ class VolkswagenCarnetOptionsFlowHandler(config_entries.OptionsFlow):
             data_schema=vol.Schema(
                 {
                     vol.Optional(
+                        CONF_SPIN,
+                        default=self._config_entry.data.get(CONF_SPIN, ""),
+                    ): str,
+                    vol.Optional(
+                        CONF_REGION,
+                        default=self._config_entry.options.get(
+                            CONF_REGION, self._config_entry.data[CONF_REGION]
+                        ),
+                    ): str,
+                    vol.Optional(
+                        CONF_MUTABLE,
+                        default=self._config_entry.data.get(CONF_MUTABLE, True),
+                    ): cv.boolean,
+                    vol.Optional(
                         CONF_CONVERT,
                         default=self._config_entry.data.get(
                             CONF_CONVERT, CONF_NO_CONVERSION
@@ -309,12 +323,6 @@ class VolkswagenCarnetOptionsFlowHandler(config_entries.OptionsFlow):
                             ),
                         ),
                     ): cv.positive_int,
-                    vol.Optional(
-                        CONF_REGION,
-                        default=self._config_entry.options.get(
-                            CONF_REGION, self._config_entry.data[CONF_REGION]
-                        ),
-                    ): str,
                 }
             ),
         )
