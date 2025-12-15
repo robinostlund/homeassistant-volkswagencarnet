@@ -1,0 +1,77 @@
+{
+  "title": "Volkswagen Connect",
+  "config": {
+    "step": {
+      "user": {
+        "title": "Volkswagen Connect Configuratie",
+        "description": "Vul de Volkswagen Connect gegevens in\n\nDe S-PIN is vereist voor specifieke opties zoals vergrendelen/ontgrendelen en het starten/stoppen van de standkachel.",
+        "data": {
+          "username": "E-mailadres",
+          "password": "Wachtwoord",
+          "mutable": "Vink uit om de auto 'alleen-lezen' te maken. Houd aangevinkt om interactie met de auto mogelijk te maken.",
+          "region": "Landcode waar de auto is verkocht (ISO 3166-1 alpha-2)",
+          "spin": "S-PIN",
+          "name": "Geef je auto een naam (standaard het VIN-nummer)",
+          "debug": "Schakel volledige debug-logs van de API in (vereist dat debug-logging is ingeschakeld in de config)",
+          "convert": "Selecteer of je eenheden voor afstand wilt converteren"
+        }
+      },
+      "select_vehicle": {
+        "title": "Voertuig",
+        "description": "De volgende voertuigen zijn gevonden. Selecteer het voertuig dat je wilt volgen.",
+        "data": {
+          "vehicle": "VIN-nummer"
+        }
+      },
+      "select_instruments": {
+        "title": "Sensoren/Gegevens",
+        "description": "Selecteer de gegevens die je wilt monitoren",
+        "data": {
+          "resources": "Te monitoren gegevens"
+        }
+      },
+      "reauth_confirm": {
+        "data": {
+          "description": "Log opnieuw in met je Volkswagen Connect-account. Zorg ervoor dat je eventuele nieuwe gebruikersvoorwaarden (EULA) accepteert in het Volkswagen Connect-portaal (https://www.myvolkswagen.net/) voordat je verdergaat.",
+          "email": "E-mailadres",
+          "password": "Wachtwoord"
+        }
+      }
+    },
+    "abort": {
+      "already_configured": "De auto met dit VIN-nummer is al geconfigureerd",
+      "reauth_successful": "Herauthenticatie was succesvol"
+    },
+    "error": {
+      "cannot_connect": "Kon niet inloggen bij Volkswagen Connect. Controleer je inloggegevens en of de service beschikbaar is. Dit kan ook worden veroorzaakt door gewijzigde algemene voorwaarden; probeer in te loggen via de app of op https://www.myvolkswagen.net/.",
+      "cannot_update": "Kon geen update opvragen bij Volkswagen Connect",
+      "unknown": "Er is een onbekende fout opgetreden"
+    },
+    "progress": {
+      "task_login": "Inloggen bij Volkswagen Connect",
+      "task_update": "Voertuigen ophalen"
+    }
+  },
+  "options": {
+    "step": {
+      "user": {
+        "title": "Opties voor Volkswagen Connect",
+        "description": "Configureer de Volkswagen Connect instellingen",
+        "data": {
+          "spin": "S-PIN (vereist voor vergrendelen/ontgrendelen en verwarming)",
+          "region": "Regio (Het land waar de auto is verkocht)",
+          "mutable": "Voertuigbediening inschakelen (vink uit voor alleen-lezen modus)",
+          "convert": "Selecteer of je eenheden voor afstand wilt converteren",
+          "scan_interval": "Update-interval sensoren (minuten)"
+        }
+      },
+      "select_instruments": {
+        "title": "Sensoren/Gegevens",
+        "description": "Selecteer de gegevens die je wilt monitoren",
+        "data": {
+          "resources": "Te monitoren gegevens"
+        }
+      }
+    }
+  }
+}
