@@ -1,0 +1,113 @@
+update_schedule:
+  name: Update departure schedule
+  description: >
+    Update a departure schedule
+  fields:
+    device_id:
+      name: Vehicle
+      description: The vehicle device
+      required: true
+      selector:
+        device:
+          integration: volkswagencarnet
+    timer_id:
+      name: Timer id
+      description: The timer id (1, 2 or 3)
+      example: 1
+      required: true
+      selector:
+        number:
+          min: 1
+          max: 3
+          step: 1
+    charging_profile:
+      name: Charging profile
+      description: The charging profile id (1..10) to use
+      example: 3
+      required: false
+      selector:
+        number:
+          min: 1
+          max: 10
+          step: 1
+    enabled:
+      name: Timer enabled
+      description: Enable this timer
+      example: 3
+      required: true
+      selector:
+        boolean:
+    charging:
+      name: Charging enabled
+      description: Enable charging
+      example: 3
+      required: false
+      selector:
+        boolean:
+    climatisation:
+      name: Air Conditioning enabled
+      description: Enable Air Conditioning
+      example: 3
+      required: false
+      selector:
+        boolean:
+    frequency:
+      name: Timer frequency
+      description: recurring / single
+      example: "recurring"
+      required: true
+      selector:
+        select:
+          options:
+            - "recurring"
+            - "single"
+    departure_time:
+      name: Departure time
+      description: "hh:mm for recurring frequency"
+      example: "06:45"
+      required: false
+      selector:
+        time:
+    departure_datetime:
+      name: Departure time
+      description: "timestamp for single"
+      example: "2022-02-22T06:45:00+0200"
+      required: false
+      selector:
+        datetime:
+    weekdays:
+      name: Weekdays
+      description: Weekdays to apply the recurring timer
+      required: false
+      selector:
+        select:
+          multiple: true
+          options:
+            - Monday
+            - Tuesday
+            - Wednesday
+            - Thursday
+            - Friday
+            - Saturday
+            - Sunday
+    preferred_charging_times_enabled:
+      name: Preferred charging times enabled
+      description: Enable Preferred charging times
+      example: 3
+      required: false
+      selector:
+        boolean:
+    preferred_charging_times_start_time:
+      name: Preferred charging start time
+      description: "hh:mm for preferred charging start time"
+      example: "06:45"
+      required: false
+      selector:
+        time:
+    preferred_charging_times_end_time:
+      name: Preferred charging end time
+      description: "hh:mm for preferred charging end time"
+      example: "10:45"
+      required: false
+      selector:
+        time:
