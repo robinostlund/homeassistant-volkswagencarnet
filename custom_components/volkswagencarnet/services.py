@@ -70,19 +70,19 @@ class SchedulerService:
             coordinator = await get_coordinator_by_device_id(
                 self.hass, service_call.data.get("device_id")
             )
-            
+
             # Access the already-loaded vehicle directly from coordinator
             if coordinator.vehicle is None:
                 raise HomeAssistantError("Vehicle data not available")
-            
+
             vehicle = coordinator.vehicle
-            
+
             # Check if timer is supported
             if not vehicle.is_departure_timer_supported(timer_id):
                 raise HomeAssistantError(
                     f"Timer {timer_id} is not supported for this vehicle"
                 )
-            
+
             _LOGGER.info("Timer %s validated for VIN %s", timer_id, vehicle.vin)
 
             # charging_profile = service_call.data.get("charging_profile", None)
