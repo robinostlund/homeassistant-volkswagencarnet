@@ -42,3 +42,5 @@ COMPONENTS = {
     "climate": "climate",
     "number": "number",
 }
+
+SERVICE_UPDATE_SCHEDULE = "update_schedule"

@@ -59,10 +59,20 @@ from .const import (
     SIGNAL_STATE_UPDATED,
     UNDO_UPDATE_LISTENER,
     UPDATE_CALLBACK,
+    SERVICE_UPDATE_SCHEDULE,
+)
+from .services import (
+    SchedulerService,
+    SERVICE_UPDATE_SCHEDULE_SCHEMA,
 )
 from .util import get_convert_conf
 
 _LOGGER = logging.getLogger(__name__)
+
+
+def unload_services(hass: HomeAssistant):
+    """Unload the services from HA."""
+    hass.services.async_remove(DOMAIN, SERVICE_UPDATE_SCHEDULE)
 
 
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
@@ -167,6 +177,16 @@ def update_callback(hass: HomeAssistant, coordinator: DataUpdateCoordinator) -> 
 async def async_setup(hass: HomeAssistant, config: dict[str, Any]) -> bool:
     """Set up the component."""
     hass.data.setdefault(DOMAIN, {})
+
+    # Register services once for the domain
+    ss = SchedulerService(hass)
+
+    hass.services.async_register(
+        domain=DOMAIN,
+        service=SERVICE_UPDATE_SCHEDULE,
+        service_func=ss.update_schedule,
+        schema=SERVICE_UPDATE_SCHEDULE_SCHEMA,
+    )
     return True
 
 
@@ -175,7 +195,14 @@ async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     _LOGGER.debug("Removing update listener")
     hass.data[DOMAIN][entry.entry_id][UNDO_UPDATE_LISTENER]()
 
-    return await async_unload_coordinator(hass, entry)
+    unloaded = await async_unload_coordinator(hass, entry)
+
+    # Only remove services if this is the last config entry
+    if unloaded and not hass.config_entries.async_entries(DOMAIN):
+        _LOGGER.debug("Removing services (last config entry unloaded)")
+        unload_services(hass)
+
+    return unloaded
 
 
 async def async_unload_coordinator(hass: HomeAssistant, entry: ConfigEntry) -> bool:
@@ -500,6 +527,7 @@ class VolkswagenCoordinator(DataUpdateCoordinator):
         self.vin = entry.data[CONF_VEHICLE].upper()
         self.entry = entry
         self.platforms: list[str] = []
+        self.vehicle: Vehicle | None = None
         self.connection = Connection(
             session=async_get_clientsession(hass),
             username=self.entry.data[CONF_USERNAME],
@@ -528,6 +556,8 @@ class VolkswagenCoordinator(DataUpdateCoordinator):
                 "Failed to update Volkswagen Connect. Need to accept EULA? "
                 "Try logging in to the portal: https://www.myvolkswagen.net/"
             )
+
+        self.vehicle = vehicle
 
         convert_conf = self.entry.options.get(
             CONF_CONVERT, self.entry.data.get(CONF_CONVERT, CONF_NO_CONVERSION)
