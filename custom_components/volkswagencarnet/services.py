@@ -1,15 +1,17 @@
 """Services exposed to Home Assistant."""
 
 import logging
-from datetime import datetime, timezone
+from datetime import datetime
 
-import pytz
 import voluptuous as vol
 from homeassistant.core import HomeAssistant, ServiceCall
 from homeassistant.exceptions import HomeAssistantError
 from homeassistant.helpers import config_validation as cv
 from homeassistant.util import dt as dt_util
 
+from .const import (
+    CONF_SPIN,
+)
 from .util import get_coordinator_by_device_id
 
 _LOGGER = logging.getLogger(__name__)
@@ -83,6 +85,18 @@ class SchedulerService:
                     f"Timer {timer_id} is not supported for this vehicle"
                 )
 
+            spin = coordinator.entry.data.get(CONF_SPIN, "")
+            timer_attributes = vehicle.timer_attributes(timer_id)
+            timer_raw = vehicle.departure_timer(timer_id)
+            # Determine timer type from existing configuration
+            is_ev_timer = timer_attributes.get("profile_id") is not None
+            is_departure_timer = (
+                "charging" in timer_raw
+                or "climatisation" in timer_raw
+                or "preferredChargingTimes" in timer_raw
+            )
+            is_aux_timer = not is_ev_timer and not is_departure_timer
+
             charging_profile = service_call.data.get("charging_profile", None)
             enabled = service_call.data.get("enabled", None)
             charging = service_call.data.get("charging", None)
@@ -103,6 +117,9 @@ class SchedulerService:
 
             # Validate parameters based on timer type
             self._validate_timer_parameters(
+                is_departure_timer,
+                is_ev_timer,
+                is_aux_timer,
                 charging_profile,
                 enabled,
                 charging,
@@ -116,7 +133,7 @@ class SchedulerService:
                 preferred_charging_times_end_time,
             )
 
-            if charging_profile is not None:
+            if is_ev_timer:
                 # Build EV timer payload with charging profile
                 payload = {
                     "id": timer_id,
@@ -182,8 +199,23 @@ class SchedulerService:
                     }
 
                 _LOGGER.debug("EV Departure Timer payload: %s", payload)
-            else:
-                # Build departure timer payload without charging profile
+                _LOGGER.debug("Updating EV Departure Timer %s", timer_id)
+                if is_departure_timer:
+                    raise HomeAssistantError(f"Timer {timer_id} is a Departure timer.")
+                if is_aux_timer:
+                    raise HomeAssistantError(
+                        f"Timer {timer_id} is an Auxiliary/AC timer."
+                    )
+                result = await vehicle.update_departure_timer(
+                    timer_id=timer_id, timer_data=payload
+                )
+                if result is False:
+                    raise HomeAssistantError(
+                        f"Failed to update EV departure timer {timer_id}"
+                    )
+
+            elif is_departure_timer:
+                # Build departure timer payload
                 payload = {
                     "id": timer_id,
                     "enabled": enabled if enabled is not None else True,
@@ -264,6 +296,112 @@ class SchedulerService:
                 ]
 
                 _LOGGER.debug("Departure Timer payload: %s", payload)
+                _LOGGER.debug("Updating Departure Timer %s", timer_id)
+                if is_ev_timer:
+                    raise HomeAssistantError(
+                        f"Timer {timer_id} is an EV Departure timer."
+                    )
+                if is_aux_timer:
+                    raise HomeAssistantError(
+                        f"Timer {timer_id} is an Auxiliary/AC timer."
+                    )
+                result = await vehicle.update_departure_timer(
+                    timer_id=timer_id, timer_data=payload
+                )
+                if result is False:
+                    raise HomeAssistantError(
+                        f"Failed to update departure timer {timer_id}"
+                    )
+
+            elif is_aux_timer:
+                # Build auxiliary departure timer payload
+                payload = {
+                    "id": timer_id,
+                    "enabled": enabled if enabled is not None else True,
+                }
+
+                # Handle recurring timer
+                if frequency == "recurring" and departure_time is not None:
+                    from datetime import time
+
+                    if isinstance(departure_time, time):
+                        time_str = departure_time.strftime("%H:%M")
+                    else:
+                        time_str = departure_time.strftime("%H:%M")
+
+                    # Build repetitionDays array (lowercase day names)
+                    weekday_map_plural = {
+                        "Monday": "monday",
+                        "Tuesday": "tuesday",
+                        "Wednesday": "wednesday",
+                        "Thursday": "thursday",
+                        "Friday": "friday",
+                        "Saturday": "saturday",
+                        "Sunday": "sunday",
+                    }
+
+                    weekday_map_singular = {
+                        "Monday": "monday",
+                        "Tuesday": "tuesday",
+                        "Wednesday": "wednesday",
+                        "Thursday": "thursday",
+                        "Friday": "friday",
+                        "Saturday": "saturday",
+                        "Sunday": "sunday",
+                    }
+
+                    recurring_on = {day: False for day in weekday_map_plural.values()}
+                    repetition_days = []
+
+                    if weekdays:
+                        for day in weekdays:
+                            if day in weekday_map_plural:
+                                recurring_on[weekday_map_plural[day]] = True
+                                repetition_days.append(weekday_map_singular[day])
+
+                    payload["recurringTimer"] = {
+                        "startTimeLocal": time_str,
+                        "targetTimeLocal": time_str,
+                        "recurringOn": recurring_on,
+                        "repetitionDays": repetition_days,
+                    }
+
+                # Handle single timer
+                elif departure_datetime is not None:
+                    if isinstance(departure_datetime, int):
+                        dt = datetime.fromtimestamp(departure_datetime)
+                    elif isinstance(departure_datetime, str):
+                        dt = datetime.fromisoformat(departure_datetime)
+                    else:
+                        dt = departure_datetime
+
+                    # Ensure timezone awareness using local timezone (non-blocking)
+                    if dt.tzinfo is None:
+                        local_tz = dt_util.get_time_zone(self.hass.config.time_zone)
+                        dt = dt.replace(tzinfo=local_tz)
+
+                    # Keep as local time - no UTC conversion
+                    dt_str = dt.strftime("%Y-%m-%dT%H:%M:%S")
+                    payload["singleTimer"] = {
+                        "startDateTimeLocal": dt_str,
+                        "targetDateTimeLocal": dt_str,
+                    }
+
+                _LOGGER.debug("Auxiliary Departure Timer payload: %s", payload)
+                _LOGGER.debug("Updating Auxiliary Departure Timer %s", timer_id)
+                if is_ev_timer:
+                    raise HomeAssistantError(
+                        f"Timer {timer_id} is an EV Departure timer (has profile_id)."
+                    )
+                if is_departure_timer:
+                    raise HomeAssistantError(f"Timer {timer_id} is a Departure timer.")
+                result = await vehicle.update_departure_timer(
+                    timer_id=timer_id, spin=spin, timer_data=payload
+                )
+                if result is False:
+                    raise HomeAssistantError(
+                        f"Failed to update auxiliary departure timer {timer_id}"
+                    )
 
             # timers: dict[int, Timer] = {
             #     1: data.get_schedule(1),
@@ -323,6 +461,9 @@ class SchedulerService:
 
     def _validate_timer_parameters(
         self,
+        is_departure_timer: bool,
+        is_ev_timer: bool,
+        is_aux_timer: bool,
         charging_profile: int | None,
         enabled: bool | None,
         charging: bool | None,
@@ -341,8 +482,8 @@ class SchedulerService:
         if enabled is None:
             raise HomeAssistantError("enabled parameter is required")
 
-        # EV Timer validation (with charging_profile)
-        if charging_profile is not None:
+        # EV Timer validation
+        if is_ev_timer:
             # EV timer cannot have departure timer fields
             if charging is not None:
                 raise HomeAssistantError(
@@ -390,8 +531,8 @@ class SchedulerService:
                         "departure_time cannot be used with single timer (use departure_datetime)"
                     )
 
-        # Departure Timer validation (without charging_profile)
-        else:
+        # Departure Timer validation
+        if is_departure_timer:
             # Departure timer requires charging and climatisation parameters
             if charging is None:
                 raise HomeAssistantError(
@@ -454,4 +595,52 @@ class SchedulerService:
                 if departure_time is not None and (not weekdays or len(weekdays) == 0):
                     raise HomeAssistantError(
                         "weekdays parameter is required and cannot be empty when using departure_time"
+                    )
+
+        # Auxiliary Timer validation
+        if is_aux_timer:
+            # Auxiliary timer cannot have EV timer fields
+            if charging_profile is not None:
+                raise HomeAssistantError(
+                    "charging_profile cannot be used with auxiliary timer"
+                )
+            # Auxiliary timer cannot have departure timer fields
+            if charging is not None:
+                raise HomeAssistantError(
+                    "charging parameter cannot be used with auxiliary timer"
+                )
+            if climatisation is not None:
+                raise HomeAssistantError(
+                    "climatisation parameter cannot be used with auxiliary timer"
+                )
+            if any(
+                [
+                    preferred_charging_times_enabled,
+                    preferred_charging_times_start_time,
+                    preferred_charging_times_end_time,
+                ]
+            ):
+                raise HomeAssistantError(
+                    "preferred_charging_times cannot be used with auxiliary timer"
+                )
+
+            # Check for correct parameters based on frequency
+            if frequency == "recurring":
+                if departure_time is None:
+                    raise HomeAssistantError(
+                        "departure_time is required for recurring auxiliary timer"
+                    )
+                if departure_datetime is not None:
+                    raise HomeAssistantError(
+                        "departure_datetime cannot be used with recurring timer (use departure_time)"
+                    )
+                # weekdays are optional for auxiliary (defaults to all days)
+            elif frequency == "single":
+                if departure_datetime is None:
+                    raise HomeAssistantError(
+                        "departure_datetime is required for single auxiliary timer"
+                    )
+                if departure_time is not None:
+                    raise HomeAssistantError(
+                        "departure_time cannot be used with single timer (use departure_datetime)"
                     )
