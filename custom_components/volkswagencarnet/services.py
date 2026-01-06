@@ -8,9 +8,9 @@ import voluptuous as vol
 from homeassistant.core import HomeAssistant, ServiceCall
 from homeassistant.exceptions import HomeAssistantError
 from homeassistant.helpers import config_validation as cv
-from volkswagencarnet.vw_timer import Timer, TimerData
+from homeassistant.util import dt as dt_util
 
-from .util import get_coordinator_by_device_id, get_vehicle
+from .util import get_coordinator_by_device_id
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -83,14 +83,187 @@ class SchedulerService:
                     f"Timer {timer_id} is not supported for this vehicle"
                 )
 
-            _LOGGER.info("Timer %s validated for VIN %s", timer_id, vehicle.vin)
+            charging_profile = service_call.data.get("charging_profile", None)
+            enabled = service_call.data.get("enabled", None)
+            charging = service_call.data.get("charging", None)
+            climatisation = service_call.data.get("climatisation", None)
+            frequency = service_call.data.get("frequency", None)
+            departure_time = service_call.data.get("departure_time", None)
+            departure_datetime = service_call.data.get("departure_datetime", None)
+            weekdays = service_call.data.get("weekdays", None)
+            preferred_charging_times_enabled = service_call.data.get(
+                "preferred_charging_times_enabled", None
+            )
+            preferred_charging_times_start_time = service_call.data.get(
+                "preferred_charging_times_start_time", None
+            )
+            preferred_charging_times_end_time = service_call.data.get(
+                "preferred_charging_times_end_time", None
+            )
 
-            # charging_profile = service_call.data.get("charging_profile", None)
-            # enabled = service_call.data.get("enabled", None)
-            # frequency = service_call.data.get("frequency", None)
-            # departure_time = service_call.data.get("departure_time", None)
-            # departure_datetime = service_call.data.get("departure_datetime", None)
-            # weekday_mask = service_call.data.get("weekday_mask", None)
+            # Validate parameters based on timer type
+            self._validate_timer_parameters(
+                charging_profile,
+                enabled,
+                charging,
+                climatisation,
+                frequency,
+                departure_time,
+                departure_datetime,
+                weekdays,
+                preferred_charging_times_enabled,
+                preferred_charging_times_start_time,
+                preferred_charging_times_end_time,
+            )
+
+            if charging_profile is not None:
+                # Build EV timer payload with charging profile
+                payload = {
+                    "id": timer_id,
+                    "enabled": enabled if enabled is not None else False,
+                    "profileIDs": [charging_profile],
+                }
+
+                if frequency == "recurring" and departure_time is not None:
+                    # Build recurringTimer with recurring schedule
+                    # Handle time object conversion properly
+                    from datetime import time
+
+                    if isinstance(departure_time, time):
+                        # Convert time to datetime in local timezone, then to UTC
+                        local_tz = dt_util.get_time_zone(self.hass.config.time_zone)
+                        today = dt_util.now(local_tz).date()
+                        local_dt = datetime.combine(today, departure_time)
+                        if local_dt.tzinfo is None:
+                            local_dt = local_dt.replace(tzinfo=local_tz)
+                        utc_time = dt_util.as_utc(local_dt)
+                    else:
+                        # It's already a datetime
+                        utc_time = dt_util.as_utc(departure_time)
+
+                    # Build weekdays mapping
+                    weekday_map = {
+                        "Monday": "mondays",
+                        "Tuesday": "tuesdays",
+                        "Wednesday": "wednesdays",
+                        "Thursday": "thursdays",
+                        "Friday": "fridays",
+                        "Saturday": "saturdays",
+                        "Sunday": "sundays",
+                    }
+
+                    # Initialize all days to False
+                    recurring_on = {day: False for day in weekday_map.values()}
+                    # Set specified days to True
+                    if weekdays:
+                        for day in weekdays:
+                            if day in weekday_map:
+                                recurring_on[weekday_map[day]] = True
+
+                    payload["recurringTimer"] = {
+                        "startTime": utc_time.strftime("%H:%M"),
+                        "recurringOn": recurring_on,
+                    }
+
+                elif frequency == "single" and departure_datetime is not None:
+                    # Build singleTimer with one-time schedule
+                    if isinstance(departure_datetime, int):
+                        dt = datetime.fromtimestamp(departure_datetime)
+                    elif isinstance(departure_datetime, str):
+                        dt = datetime.fromisoformat(departure_datetime)
+                    else:
+                        dt = departure_datetime
+
+                    # Convert to UTC using dt_util (non-blocking)
+                    utc_dt = dt_util.as_utc(dt)
+
+                    payload["singleTimer"] = {
+                        "startDateTime": utc_dt.strftime("%Y-%m-%dT%H:%M:%SZ")
+                    }
+
+                _LOGGER.debug("EV Departure Timer payload: %s", payload)
+            else:
+                # Build departure timer payload without charging profile
+                payload = {
+                    "id": timer_id,
+                    "enabled": enabled if enabled is not None else True,
+                    "charging": charging if charging is not None else False,
+                    "climatisation": climatisation
+                    if climatisation is not None
+                    else True,
+                }
+
+                # Handle recurring timer
+                if frequency == "recurring" and departure_time is not None:
+                    from datetime import time
+
+                    if isinstance(departure_time, time):
+                        time_str = departure_time.strftime("%H:%M")
+                    else:
+                        time_str = departure_time.strftime("%H:%M")
+
+                    # Build repetitionDays array (lowercase day names)
+                    weekday_map = {
+                        "Monday": "monday",
+                        "Tuesday": "tuesday",
+                        "Wednesday": "wednesday",
+                        "Thursday": "thursday",
+                        "Friday": "friday",
+                        "Saturday": "saturday",
+                        "Sunday": "sunday",
+                    }
+
+                    repetition_days = []
+                    if weekdays:
+                        for day in weekdays:
+                            if day in weekday_map:
+                                repetition_days.append(weekday_map[day])
+
+                    payload["recurringTimer"] = {
+                        "departureTimeLocal": time_str,
+                        "repetitionDays": repetition_days,
+                    }
+
+                # Handle single timer
+                elif departure_datetime is not None:
+                    if isinstance(departure_datetime, int):
+                        dt = datetime.fromtimestamp(departure_datetime)
+                    elif isinstance(departure_datetime, str):
+                        dt = datetime.fromisoformat(departure_datetime)
+                    else:
+                        dt = departure_datetime
+
+                    # Ensure timezone awareness using local timezone (non-blocking)
+                    if dt.tzinfo is None:
+                        local_tz = dt_util.get_time_zone(self.hass.config.time_zone)
+                        dt = dt.replace(tzinfo=local_tz)
+
+                    # Keep as local time - no UTC conversion
+                    payload["singleTimer"] = {
+                        "departureDateTimeLocal": dt.strftime("%Y-%m-%dT%H:%M:%S")
+                    }
+
+                # Build preferredChargingTimes (always included)
+                payload["preferredChargingTimes"] = [
+                    {
+                        "id": 1,
+                        "enabled": preferred_charging_times_enabled
+                        if preferred_charging_times_enabled is not None
+                        else False,
+                        "startTimeLocal": preferred_charging_times_start_time.strftime(
+                            "%H:%M"
+                        )
+                        if preferred_charging_times_start_time
+                        else "00:00",
+                        "endTimeLocal": preferred_charging_times_end_time.strftime(
+                            "%H:%M"
+                        )
+                        if preferred_charging_times_end_time
+                        else "00:00",
+                    }
+                ]
+
+                _LOGGER.debug("Departure Timer payload: %s", payload)
 
             # timers: dict[int, Timer] = {
             #     1: data.get_schedule(1),
@@ -147,3 +320,138 @@ class SchedulerService:
         except Exception as err:
             _LOGGER.error("Unexpected error in update_schedule: %s", err)
             raise HomeAssistantError(f"Failed to update schedule: {err}") from err
+
+    def _validate_timer_parameters(
+        self,
+        charging_profile: int | None,
+        enabled: bool | None,
+        charging: bool | None,
+        climatisation: bool | None,
+        frequency: str | None,
+        departure_time,
+        departure_datetime,
+        weekdays: list | None,
+        preferred_charging_times_enabled: bool | None,
+        preferred_charging_times_start_time,
+        preferred_charging_times_end_time,
+    ) -> None:
+        """Validate timer parameters based on timer type."""
+
+        # enabled is always required
+        if enabled is None:
+            raise HomeAssistantError("enabled parameter is required")
+
+        # EV Timer validation (with charging_profile)
+        if charging_profile is not None:
+            # EV timer cannot have departure timer fields
+            if charging is not None:
+                raise HomeAssistantError(
+                    "charging parameter cannot be used with charging_profile (EV Departure timer)"
+                )
+            if climatisation is not None:
+                raise HomeAssistantError(
+                    "climatisation parameter cannot be used with charging_profile (EV Departure timer)"
+                )
+            if any(
+                [
+                    preferred_charging_times_enabled,
+                    preferred_charging_times_start_time,
+                    preferred_charging_times_end_time,
+                ]
+            ):
+                raise HomeAssistantError(
+                    "preferred_charging_times cannot be used with charging_profile (EV Departure timer)"
+                )
+
+            # Frequency is required for EV timers
+            if frequency not in ["recurring", "single"]:
+                raise HomeAssistantError(
+                    "EV timer requires frequency parameter ('recurring' or 'single')"
+                )
+
+            # Check for correct parameters based on frequency
+            if frequency == "recurring":
+                if departure_time is None:
+                    raise HomeAssistantError(
+                        "departure_time is required for recurring EV Departure timer"
+                    )
+                if departure_datetime is not None:
+                    raise HomeAssistantError(
+                        "departure_datetime cannot be used with recurring timer (use departure_time)"
+                    )
+                # weekdays are optional for EV (defaults to all days)
+            elif frequency == "single":
+                if departure_datetime is None:
+                    raise HomeAssistantError(
+                        "departure_datetime is required for single EV Departure timer"
+                    )
+                if departure_time is not None:
+                    raise HomeAssistantError(
+                        "departure_time cannot be used with single timer (use departure_datetime)"
+                    )
+
+        # Departure Timer validation (without charging_profile)
+        else:
+            # Departure timer requires charging and climatisation parameters
+            if charging is None:
+                raise HomeAssistantError(
+                    "charging parameter is required for departure timer"
+                )
+            if climatisation is None:
+                raise HomeAssistantError(
+                    "climatisation parameter is required for departure timer"
+                )
+
+            # Departure timer requires all preferred_charging_times parameters
+            if preferred_charging_times_enabled is None:
+                raise HomeAssistantError(
+                    "preferred_charging_times_enabled is required for departure timer"
+                )
+            if preferred_charging_times_start_time is None:
+                raise HomeAssistantError(
+                    "preferred_charging_times_start_time is required for departure timer"
+                )
+            if preferred_charging_times_end_time is None:
+                raise HomeAssistantError(
+                    "preferred_charging_times_end_time is required for departure timer"
+                )
+
+            # Check for mixed parameters
+            if frequency == "recurring":
+                if departure_time is None:
+                    raise HomeAssistantError(
+                        "departure_time is required for recurring departure timer"
+                    )
+                if departure_datetime is not None:
+                    raise HomeAssistantError(
+                        "departure_datetime cannot be used with recurring timer (use departure_time)"
+                    )
+                # weekdays are required and cannot be empty for departure recurring
+                if not weekdays or len(weekdays) == 0:
+                    raise HomeAssistantError(
+                        "weekdays parameter is required and cannot be empty for recurring departure timer"
+                    )
+            elif frequency == "single":
+                if departure_datetime is None:
+                    raise HomeAssistantError(
+                        "departure_datetime is required for single departure timer"
+                    )
+                if departure_time is not None:
+                    raise HomeAssistantError(
+                        "departure_time cannot be used with single timer (use departure_datetime)"
+                    )
+            else:
+                # No frequency specified - must have departure_datetime for single timer
+                if departure_datetime is None and departure_time is None:
+                    raise HomeAssistantError(
+                        "Either departure_time (recurring) or departure_datetime (single) is required"
+                    )
+                if departure_datetime is not None and departure_time is not None:
+                    raise HomeAssistantError(
+                        "Cannot specify both departure_time and departure_datetime"
+                    )
+                # If departure_time without frequency, require weekdays
+                if departure_time is not None and (not weekdays or len(weekdays) == 0):
+                    raise HomeAssistantError(
+                        "weekdays parameter is required and cannot be empty when using departure_time"
+                    )
