@@ -207,7 +207,7 @@ class SchedulerService:
                         f"Timer {timer_id} is an Auxiliary/AC timer."
                     )
                 result = await vehicle.update_departure_timer(
-                    timer_id=timer_id, timer_data=payload
+                    timer_id=timer_id, spin=spin, timer_data=payload
                 )
                 if result is False:
                     raise HomeAssistantError(
@@ -306,7 +306,7 @@ class SchedulerService:
                         f"Timer {timer_id} is an Auxiliary/AC timer."
                     )
                 result = await vehicle.update_departure_timer(
-                    timer_id=timer_id, timer_data=payload
+                    timer_id=timer_id, spin=spin, timer_data=payload
                 )
                 if result is False:
                     raise HomeAssistantError(
@@ -403,6 +403,10 @@ class SchedulerService:
                         f"Failed to update auxiliary departure timer {timer_id}"
                     )
 
+            else:
+                raise HomeAssistantError("Unable to determine timer type")
+
+            # Old code for reference - commented out
             # timers: dict[int, Timer] = {
             #     1: data.get_schedule(1),
             #     2: data.get_schedule(2),
@@ -485,13 +489,17 @@ class SchedulerService:
         # EV Timer validation
         if is_ev_timer:
             # EV timer cannot have departure timer fields
+            if charging_profile is None:
+                raise HomeAssistantError(
+                    "charging_profile is required for EV Departure timer"
+                )
             if charging is not None:
                 raise HomeAssistantError(
-                    "charging parameter cannot be used with charging_profile (EV Departure timer)"
+                    "charging parameter cannot be used with EV Departure timer"
                 )
             if climatisation is not None:
                 raise HomeAssistantError(
-                    "climatisation parameter cannot be used with charging_profile (EV Departure timer)"
+                    "climatisation parameter cannot be used with EV Departure timer"
                 )
             if any(
                 [
@@ -501,13 +509,13 @@ class SchedulerService:
                 ]
             ):
                 raise HomeAssistantError(
-                    "preferred_charging_times cannot be used with charging_profile (EV Departure timer)"
+                    "preferred_charging_times cannot be used with EV Departure timer"
                 )
 
             # Frequency is required for EV timers
             if frequency not in ["recurring", "single"]:
                 raise HomeAssistantError(
-                    "EV timer requires frequency parameter ('recurring' or 'single')"
+                    "EV Departure timer requires frequency parameter ('recurring' or 'single')"
                 )
 
             # Check for correct parameters based on frequency
@@ -532,7 +540,7 @@ class SchedulerService:
                     )
 
         # Departure Timer validation
-        if is_departure_timer:
+        elif is_departure_timer:
             # Departure timer requires charging and climatisation parameters
             if charging is None:
                 raise HomeAssistantError(
@@ -598,7 +606,7 @@ class SchedulerService:
                     )
 
         # Auxiliary Timer validation
-        if is_aux_timer:
+        elif is_aux_timer:
             # Auxiliary timer cannot have EV timer fields
             if charging_profile is not None:
                 raise HomeAssistantError(
@@ -644,3 +652,5 @@ class SchedulerService:
                     raise HomeAssistantError(
                         "departure_time cannot be used with single timer (use departure_datetime)"
                     )
+        else:
+            raise HomeAssistantError("Unable to determine timer type")
