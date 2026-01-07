@@ -2,9 +2,12 @@
 
 import logging
 
+from datetime import timedelta
+
 from homeassistant.components.number import NumberDeviceClass, NumberEntity
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity import EntityCategory
+from homeassistant.const import CONF_SCAN_INTERVAL
 
 from . import VolkswagenEntity
 from .const import DATA, DATA_KEY, DOMAIN, UPDATE_CALLBACK
@@ -121,6 +124,12 @@ class VolkswagenNumber(VolkswagenEntity, NumberEntity):
     async def async_set_native_value(self, value: float) -> None:
         """Update the current value."""
         try:
+            # Special handling for scan_interval
+            if self.instrument.attr == "scan_interval":
+                await self._set_scan_interval(int(value))
+                return
+
+            # Normal instrument value setting
             await self.instrument.set_value(value)
             self.notify_updated()
         except Exception as err:
@@ -131,3 +140,32 @@ class VolkswagenNumber(VolkswagenEntity, NumberEntity):
                 err,
             )
             raise
+
+    async def _set_scan_interval(self, minutes: int) -> None:
+        """Set scan interval and persist to config entry."""
+
+        if self.coordinator:
+            # Update coordinator interval
+            new_interval = timedelta(minutes=minutes)
+            self.coordinator.update_interval = new_interval
+
+            # Update instrument state
+            self.instrument._current_interval = minutes
+
+            # Persist to config entry options
+            self.hass.config_entries.async_update_entry(
+                self.coordinator.entry,
+                options={
+                    **self.coordinator.entry.options,
+                    CONF_SCAN_INTERVAL: minutes,
+                },
+            )
+
+            _LOGGER.debug(
+                "Scan interval changed to %s minutes for VIN %s",
+                minutes,
+                self.vin,
+            )
+
+            # Update the state
+            self.async_write_ha_state()

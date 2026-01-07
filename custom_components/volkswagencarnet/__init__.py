@@ -539,6 +539,14 @@ class VolkswagenCoordinator(DataUpdateCoordinator):
 
     def async_update_listener(self) -> None:
         """Listen for update events."""
+        # Update scan_interval instrument with current value
+        if self.data:
+            for instrument in self.data:
+                if hasattr(instrument, "attr") and instrument.attr == "scan_interval":
+                    current_minutes = int(self.update_interval.total_seconds() / 60)
+                    instrument._current_interval = current_minutes
+                    break
+
         _LOGGER.debug(
             "Async update finished for %s (%s). Next update in %s",
             self.vin,
@@ -613,18 +621,23 @@ class VolkswagenCoordinator(DataUpdateCoordinator):
     async def update(self) -> Vehicle | None:
         """Update status from Volkswagen Connect."""
         try:
-            if not await self.connection.update():
-                _LOGGER.warning("Could not query update from Volkswagen Connect")
+            # Update only this specific vehicle, not all vehicles in the account
+            if self.vehicle is None:
+                # First time - get vehicle object
+                for vehicle in self.connection.vehicles:
+                    if vehicle.vin.upper() == self.vin:
+                        self.vehicle = vehicle
+                        break
+
+            if self.vehicle is None:
+                _LOGGER.warning("Vehicle with VIN %s not found in connection", self.vin)
                 return None
 
-            _LOGGER.debug("Updating data from Volkswagen Connect")
+            # Update only this vehicle
+            await self.vehicle.update()
 
-            for vehicle in self.connection.vehicles:
-                if vehicle.vin.upper() == self.vin:
-                    return vehicle
-
-            _LOGGER.warning("Vehicle with VIN %s not found in connection", self.vin)
-            return None
+            _LOGGER.debug("Updated data for VIN %s", self.vin)
+            return self.vehicle
         except Exception as err:  # pylint: disable=broad-exception-caught
-            _LOGGER.error("Error during update: %s", err)
+            _LOGGER.error("Error during update for VIN %s: %s", self.vin, err)
             return None
