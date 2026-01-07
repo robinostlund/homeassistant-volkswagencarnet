@@ -363,14 +363,31 @@ class VolkswagenEntity(CoordinatorEntity, RestoreEntity):
             backend_refresh_time
         )
 
-        if time_changed or state_changed:
+        # Check if custom attributes changed
+        # Exclude system attributes that HA adds automatically
+        system_attrs = {
+            "icon",
+            "friendly_name",
+            "device_class",
+            "unit_of_measurement",
+            "state_class",
+            "last_updated",
+            "assumed_state",
+            "attribution",
+        }
+        current_attrs = self.extra_state_attributes or {}
+        prev_attrs = {k: v for k, v in prev.attributes.items() if k not in system_attrs}
+        current_attrs_compare = {
+            k: v for k, v in current_attrs.items() if k not in system_attrs
+        }
+        attributes_changed = current_attrs_compare != prev_attrs
+
+        if time_changed or state_changed or attributes_changed:
             super().async_write_ha_state()
         else:
             _LOGGER.debug(
-                "%s: state unchanged ('%s' == '%s'), skipping update",
+                "%s: state and attributes unchanged, skipping update",
                 self.name,
-                prev.state,
-                self.state,
             )
 
     @callback

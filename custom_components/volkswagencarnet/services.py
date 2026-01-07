@@ -213,6 +213,7 @@ class SchedulerService:
                     raise HomeAssistantError(
                         f"Failed to update EV departure timer {timer_id}"
                     )
+                await coordinator.async_request_refresh()
 
             elif is_departure_timer:
                 # Build departure timer payload
@@ -312,6 +313,7 @@ class SchedulerService:
                     raise HomeAssistantError(
                         f"Failed to update departure timer {timer_id}"
                     )
+                await coordinator.async_request_refresh()
 
             elif is_aux_timer:
                 # Build auxiliary departure timer payload
@@ -402,60 +404,10 @@ class SchedulerService:
                     raise HomeAssistantError(
                         f"Failed to update auxiliary departure timer {timer_id}"
                     )
+                await coordinator.async_request_refresh()
 
             else:
                 raise HomeAssistantError("Unable to determine timer type")
-
-            # Old code for reference - commented out
-            # timers: dict[int, Timer] = {
-            #     1: data.get_schedule(1),
-            #     2: data.get_schedule(2),
-            #     3: data.get_schedule(3),
-            # }
-
-            # if frequency is not None:
-            #     timers[timer_id].timerFrequency = frequency
-            #     if frequency == "single":
-            #         if isinstance(departure_datetime, int):
-            #             time = datetime.fromtimestamp(departure_datetime)
-            #         elif isinstance(departure_datetime, str):
-            #             time = datetime.fromisoformat(departure_datetime)
-            #         else:
-            #             time = departure_datetime
-            #         if time.tzinfo is None:
-            #             time = time.replace(
-            #                 tzinfo=pytz.timezone(self.hass.config.time_zone)
-            #             )
-            #         time = time.astimezone(timezone.utc)
-            #         timers[timer_id].departureDateTime = time.strftime("%Y-%m-%dT%H:%M")
-            #         timers[timer_id].departureTimeOfDay = time.strftime("%H:%M")
-            #     elif frequency == "cyclic":
-            #         timers[timer_id].departureDateTime = None
-            #         timers[timer_id].departureTimeOfDay = self.time_to_utc(
-            #             departure_time
-            #         )
-            #         timers[timer_id].departureWeekdayMask = weekday_mask
-            #     else:
-            #         raise HomeAssistantError(f"Invalid frequency: {frequency}")
-
-            # if charging_profile is not None:
-            #     timers[timer_id].profileID = charging_profile
-
-            # if enabled is not None:
-            #     timers[timer_id].timerProgrammedStatus = (
-            #         "programmed" if enabled else "notProgrammed"
-            #     )
-
-            # _LOGGER.debug("Updating timer %s", timer_id)
-            # data.timersAndProfiles.timerList.timer = [timers[1], timers[2], timers[3]]
-            # result = await v.set_schedule(data)
-            # if result is False:
-            #     raise HomeAssistantError(
-            #         f"Failed to update schedule for timer {timer_id}"
-            #     )
-
-            # self.hass.add_job(c.async_request_refresh)
-            # _LOGGER.info("Successfully updated schedule for timer %s", timer_id)
 
         except HomeAssistantError:
             raise
