@@ -66,15 +66,18 @@ class VolkswagenNumber(VolkswagenEntity, NumberEntity):
 
     def _get_min_value(self) -> float | None:
         """Get minimum value from instrument."""
-        return self.instrument.min_value or None
+        min_val = self.instrument.min_value
+        return min_val if min_val is not None else None
 
     def _get_max_value(self) -> float | None:
         """Get maximum value from instrument."""
-        return self.instrument.max_value or None
+        max_val = self.instrument.max_value
+        return max_val if max_val is not None else None
 
     def _get_step(self) -> float | None:
         """Get step value from instrument."""
-        return self.instrument.native_step or None
+        step = self.instrument.native_step
+        return step if step is not None else None
 
     def _get_unit(self) -> str | None:
         """Get unit of measurement from instrument."""
@@ -119,7 +122,8 @@ class VolkswagenNumber(VolkswagenEntity, NumberEntity):
     @property
     def native_value(self) -> float | None:
         """Return the entity value to represent the entity state."""
-        return self.instrument.state or None
+        state = self.instrument.state
+        return state if state is not None else None
 
     async def async_set_native_value(self, value: float) -> None:
         """Update the current value."""
