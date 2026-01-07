@@ -59,10 +59,20 @@ from .const import (
     SIGNAL_STATE_UPDATED,
     UNDO_UPDATE_LISTENER,
     UPDATE_CALLBACK,
+    SERVICE_UPDATE_SCHEDULE,
+)
+from .services import (
+    SchedulerService,
+    SERVICE_UPDATE_SCHEDULE_SCHEMA,
 )
 from .util import get_convert_conf
 
 _LOGGER = logging.getLogger(__name__)
+
+
+def unload_services(hass: HomeAssistant):
+    """Unload the services from HA."""
+    hass.services.async_remove(DOMAIN, SERVICE_UPDATE_SCHEDULE)
 
 
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
@@ -167,6 +177,16 @@ def update_callback(hass: HomeAssistant, coordinator: DataUpdateCoordinator) -> 
 async def async_setup(hass: HomeAssistant, config: dict[str, Any]) -> bool:
     """Set up the component."""
     hass.data.setdefault(DOMAIN, {})
+
+    # Register services once for the domain
+    ss = SchedulerService(hass)
+
+    hass.services.async_register(
+        domain=DOMAIN,
+        service=SERVICE_UPDATE_SCHEDULE,
+        service_func=ss.update_schedule,
+        schema=SERVICE_UPDATE_SCHEDULE_SCHEMA,
+    )
     return True
 
 
@@ -175,7 +195,14 @@ async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     _LOGGER.debug("Removing update listener")
     hass.data[DOMAIN][entry.entry_id][UNDO_UPDATE_LISTENER]()
 
-    return await async_unload_coordinator(hass, entry)
+    unloaded = await async_unload_coordinator(hass, entry)
+
+    # Only remove services if this is the last config entry
+    if unloaded and not hass.config_entries.async_entries(DOMAIN):
+        _LOGGER.debug("Removing services (last config entry unloaded)")
+        unload_services(hass)
+
+    return unloaded
 
 
 async def async_unload_coordinator(hass: HomeAssistant, entry: ConfigEntry) -> bool:
@@ -336,14 +363,31 @@ class VolkswagenEntity(CoordinatorEntity, RestoreEntity):
             backend_refresh_time
         )
 
-        if time_changed or state_changed:
+        # Check if custom attributes changed
+        # Exclude system attributes that HA adds automatically
+        system_attrs = {
+            "icon",
+            "friendly_name",
+            "device_class",
+            "unit_of_measurement",
+            "state_class",
+            "last_updated",
+            "assumed_state",
+            "attribution",
+        }
+        current_attrs = self.extra_state_attributes or {}
+        prev_attrs = {k: v for k, v in prev.attributes.items() if k not in system_attrs}
+        current_attrs_compare = {
+            k: v for k, v in current_attrs.items() if k not in system_attrs
+        }
+        attributes_changed = current_attrs_compare != prev_attrs
+
+        if time_changed or state_changed or attributes_changed:
             super().async_write_ha_state()
         else:
             _LOGGER.debug(
-                "%s: state unchanged ('%s' == '%s'), skipping update",
+                "%s: state and attributes unchanged, skipping update",
                 self.name,
-                prev.state,
-                self.state,
             )
 
     @callback
@@ -500,6 +544,7 @@ class VolkswagenCoordinator(DataUpdateCoordinator):
         self.vin = entry.data[CONF_VEHICLE].upper()
         self.entry = entry
         self.platforms: list[str] = []
+        self.vehicle: Vehicle | None = None
         self.connection = Connection(
             session=async_get_clientsession(hass),
             username=self.entry.data[CONF_USERNAME],
@@ -511,6 +556,14 @@ class VolkswagenCoordinator(DataUpdateCoordinator):
 
     def async_update_listener(self) -> None:
         """Listen for update events."""
+        # Update scan_interval instrument with current value
+        if self.data:
+            for instrument in self.data:
+                if hasattr(instrument, "attr") and instrument.attr == "scan_interval":
+                    current_minutes = int(self.update_interval.total_seconds() / 60)
+                    instrument._current_interval = current_minutes
+                    break
+
         _LOGGER.debug(
             "Async update finished for %s (%s). Next update in %s",
             self.vin,
@@ -528,6 +581,8 @@ class VolkswagenCoordinator(DataUpdateCoordinator):
                 "Failed to update Volkswagen Connect. Need to accept EULA? "
                 "Try logging in to the portal: https://www.myvolkswagen.net/"
             )
+
+        self.vehicle = vehicle
 
         convert_conf = self.entry.options.get(
             CONF_CONVERT, self.entry.data.get(CONF_CONVERT, CONF_NO_CONVERSION)
@@ -583,18 +638,23 @@ class VolkswagenCoordinator(DataUpdateCoordinator):
     async def update(self) -> Vehicle | None:
         """Update status from Volkswagen Connect."""
         try:
-            if not await self.connection.update():
-                _LOGGER.warning("Could not query update from Volkswagen Connect")
+            # Update only this specific vehicle, not all vehicles in the account
+            if self.vehicle is None:
+                # First time - get vehicle object
+                for vehicle in self.connection.vehicles:
+                    if vehicle.vin.upper() == self.vin:
+                        self.vehicle = vehicle
+                        break
+
+            if self.vehicle is None:
+                _LOGGER.warning("Vehicle with VIN %s not found in connection", self.vin)
                 return None
 
-            _LOGGER.debug("Updating data from Volkswagen Connect")
+            # Update only this vehicle
+            await self.vehicle.update()
 
-            for vehicle in self.connection.vehicles:
-                if vehicle.vin.upper() == self.vin:
-                    return vehicle
-
-            _LOGGER.warning("Vehicle with VIN %s not found in connection", self.vin)
-            return None
+            _LOGGER.debug("Updated data for VIN %s", self.vin)
+            return self.vehicle
         except Exception as err:  # pylint: disable=broad-exception-caught
-            _LOGGER.error("Error during update: %s", err)
+            _LOGGER.error("Error during update for VIN %s: %s", self.vin, err)
             return None

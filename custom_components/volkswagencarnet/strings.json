@@ -13,7 +13,8 @@
           "spin": "S-PIN",
           "name": "Name your car (defaults to VIN number)",
           "debug": "Enable full debug logs from API (requires debug logging enabled in config)",
-          "convert": "Select if you wan to make any distance unit conversions"
+          "convert": "Select if you wan to make any distance unit conversions",
+          "scan_interval": "Sensors update interval (minutes)"
         }
       },
       "select_vehicle": {

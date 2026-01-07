@@ -13,7 +13,8 @@
           "spin": "S-PIN",
           "name": "Gje bilen ditt eit navn (elles blir navnet det same som VIN nummeret)",
           "debug": "Skru på debug logger frå API (krev at debug logging er skrudd på i konfigurasjonen",
-          "convert": "Velg denne om du vil ha omrekning av distanse"
+          "convert": "Velg denne om du vil ha omrekning av distanse",
+          "scan_interval": "Oppdateringsintervall for sensorar (minutt)"
         }
       },
       "select_vehicle": {

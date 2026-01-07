@@ -13,7 +13,8 @@
           "spin": "S-PIN",
           "name": "Nimeä ajoneuvo (oletuksena näytetään VIN)",
           "debug": "Ota täysi API:n debuglogitus käyttöön (logitustaso pitää myös olla asetettu debugille)",
-          "convert": "Käytä etäisyysmuunnoksia"
+          "convert": "Käytä etäisyysmuunnoksia",
+          "scan_interval": "Anturidatan päivitysväli (minuuteissa)"
         }
       },
       "select_vehicle": {

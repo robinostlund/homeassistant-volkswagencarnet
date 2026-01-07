@@ -13,7 +13,8 @@
           "spin": "S-PIN",
           "name": "Nome do carro (o padrão é o número VIN)",
           "debug": "Habilitar logs de depuração completos da API (requer log de depuração habilitado nas configurações)",
-          "convert": "Selecione se você deseja fazer qualquer conversão de unidade de distância"
+          "convert": "Selecione se você deseja fazer qualquer conversão de unidade de distância",
+          "scan_interval": "Intervalo de atualização dos sensores (minutos)"
         }
       },
       "select_vehicle": {

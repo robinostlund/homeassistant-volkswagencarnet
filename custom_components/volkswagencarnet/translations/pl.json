@@ -13,7 +13,8 @@
           "spin": "S-PIN",
           "name": "Nazwij swój samochód (domyślnie numer VIN)",
           "debug": "Włącz pełne dzienniki debugowania z interfejsu API (wymaga włączenia rejestrowania debugowania w konfiguracji)",
-          "convert": "Wybierz, jeśli chcesz dokonać konwersji jednostek odległości"
+          "convert": "Wybierz, jeśli chcesz dokonać konwersji jednostek odległości",
+          "scan_interval": "Częstotliwość aktualizacji czujników (minuty)"
         }
       },
       "select_vehicle": {

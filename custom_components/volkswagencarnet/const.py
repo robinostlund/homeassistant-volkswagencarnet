@@ -27,9 +27,9 @@ MIN_UPDATE_INTERVAL = timedelta(minutes=1)
 DEFAULT_UPDATE_INTERVAL = 5
 
 CONVERT_DICT = {
-    CONF_NO_CONVERSION: "No conversion",
-    CONF_IMPERIAL_UNITS: "Imperial units",
-    CONF_SCANDINAVIAN_MILES: "km to mil",
+    CONF_NO_CONVERSION: "No conversion (km)",
+    CONF_IMPERIAL_UNITS: "Imperial units (mi)",
+    CONF_SCANDINAVIAN_MILES: "Scandinavian mile (mil) (Norway/Sweden)",
 }
 
 COMPONENTS = {
@@ -42,3 +42,5 @@ COMPONENTS = {
     "climate": "climate",
     "number": "number",
 }
+
+SERVICE_UPDATE_SCHEDULE = "update_schedule"
