@@ -13,7 +13,8 @@
           "spin": "S-PIN",
           "name": "Navngiv din bil (standard er bilens stelnummer)",
           "debug": "Tillad fuld fejlfindingslog fra API (kræver at fejlfindingslogføring er slået til)",
-          "convert": "Vælg hvis du ønsker at konvertere enheder"
+          "convert": "Vælg hvis du ønsker at konvertere enheder",
+          "scan_interval": "Sensor opdateringsinterval (minutter)"
         }
       },
       "select_vehicle": {

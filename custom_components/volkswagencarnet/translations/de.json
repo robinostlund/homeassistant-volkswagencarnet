@@ -13,7 +13,8 @@
           "spin": "S-PIN",
           "name": "Benenne dein Auto (standardmäßig die VIN-Nummer)",
           "debug": "Aktiviere die Debug-Logs der API (erfordert aktivierte Debug-Protokollierung in der Konfiguration)",
-          "convert": "Wähle, ob du eine Umrechnung der Entfernungseinheiten vornehmen möchtest"
+          "convert": "Wähle, ob du eine Umrechnung der Entfernungseinheiten vornehmen möchtest",
+          "scan_interval": "Aktualisierungsintervall der Sensoren (Minuten)"
         }
       },
       "select_vehicle": {

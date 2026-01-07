@@ -50,6 +50,7 @@ DATA_SCHEMA = vol.Schema(
         vol.Optional(CONF_REGION, default=DEFAULT_REGION): str,
         vol.Optional(CONF_MUTABLE, default=True): cv.boolean,
         vol.Optional(CONF_CONVERT, default=CONF_NO_CONVERSION): vol.In(CONVERT_DICT),
+        vol.Optional(CONF_SCAN_INTERVAL, default=DEFAULT_UPDATE_INTERVAL): cv.positive_int,
     }
 )
 

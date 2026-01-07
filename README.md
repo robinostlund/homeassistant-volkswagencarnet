@@ -66,7 +66,8 @@ Note that only the packaged releases (zip file) have the dependencies configured
 * Region - The country where the car was sold (Required)
 * Mutable - If enabled you can interact with the car, if disabled only data from the car will be presented (Optional)
 * S-PIN - Required for some specific options such as lock/unlock (Optional)
-* Distance unit conversion - Select if you wish to use "Swedish mil" or Imperial Miles instead of KM (Optional, default is KM)
+* Distance unit conversion - Select if you wish to use "Scandinavian mile (mil)" or Imperial Miles (mi) instead of KM (Optional, default is KM)
+* Sensors update interval (min) - Set how often data is fetched from your vehicle (default: 5 minutes, range: 1-60). Lower values provide more frequent updates but use more API calls. You can also adjust this per vehicle after setup using the "Scan Interval" number entity.
 
 ![image](https://raw.githubusercontent.com/robinostlund/homeassistant-volkswagencarnet/master/resources/integration_config.png)
 

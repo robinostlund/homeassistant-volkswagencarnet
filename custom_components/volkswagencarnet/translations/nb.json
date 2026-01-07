@@ -13,7 +13,8 @@
           "spin": "S-PIN",
           "name": "Gi bilen et kallenavn (Standard er VIN number)",
           "debug": "Aktiver full debug-logg fra API (krever feilsøkingslogging aktivert i config)",
-          "convert": "Velg om du vil gjøre noen avstandsenhetskonverteringer"
+          "convert": "Velg om du vil gjøre noen avstandsenhetskonverteringer",
+          "scan_interval": "Sensorenes oppdateringsintervall (minutter)"
         }
       },
       "select_vehicle": {
