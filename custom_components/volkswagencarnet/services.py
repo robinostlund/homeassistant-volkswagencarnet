@@ -493,28 +493,29 @@ class SchedulerService:
 
         # Departure Timer validation
         elif is_departure_timer:
-            # Departure timer requires charging and climatisation parameters
-            if charging is None:
+            # Departure timer requires at least one of charging or climatisation parameters
+            if not charging and not climatisation:
                 raise HomeAssistantError(
-                    "charging parameter is required for departure timer"
-                )
-            if climatisation is None:
-                raise HomeAssistantError(
-                    "climatisation parameter is required for departure timer"
+                    "Either charging or climatisation parameter is required for departure timer"
                 )
 
-            # Departure timer requires all preferred_charging_times parameters
-            if preferred_charging_times_enabled is None:
+            # Check departure timer preferred_charging_times parameters when charging
+            if charging:
+                # preferred_charging_times may be enabled or not
+                if preferred_charging_times_enabled:
+                    # But if they are enabled, both start_time and end_time must be specified
+                    if preferred_charging_times_start_time is None:
+                        raise HomeAssistantError(
+                            "preferred_charging_times_start_time is required for departure timer with preferred_charging_time"
+                        )
+                    if preferred_charging_times_end_time is None:
+                        raise HomeAssistantError(
+                            "preferred_charging_times_end_time is required for departure timer with preferred_charging_time"
+                        )
+            elif preferred_charging_times_enabled:
+                # If charging is not enabled, preferred_charging_times must not be enabled
                 raise HomeAssistantError(
-                    "preferred_charging_times_enabled is required for departure timer"
-                )
-            if preferred_charging_times_start_time is None:
-                raise HomeAssistantError(
-                    "preferred_charging_times_start_time is required for departure timer"
-                )
-            if preferred_charging_times_end_time is None:
-                raise HomeAssistantError(
-                    "preferred_charging_times_end_time is required for departure timer"
+                    "charging is required for preferred_charging_time to be enabled in a departure timer"
                 )
 
             # Check for mixed parameters
