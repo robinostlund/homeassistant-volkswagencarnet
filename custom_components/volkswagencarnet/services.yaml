@@ -10,6 +10,16 @@ update_schedule:
       selector:
         device:
           integration: volkswagencarnet
+    vehicle_series:
+      name: Vehicle series
+      description: The vehicle series
+      required: true
+      selector:
+        select:
+          multiple: false
+          options:
+            - Non-ID. Series
+            - ID. Series
     timer_id:
       name: Timer id
       description: The timer id (1, 2 or 3)
@@ -20,6 +30,16 @@ update_schedule:
           min: 1
           max: 3
           step: 1
+    timer_type:
+      name: Timer type
+      description: The timer type. Departure Timer (Legacy) or AC Departure Timer (ID. Series)
+      required: true
+      selector:
+        select:
+          multiple: false
+          options:
+            - Departure Timer
+            - AC Departure Timer
     charging_profile:
       name: Charging profile
       description: The charging profile id (1..10) to use

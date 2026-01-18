@@ -21,6 +21,8 @@ SERVICE_UPDATE_SCHEDULE_SCHEMA = vol.Schema(
     {
         vol.Required("device_id"): vol.All(cv.string, vol.Length(min=32, max=32)),
         vol.Required("timer_id"): vol.In([1, 2, 3]),
+        vol.Required("vehicle_series"): vol.In(["Legacy", "ID. Series"]),
+        vol.Required("timer_type"): vol.In(["Departure Timer", "AC Departure Timer"]),
         vol.Optional("charging_profile"): vol.All(
             cv.positive_int, vol.Range(min_included=1, max_included=10)
         ),
@@ -69,6 +71,18 @@ class SchedulerService:
                     f"Invalid timer_id: {timer_id}. Must be 1, 2, or 3"
                 )
 
+            vehicle_series = service_call.data.get("vehicle_series", None)
+            if vehicle_series not in ["Legacy", "ID. Series"]:
+                raise HomeAssistantError(
+                    f"Invalid vehicle_series: {vehicle_series}. Must be 'Legacy' or 'ID. Series'"
+                )
+
+            timer_type = service_call.data.get("timer_type", None)
+            if timer_type not in ["Departure Timer", "AC Departure Timer"]:
+                raise HomeAssistantError(
+                    f"Invalid timer_type: {timer_type}. Must be 'Departure Timer' or 'AC Departure Timer'"
+                )
+
             coordinator = await get_coordinator_by_device_id(
                 self.hass, service_call.data.get("device_id")
             )
@@ -79,23 +93,13 @@ class SchedulerService:
 
             vehicle = coordinator.vehicle
 
-            # Check if timer is supported
-            if not vehicle.is_departure_timer_supported(timer_id):
-                raise HomeAssistantError(
-                    f"Timer {timer_id} is not supported for this vehicle"
-                )
-
             spin = coordinator.entry.data.get(CONF_SPIN, "")
-            timer_attributes = vehicle.timer_attributes(timer_id)
-            timer_raw = vehicle.departure_timer(timer_id)
-            # Determine timer type from existing configuration
-            is_ev_timer = timer_attributes.get("profile_id") is not None
-            is_departure_timer = (
-                "charging" in timer_raw
-                or "climatisation" in timer_raw
-                or "preferredChargingTimes" in timer_raw
-            )
-            is_aux_timer = not is_ev_timer and not is_departure_timer
+
+            # Initialize all timer type flags
+            is_ev_timer = False
+            is_departure_timer = False
+            is_aux_timer = False
+            is_id_ac_timer = False
 
             charging_profile = service_call.data.get("charging_profile", None)
             enabled = service_call.data.get("enabled", None)
@@ -115,299 +119,457 @@ class SchedulerService:
                 "preferred_charging_times_end_time", None
             )
 
-            # Validate parameters based on timer type
-            self._validate_timer_parameters(
-                is_departure_timer,
-                is_ev_timer,
-                is_aux_timer,
-                charging_profile,
-                enabled,
-                charging,
-                climatisation,
-                frequency,
-                departure_time,
-                departure_datetime,
-                weekdays,
-                preferred_charging_times_enabled,
-                preferred_charging_times_start_time,
-                preferred_charging_times_end_time,
-            )
-
-            if is_ev_timer:
-                # Build EV timer payload with charging profile
-                payload = {
-                    "id": timer_id,
-                    "enabled": enabled if enabled is not None else False,
-                    "profileIDs": [charging_profile],
-                }
-
-                if frequency == "recurring" and departure_time is not None:
-                    # Build recurringTimer with recurring schedule
-                    # Handle time object conversion properly
-                    from datetime import time
-
-                    if isinstance(departure_time, time):
-                        # Convert time to datetime in local timezone, then to UTC
-                        local_tz = dt_util.get_time_zone(self.hass.config.time_zone)
-                        today = dt_util.now(local_tz).date()
-                        local_dt = datetime.combine(today, departure_time)
-                        if local_dt.tzinfo is None:
-                            local_dt = local_dt.replace(tzinfo=local_tz)
-                        utc_time = dt_util.as_utc(local_dt)
-                    else:
-                        # It's already a datetime
-                        utc_time = dt_util.as_utc(departure_time)
-
-                    # Build weekdays mapping
-                    weekday_map = {
-                        "Monday": "mondays",
-                        "Tuesday": "tuesdays",
-                        "Wednesday": "wednesdays",
-                        "Thursday": "thursdays",
-                        "Friday": "fridays",
-                        "Saturday": "saturdays",
-                        "Sunday": "sundays",
-                    }
-
-                    # Initialize all days to False
-                    recurring_on = {day: False for day in weekday_map.values()}
-                    # Set specified days to True
-                    if weekdays:
-                        for day in weekdays:
-                            if day in weekday_map:
-                                recurring_on[weekday_map[day]] = True
-
-                    payload["recurringTimer"] = {
-                        "startTime": utc_time.strftime("%H:%M"),
-                        "recurringOn": recurring_on,
-                    }
-
-                elif frequency == "single" and departure_datetime is not None:
-                    # Build singleTimer with one-time schedule
-                    if isinstance(departure_datetime, int):
-                        dt = datetime.fromtimestamp(departure_datetime)
-                    elif isinstance(departure_datetime, str):
-                        dt = datetime.fromisoformat(departure_datetime)
-                    else:
-                        dt = departure_datetime
-
-                    # Convert to UTC using dt_util (non-blocking)
-                    utc_dt = dt_util.as_utc(dt)
-
-                    payload["singleTimer"] = {
-                        "startDateTime": utc_dt.strftime("%Y-%m-%dT%H:%M:%SZ")
-                    }
-
-                _LOGGER.debug("EV Departure Timer payload: %s", payload)
-                _LOGGER.debug("Updating EV Departure Timer %s", timer_id)
-                if is_departure_timer:
-                    raise HomeAssistantError(f"Timer {timer_id} is a Departure timer.")
-                if is_aux_timer:
+            if vehicle_series == "Legacy":
+                # Check if timer is supported
+                if not vehicle.is_departure_timer_supported(timer_id):
                     raise HomeAssistantError(
-                        f"Timer {timer_id} is an Auxiliary/AC timer."
+                        f"Timer {timer_id} is not supported for this vehicle"
                     )
-                result = await vehicle.update_departure_timer(
-                    timer_id=timer_id, spin=spin, timer_data=payload
+
+                timer_attributes = vehicle.timer_attributes(timer_id)
+                timer_raw = vehicle.departure_timer(timer_id)
+                # Determine timer type from existing configuration
+                is_ev_timer = timer_attributes.get("profile_id") is not None
+                is_departure_timer = (
+                    "charging" in timer_raw
+                    or "climatisation" in timer_raw
+                    or "preferredChargingTimes" in timer_raw
                 )
-                if result is False:
-                    raise HomeAssistantError(
-                        f"Failed to update EV departure timer {timer_id}"
-                    )
-                await coordinator.async_request_refresh()
+                is_aux_timer = not is_ev_timer and not is_departure_timer
 
-            elif is_departure_timer:
-                # Build departure timer payload
-                payload = {
-                    "id": timer_id,
-                    "enabled": enabled if enabled is not None else True,
-                    "charging": charging if charging is not None else False,
-                    "climatisation": climatisation
-                    if climatisation is not None
-                    else True,
-                }
+                # Validate parameters based on timer type
+                self._validate_timer_parameters(
+                    timer_type,
+                    is_departure_timer,
+                    is_ev_timer,
+                    is_aux_timer,
+                    is_id_ac_timer,
+                    charging_profile,
+                    enabled,
+                    charging,
+                    climatisation,
+                    frequency,
+                    departure_time,
+                    departure_datetime,
+                    weekdays,
+                    preferred_charging_times_enabled,
+                    preferred_charging_times_start_time,
+                    preferred_charging_times_end_time,
+                )
 
-                # Handle recurring timer
-                if frequency == "recurring" and departure_time is not None:
-                    from datetime import time
-
-                    if isinstance(departure_time, time):
-                        time_str = departure_time.strftime("%H:%M")
-                    else:
-                        time_str = departure_time.strftime("%H:%M")
-
-                    # Build repetitionDays array (lowercase day names)
-                    weekday_map = {
-                        "Monday": "monday",
-                        "Tuesday": "tuesday",
-                        "Wednesday": "wednesday",
-                        "Thursday": "thursday",
-                        "Friday": "friday",
-                        "Saturday": "saturday",
-                        "Sunday": "sunday",
-                    }
-
-                    repetition_days = []
-                    if weekdays:
-                        for day in weekdays:
-                            if day in weekday_map:
-                                repetition_days.append(weekday_map[day])
-
-                    payload["recurringTimer"] = {
-                        "departureTimeLocal": time_str,
-                        "repetitionDays": repetition_days,
-                    }
-
-                # Handle single timer
-                elif departure_datetime is not None:
-                    if isinstance(departure_datetime, int):
-                        dt = datetime.fromtimestamp(departure_datetime)
-                    elif isinstance(departure_datetime, str):
-                        dt = datetime.fromisoformat(departure_datetime)
-                    else:
-                        dt = departure_datetime
-
-                    # Ensure timezone awareness using local timezone (non-blocking)
-                    if dt.tzinfo is None:
-                        local_tz = dt_util.get_time_zone(self.hass.config.time_zone)
-                        dt = dt.replace(tzinfo=local_tz)
-
-                    # Keep as local time - no UTC conversion
-                    payload["singleTimer"] = {
-                        "departureDateTimeLocal": dt.strftime("%Y-%m-%dT%H:%M:%S")
-                    }
-
-                # Build preferredChargingTimes (always included)
-                payload["preferredChargingTimes"] = [
-                    {
-                        "id": 1,
-                        "enabled": preferred_charging_times_enabled
-                        if preferred_charging_times_enabled is not None
-                        else False,
-                        "startTimeLocal": preferred_charging_times_start_time.strftime(
-                            "%H:%M"
-                        )
-                        if preferred_charging_times_start_time
-                        else "00:00",
-                        "endTimeLocal": preferred_charging_times_end_time.strftime(
-                            "%H:%M"
-                        )
-                        if preferred_charging_times_end_time
-                        else "00:00",
-                    }
-                ]
-
-                _LOGGER.debug("Departure Timer payload: %s", payload)
-                _LOGGER.debug("Updating Departure Timer %s", timer_id)
                 if is_ev_timer:
-                    raise HomeAssistantError(
-                        f"Timer {timer_id} is an EV Departure timer."
+                    # Build EV timer payload with charging profile
+                    payload = {
+                        "id": timer_id,
+                        "enabled": enabled if enabled is not None else False,
+                        "profileIDs": [charging_profile],
+                    }
+
+                    if frequency == "recurring" and departure_time is not None:
+                        # Build recurringTimer with recurring schedule
+                        # Handle time object conversion properly
+                        from datetime import time
+
+                        if isinstance(departure_time, time):
+                            # Convert time to datetime in local timezone, then to UTC
+                            local_tz = dt_util.get_time_zone(self.hass.config.time_zone)
+                            today = dt_util.now(local_tz).date()
+                            local_dt = datetime.combine(today, departure_time)
+                            if local_dt.tzinfo is None:
+                                local_dt = local_dt.replace(tzinfo=local_tz)
+                            utc_time = dt_util.as_utc(local_dt)
+                        else:
+                            # It's already a datetime
+                            utc_time = dt_util.as_utc(departure_time)
+
+                        # Build weekdays mapping
+                        weekday_map = {
+                            "Monday": "mondays",
+                            "Tuesday": "tuesdays",
+                            "Wednesday": "wednesdays",
+                            "Thursday": "thursdays",
+                            "Friday": "fridays",
+                            "Saturday": "saturdays",
+                            "Sunday": "sundays",
+                        }
+
+                        # Initialize all days to False
+                        recurring_on = {day: False for day in weekday_map.values()}
+                        # Set specified days to True
+                        if weekdays:
+                            for day in weekdays:
+                                if day in weekday_map:
+                                    recurring_on[weekday_map[day]] = True
+
+                        payload["recurringTimer"] = {
+                            "startTime": utc_time.strftime("%H:%M"),
+                            "recurringOn": recurring_on,
+                        }
+
+                    elif frequency == "single" and departure_datetime is not None:
+                        # Build singleTimer with one-time schedule
+                        if isinstance(departure_datetime, int):
+                            dt = datetime.fromtimestamp(departure_datetime)
+                        elif isinstance(departure_datetime, str):
+                            dt = datetime.fromisoformat(departure_datetime)
+                        else:
+                            dt = departure_datetime
+
+                        # Convert to UTC using dt_util (non-blocking)
+                        utc_dt = dt_util.as_utc(dt)
+
+                        payload["singleTimer"] = {
+                            "startDateTime": utc_dt.strftime("%Y-%m-%dT%H:%M:%SZ")
+                        }
+
+                    _LOGGER.debug("EV Departure Timer payload: %s", payload)
+                    _LOGGER.debug("Updating EV Departure Timer %s", timer_id)
+                    if is_departure_timer:
+                        raise HomeAssistantError(
+                            f"Timer {timer_id} is a Departure timer."
+                        )
+                    if is_aux_timer:
+                        raise HomeAssistantError(
+                            f"Timer {timer_id} is an Auxiliary/AC timer."
+                        )
+                    result = await vehicle.update_departure_timer(
+                        timer_id=timer_id, spin=spin, timer_data=payload
                     )
-                if is_aux_timer:
-                    raise HomeAssistantError(
-                        f"Timer {timer_id} is an Auxiliary/AC timer."
+                    if result is False:
+                        raise HomeAssistantError(
+                            f"Failed to update EV departure timer {timer_id}"
+                        )
+                    await coordinator.async_request_refresh()
+
+                elif is_departure_timer:
+                    # Build departure timer payload
+                    payload = {
+                        "id": timer_id,
+                        "enabled": enabled if enabled is not None else True,
+                        "charging": charging if charging is not None else False,
+                        "climatisation": climatisation
+                        if climatisation is not None
+                        else True,
+                    }
+
+                    # Handle recurring timer
+                    if frequency == "recurring" and departure_time is not None:
+                        from datetime import time
+
+                        if isinstance(departure_time, time):
+                            time_str = departure_time.strftime("%H:%M")
+                        else:
+                            time_str = departure_time.strftime("%H:%M")
+
+                        # Build repetitionDays array (lowercase day names)
+                        weekday_map = {
+                            "Monday": "monday",
+                            "Tuesday": "tuesday",
+                            "Wednesday": "wednesday",
+                            "Thursday": "thursday",
+                            "Friday": "friday",
+                            "Saturday": "saturday",
+                            "Sunday": "sunday",
+                        }
+
+                        repetition_days = []
+                        if weekdays:
+                            for day in weekdays:
+                                if day in weekday_map:
+                                    repetition_days.append(weekday_map[day])
+
+                        payload["recurringTimer"] = {
+                            "departureTimeLocal": time_str,
+                            "repetitionDays": repetition_days,
+                        }
+
+                    # Handle single timer
+                    elif departure_datetime is not None:
+                        if isinstance(departure_datetime, int):
+                            dt = datetime.fromtimestamp(departure_datetime)
+                        elif isinstance(departure_datetime, str):
+                            dt = datetime.fromisoformat(departure_datetime)
+                        else:
+                            dt = departure_datetime
+
+                        # Ensure timezone awareness using local timezone (non-blocking)
+                        if dt.tzinfo is None:
+                            local_tz = dt_util.get_time_zone(self.hass.config.time_zone)
+                            dt = dt.replace(tzinfo=local_tz)
+
+                        # Keep as local time - no UTC conversion
+                        payload["singleTimer"] = {
+                            "departureDateTimeLocal": dt.strftime("%Y-%m-%dT%H:%M:%S")
+                        }
+
+                    # Build preferredChargingTimes (always included)
+                    payload["preferredChargingTimes"] = [
+                        {
+                            "id": 1,
+                            "enabled": preferred_charging_times_enabled
+                            if preferred_charging_times_enabled is not None
+                            else False,
+                            "startTimeLocal": preferred_charging_times_start_time.strftime(
+                                "%H:%M"
+                            )
+                            if preferred_charging_times_start_time
+                            else "00:00",
+                            "endTimeLocal": preferred_charging_times_end_time.strftime(
+                                "%H:%M"
+                            )
+                            if preferred_charging_times_end_time
+                            else "00:00",
+                        }
+                    ]
+
+                    _LOGGER.debug("Departure Timer payload: %s", payload)
+                    _LOGGER.debug("Updating Departure Timer %s", timer_id)
+                    if is_ev_timer:
+                        raise HomeAssistantError(
+                            f"Timer {timer_id} is an EV Departure timer."
+                        )
+                    if is_aux_timer:
+                        raise HomeAssistantError(
+                            f"Timer {timer_id} is an Auxiliary/AC timer."
+                        )
+                    result = await vehicle.update_departure_timer(
+                        timer_id=timer_id, spin=spin, timer_data=payload
                     )
-                result = await vehicle.update_departure_timer(
-                    timer_id=timer_id, spin=spin, timer_data=payload
+                    if result is False:
+                        raise HomeAssistantError(
+                            f"Failed to update departure timer {timer_id}"
+                        )
+                    await coordinator.async_request_refresh()
+
+                elif is_aux_timer:
+                    # Build auxiliary departure timer payload
+                    payload = {
+                        "id": timer_id,
+                        "enabled": enabled if enabled is not None else True,
+                    }
+
+                    # Handle recurring timer
+                    if frequency == "recurring" and departure_time is not None:
+                        from datetime import time
+
+                        if isinstance(departure_time, time):
+                            time_str = departure_time.strftime("%H:%M")
+                        else:
+                            time_str = departure_time.strftime("%H:%M")
+
+                        # Build repetitionDays array (lowercase day names)
+                        weekday_map_plural = {
+                            "Monday": "monday",
+                            "Tuesday": "tuesday",
+                            "Wednesday": "wednesday",
+                            "Thursday": "thursday",
+                            "Friday": "friday",
+                            "Saturday": "saturday",
+                            "Sunday": "sunday",
+                        }
+
+                        weekday_map_singular = {
+                            "Monday": "monday",
+                            "Tuesday": "tuesday",
+                            "Wednesday": "wednesday",
+                            "Thursday": "thursday",
+                            "Friday": "friday",
+                            "Saturday": "saturday",
+                            "Sunday": "sunday",
+                        }
+
+                        recurring_on = {
+                            day: False for day in weekday_map_plural.values()
+                        }
+                        repetition_days = []
+
+                        if weekdays:
+                            for day in weekdays:
+                                if day in weekday_map_plural:
+                                    recurring_on[weekday_map_plural[day]] = True
+                                    repetition_days.append(weekday_map_singular[day])
+
+                        payload["recurringTimer"] = {
+                            "startTimeLocal": time_str,
+                            "targetTimeLocal": time_str,
+                            "recurringOn": recurring_on,
+                            "repetitionDays": repetition_days,
+                        }
+
+                    # Handle single timer
+                    elif departure_datetime is not None:
+                        if isinstance(departure_datetime, int):
+                            dt = datetime.fromtimestamp(departure_datetime)
+                        elif isinstance(departure_datetime, str):
+                            dt = datetime.fromisoformat(departure_datetime)
+                        else:
+                            dt = departure_datetime
+
+                        # Ensure timezone awareness using local timezone (non-blocking)
+                        if dt.tzinfo is None:
+                            local_tz = dt_util.get_time_zone(self.hass.config.time_zone)
+                            dt = dt.replace(tzinfo=local_tz)
+
+                        # Keep as local time - no UTC conversion
+                        dt_str = dt.strftime("%Y-%m-%dT%H:%M:%S")
+                        payload["singleTimer"] = {
+                            "startDateTimeLocal": dt_str,
+                            "targetDateTimeLocal": dt_str,
+                        }
+
+                    _LOGGER.debug("Auxiliary Departure Timer payload: %s", payload)
+                    _LOGGER.debug("Updating Auxiliary Departure Timer %s", timer_id)
+                    if is_ev_timer:
+                        raise HomeAssistantError(
+                            f"Timer {timer_id} is an EV Departure timer (has profile_id)."
+                        )
+                    if is_departure_timer:
+                        raise HomeAssistantError(
+                            f"Timer {timer_id} is a Departure timer."
+                        )
+                    result = await vehicle.update_departure_timer(
+                        timer_id=timer_id, spin=spin, timer_data=payload
+                    )
+                    if result is False:
+                        raise HomeAssistantError(
+                            f"Failed to update auxiliary departure timer {timer_id}"
+                        )
+                    await coordinator.async_request_refresh()
+
+                else:
+                    raise HomeAssistantError("Unable to determine timer type")
+
+            elif vehicle_series == "ID. Series":
+                # Check if ac timer is supported
+                if not vehicle.is_ac_departure_timer_supported(timer_id):
+                    raise HomeAssistantError(
+                        f"Timer {timer_id} is not supported for this vehicle"
+                    )
+
+                ac_timer_raw = vehicle.ac_departure_timer(timer_id)
+
+                # ID AC timer uses UTC times (startTime not startTimeLocal, startDateTime not startDateTimeLocal)
+                has_utc_recurring = (
+                    ac_timer_raw.get("recurringTimer", {}).get("startTime") is not None
                 )
-                if result is False:
-                    raise HomeAssistantError(
-                        f"Failed to update departure timer {timer_id}"
-                    )
-                await coordinator.async_request_refresh()
-
-            elif is_aux_timer:
-                # Build auxiliary departure timer payload
-                payload = {
-                    "id": timer_id,
-                    "enabled": enabled if enabled is not None else True,
-                }
-
-                # Handle recurring timer
-                if frequency == "recurring" and departure_time is not None:
-                    from datetime import time
-
-                    if isinstance(departure_time, time):
-                        time_str = departure_time.strftime("%H:%M")
-                    else:
-                        time_str = departure_time.strftime("%H:%M")
-
-                    # Build repetitionDays array (lowercase day names)
-                    weekday_map_plural = {
-                        "Monday": "monday",
-                        "Tuesday": "tuesday",
-                        "Wednesday": "wednesday",
-                        "Thursday": "thursday",
-                        "Friday": "friday",
-                        "Saturday": "saturday",
-                        "Sunday": "sunday",
-                    }
-
-                    weekday_map_singular = {
-                        "Monday": "monday",
-                        "Tuesday": "tuesday",
-                        "Wednesday": "wednesday",
-                        "Thursday": "thursday",
-                        "Friday": "friday",
-                        "Saturday": "saturday",
-                        "Sunday": "sunday",
-                    }
-
-                    recurring_on = {day: False for day in weekday_map_plural.values()}
-                    repetition_days = []
-
-                    if weekdays:
-                        for day in weekdays:
-                            if day in weekday_map_plural:
-                                recurring_on[weekday_map_plural[day]] = True
-                                repetition_days.append(weekday_map_singular[day])
-
-                    payload["recurringTimer"] = {
-                        "startTimeLocal": time_str,
-                        "targetTimeLocal": time_str,
-                        "recurringOn": recurring_on,
-                        "repetitionDays": repetition_days,
-                    }
-
-                # Handle single timer
-                elif departure_datetime is not None:
-                    if isinstance(departure_datetime, int):
-                        dt = datetime.fromtimestamp(departure_datetime)
-                    elif isinstance(departure_datetime, str):
-                        dt = datetime.fromisoformat(departure_datetime)
-                    else:
-                        dt = departure_datetime
-
-                    # Ensure timezone awareness using local timezone (non-blocking)
-                    if dt.tzinfo is None:
-                        local_tz = dt_util.get_time_zone(self.hass.config.time_zone)
-                        dt = dt.replace(tzinfo=local_tz)
-
-                    # Keep as local time - no UTC conversion
-                    dt_str = dt.strftime("%Y-%m-%dT%H:%M:%S")
-                    payload["singleTimer"] = {
-                        "startDateTimeLocal": dt_str,
-                        "targetDateTimeLocal": dt_str,
-                    }
-
-                _LOGGER.debug("Auxiliary Departure Timer payload: %s", payload)
-                _LOGGER.debug("Updating Auxiliary Departure Timer %s", timer_id)
-                if is_ev_timer:
-                    raise HomeAssistantError(
-                        f"Timer {timer_id} is an EV Departure timer (has profile_id)."
-                    )
-                if is_departure_timer:
-                    raise HomeAssistantError(f"Timer {timer_id} is a Departure timer.")
-                result = await vehicle.update_departure_timer(
-                    timer_id=timer_id, spin=spin, timer_data=payload
+                has_utc_single = (
+                    ac_timer_raw.get("singleTimer", {}).get("startDateTime") is not None
                 )
-                if result is False:
-                    raise HomeAssistantError(
-                        f"Failed to update auxiliary departure timer {timer_id}"
+                is_id_ac_timer = has_utc_recurring or has_utc_single
+
+                if is_id_ac_timer:
+                    # Validate parameters for auxiliary timer
+                    self._validate_timer_parameters(
+                        timer_type,
+                        is_departure_timer,
+                        is_ev_timer,
+                        is_aux_timer,
+                        is_id_ac_timer,
+                        charging_profile,
+                        enabled,
+                        charging,
+                        climatisation,
+                        frequency,
+                        departure_time,
+                        departure_datetime,
+                        weekdays,
+                        preferred_charging_times_enabled,
+                        preferred_charging_times_start_time,
+                        preferred_charging_times_end_time,
                     )
-                await coordinator.async_request_refresh()
+
+                    # Build auxiliary AC departure timer payload
+                    payload = {
+                        "id": timer_id,
+                        "enabled": service_call.data.get("enabled", True),
+                    }
+
+                    # Handle recurring timer
+                    if (
+                        service_call.data.get("frequency", None) == "recurring"
+                        and service_call.data.get("departure_time", None) is not None
+                    ):
+                        from datetime import time
+
+                        departure_time = service_call.data.get("departure_time")
+                        if isinstance(departure_time, time):
+                            # Convert time to datetime in local timezone, then to UTC
+                            local_tz = dt_util.get_time_zone(self.hass.config.time_zone)
+                            today = dt_util.now(local_tz).date()
+                            local_dt = datetime.combine(today, departure_time)
+                            if local_dt.tzinfo is None:
+                                local_dt = local_dt.replace(tzinfo=local_tz)
+                            utc_time = dt_util.as_utc(local_dt)
+                            time_str = utc_time.strftime("%H:%M")
+                        else:
+                            # It's already a datetime
+                            utc_time = dt_util.as_utc(departure_time)
+                            time_str = utc_time.strftime("%H:%M")
+
+                        # Build weekdays mapping
+                        weekday_map = {
+                            "Monday": "mondays",
+                            "Tuesday": "tuesdays",
+                            "Wednesday": "wednesdays",
+                            "Thursday": "thursdays",
+                            "Friday": "fridays",
+                            "Saturday": "saturdays",
+                            "Sunday": "sundays",
+                        }
+
+                        # Initialize all days to False
+                        recurring_on = {day: False for day in weekday_map.values()}
+                        # Set specified days to True
+                        weekdays = service_call.data.get("weekdays", None)
+                        if weekdays:
+                            for day in weekdays:
+                                if day in weekday_map:
+                                    recurring_on[weekday_map[day]] = True
+
+                        payload["recurringTimer"] = {
+                            "startTime": time_str,
+                            "recurringOn": recurring_on,
+                        }
+
+                    # Handle single timer
+                    elif service_call.data.get("departure_datetime", None) is not None:
+                        departure_datetime = service_call.data.get("departure_datetime")
+                        if isinstance(departure_datetime, int):
+                            dt = datetime.fromtimestamp(departure_datetime)
+                        elif isinstance(departure_datetime, str):
+                            dt = datetime.fromisoformat(departure_datetime)
+                        else:
+                            dt = departure_datetime
+
+                        # Ensure timezone awareness
+                        if dt.tzinfo is None:
+                            local_tz = dt_util.get_time_zone(self.hass.config.time_zone)
+                            dt = dt.replace(tzinfo=local_tz)
+
+                        # Convert to UTC (ID AC timers use UTC)
+                        utc_dt = dt_util.as_utc(dt)
+
+                        payload["singleTimer"] = {
+                            "startDateTime": utc_dt.strftime("%Y-%m-%dT%H:%M:%SZ")
+                        }
+
+                    _LOGGER.debug("AC Departure Timer payload: %s", payload)
+                    _LOGGER.debug("Updating AC Departure Timer %s", timer_id)
+
+                    # Use set_ac_departure_timer for ID series (not update_departure_timer)
+                    result = await vehicle.update_ac_departure_timer(
+                        timer_id=timer_id, timer_data=payload
+                    )
+                    if result is False:
+                        raise HomeAssistantError(
+                            f"Failed to update AC departure timer {timer_id}"
+                        )
+                    await coordinator.async_request_refresh()
 
             else:
-                raise HomeAssistantError("Unable to determine timer type")
+                raise HomeAssistantError(
+                    f"Unsupported vehicle series: {vehicle_series}"
+                )
 
         except HomeAssistantError:
             raise
@@ -417,9 +579,11 @@ class SchedulerService:
 
     def _validate_timer_parameters(
         self,
+        timer_type: str,
         is_departure_timer: bool,
         is_ev_timer: bool,
         is_aux_timer: bool,
+        is_id_ac_timer: bool,
         charging_profile: int | None,
         enabled: bool | None,
         charging: bool | None,
@@ -440,6 +604,11 @@ class SchedulerService:
 
         # EV Timer validation
         if is_ev_timer:
+            if timer_type == "AC Departure Timer":
+                raise HomeAssistantError(
+                    "timer_type is not valid for EV Departure timer"
+                )
+
             # EV timer cannot have departure timer fields
             if charging_profile is None:
                 raise HomeAssistantError(
@@ -493,6 +662,9 @@ class SchedulerService:
 
         # Departure Timer validation
         elif is_departure_timer:
+            if timer_type == "AC Departure Timer":
+                raise HomeAssistantError("timer_type is not valid for departure timer")
+
             # Departure timer requires charging and climatisation parameters
             if charging is None:
                 raise HomeAssistantError(
@@ -559,6 +731,9 @@ class SchedulerService:
 
         # Auxiliary Timer validation
         elif is_aux_timer:
+            if timer_type == "AC Departure Timer":
+                raise HomeAssistantError("timer_type is not valid for auxiliary timer")
+
             # Auxiliary timer cannot have EV timer fields
             if charging_profile is not None:
                 raise HomeAssistantError(
@@ -604,5 +779,63 @@ class SchedulerService:
                     raise HomeAssistantError(
                         "departure_time cannot be used with single timer (use departure_datetime)"
                     )
+
+        # ID AC Timer validation (ID series)
+        elif is_id_ac_timer:
+            if timer_type == "Departure Timer":
+                raise HomeAssistantError(
+                    "timer_type is not valid for ID. Series AC departure timer"
+                )
+
+            # ID AC timer cannot have EV timer fields
+            if charging_profile is not None:
+                raise HomeAssistantError(
+                    "charging_profile cannot be used with ID AC timer"
+                )
+            # ID AC timer cannot have departure timer fields
+            if charging is not None:
+                raise HomeAssistantError(
+                    "charging parameter cannot be used with ID AC timer"
+                )
+            if climatisation is not None:
+                raise HomeAssistantError(
+                    "climatisation parameter cannot be used with ID AC timer"
+                )
+            if any(
+                [
+                    preferred_charging_times_enabled,
+                    preferred_charging_times_start_time,
+                    preferred_charging_times_end_time,
+                ]
+            ):
+                raise HomeAssistantError(
+                    "preferred_charging_times cannot be used with ID AC timer"
+                )
+
+            # Check for correct parameters based on frequency
+            if frequency == "recurring":
+                if departure_time is None:
+                    raise HomeAssistantError(
+                        "departure_time is required for recurring ID AC timer"
+                    )
+                if departure_datetime is not None:
+                    raise HomeAssistantError(
+                        "departure_datetime cannot be used with recurring timer (use departure_time)"
+                    )
+            # weekdays are optional for ID AC (defaults to all days)
+            elif frequency == "single":
+                if departure_datetime is None:
+                    raise HomeAssistantError(
+                        "departure_datetime is required for single ID AC timer"
+                    )
+                if departure_time is not None:
+                    raise HomeAssistantError(
+                        "departure_time cannot be used with single timer (use departure_datetime)"
+                    )
+            else:
+                # frequency is required for ID AC timers
+                raise HomeAssistantError(
+                    "ID AC timer requires frequency parameter ('recurring' or 'single')"
+                )
         else:
             raise HomeAssistantError("Unable to determine timer type")
