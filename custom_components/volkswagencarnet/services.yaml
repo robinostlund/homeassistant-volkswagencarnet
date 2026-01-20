@@ -32,7 +32,7 @@ update_schedule:
           step: 1
     timer_type:
       name: Timer type
-      description: The timer type. Departure Timer (Legacy) or AC Departure Timer (ID. Series)
+      description: The timer type. Departure Timer (Non-ID. Series) or AC Departure Timer (ID. Series)
       required: true
       selector:
         select:
