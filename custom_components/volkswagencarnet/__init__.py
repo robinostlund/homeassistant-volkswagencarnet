@@ -619,7 +619,7 @@ class VolkswagenCoordinator(DataUpdateCoordinator):
             return True
 
         try:
-            await self.connection.doLogin(3, vin=self.vin)
+            await self.connection.doLogin(3)
         except Exception as err:  # pylint: disable=broad-exception-caught
             _LOGGER.error("Login failed: %s", err)
             return False
