@@ -184,25 +184,34 @@ class VolkswagenNumber(VolkswagenEntity, NumberEntity):
                 self.coordinator.skip_config_reload_token()
                 self.coordinator.skip_config_reload_token = None
 
-            # Reschedule next update if the new interval is shorter than old interval
-            if new_interval < old_interval:
-                # Only request an immediate refresh if more time than new_interval
-                # has passed since the last successful update
-                if utcnow() - self.coordinator.last_update_success_time >= new_interval:
-                    await self.coordinator.async_request_refresh()
-                else:
-                    # Calculate delay until next update based on last successful
-                    # update time and the new interval
-                    delay = (
-                        new_interval
-                        - (utcnow() - self.coordinator.last_update_success_time)
-                    ).total_seconds()
-
-                    async def _delayed_refresh(now) -> None:
+            # Check if refresh is not disabled
+            if new_interval > timedelta(minutes=0):
+                # Reschedule next update if the new interval is shorter than old interval
+                if new_interval < old_interval:
+                    # Only request an immediate refresh if more time than new_interval
+                    # has passed since the last successful update
+                    if (
+                        utcnow() - self.coordinator.last_update_success_time
+                        >= new_interval
+                    ):
                         await self.coordinator.async_request_refresh()
+                    else:
+                        # Calculate delay until next update based on last successful
+                        # update time and the new interval
+                        delay = (
+                            new_interval
+                            - (utcnow() - self.coordinator.last_update_success_time)
+                        ).total_seconds()
 
-                    # Schedule a single refresh after the calculated delay
-                    # (the following ones will be handled by the coordinator)
-                    self.coordinator.skip_config_reload_token = async_call_later(
-                        self.hass, delay, _delayed_refresh
-                    )
+                        async def _delayed_refresh(now) -> None:
+                            await self.coordinator.async_request_refresh()
+
+                        # Schedule a single refresh after the calculated delay
+                        # (the following ones will be handled by the coordinator)
+                        self.coordinator.skip_config_reload_token = async_call_later(
+                            self.hass, delay, _delayed_refresh
+                        )
+                elif old_interval == timedelta(minutes=0):
+                    # If refresh was disabled and it is now enabled
+                    # refresh immediately
+                    await self.coordinator.async_request_refresh()
