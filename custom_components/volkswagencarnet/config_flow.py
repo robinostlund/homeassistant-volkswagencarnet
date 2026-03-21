@@ -25,6 +25,7 @@ from volkswagencarnet.vw_connection import Connection
 from volkswagencarnet.vw_vehicle import Vehicle
 
 from .const import (
+    CONF_ACCOUNT_LABEL,
     CONF_AVAILABLE_RESOURCES,
     CONF_CONVERT,
     CONF_MUTABLE,
@@ -46,6 +47,7 @@ DATA_SCHEMA = vol.Schema(
         vol.Optional(CONF_NAME, default=""): str,
         vol.Required(CONF_USERNAME, default=""): str,
         vol.Required(CONF_PASSWORD, default=""): str,
+        vol.Optional(CONF_ACCOUNT_LABEL, default=""): str,
         vol.Optional(CONF_SPIN, default=""): str,
         vol.Optional(CONF_REGION, default=DEFAULT_REGION): str,
         vol.Optional(CONF_MUTABLE, default=True): cv.boolean,
@@ -177,7 +179,15 @@ class VolkswagenCarnetConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
             if not self._init_info[CONF_NAME]:
                 self._init_info[CONF_NAME] = self._init_info[CONF_VEHICLE]
 
-            await self.async_set_unique_id(self._init_info[CONF_VEHICLE])
+            # Auto-generate account_label from email if not provided
+            if not self._init_info.get(CONF_ACCOUNT_LABEL):
+                email = self._init_info[CONF_USERNAME]
+                self._init_info[CONF_ACCOUNT_LABEL] = email.split("@")[0].lower()
+
+            # Use VIN + username as unique ID to allow multiple accounts per vehicle
+            username = self._init_info[CONF_USERNAME].lower().strip()
+            vin = self._init_info[CONF_VEHICLE]
+            await self.async_set_unique_id(f"{vin}_{username}")
             self._abort_if_unique_id_configured()
 
             return self.async_create_entry(

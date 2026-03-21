@@ -11,6 +11,7 @@
           "mutable": "Ta vekk krysset for å gjere bilen 'read only'. Behald krysset om du vil gjere endringar mot bilen",
           "region": "Landskode der bilen vart solgt (ISO 3166-1 alpha-2)",
           "spin": "S-PIN",
+          "account_label": "Account label (e.g. 'andreas' — used to distinguish entities when multiple accounts share a vehicle)",
           "name": "Gje bilen ditt eit navn (elles blir navnet det same som VIN nummeret)",
           "debug": "Skru på debug logger frå API (krev at debug logging er skrudd på i konfigurasjonen",
           "convert": "Velg denne om du vil ha omrekning av distanse",

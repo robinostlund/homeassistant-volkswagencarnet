@@ -44,6 +44,7 @@ from volkswagencarnet.vw_vehicle import Vehicle
 
 from .const import (
     COMPONENTS,
+    CONF_ACCOUNT_LABEL,
     CONF_AVAILABLE_RESOURCES,
     CONF_CONVERT,
     CONF_IMPERIAL_UNITS,
@@ -56,6 +57,7 @@ from .const import (
     DATA,
     DEFAULT_UPDATE_INTERVAL,
     DOMAIN,
+    PASSIVE_UPDATE_INTERVAL,
     SIGNAL_STATE_UPDATED,
     UNDO_UPDATE_LISTENER,
     UPDATE_CALLBACK,
@@ -495,11 +497,23 @@ class VolkswagenEntity(CoordinatorEntity, RestoreEntity):
         return attributes
 
     @property
+    def _account_label(self) -> str:
+        """Return the account label from the config entry."""
+        if self.coordinator and self.coordinator.entry:
+            return self.coordinator.entry.data.get(CONF_ACCOUNT_LABEL, "")
+        return ""
+
+    @property
     def device_info(self) -> dict[str, object]:
         """Return the device_info of the device."""
+        account_label = self._account_label
+        identifier = f"{self.vin}_{account_label}" if account_label else self.vin
+        device_name = self._vehicle_name
+        if account_label:
+            device_name = f"{device_name} ({account_label})"
         return {
-            "identifiers": {(DOMAIN, self.vin)},
-            "name": self._vehicle_name,
+            "identifiers": {(DOMAIN, identifier)},
+            "name": device_name,
             "manufacturer": "Volkswagen",
             "model": self.vehicle.model,
             "sw_version": self.vehicle.model_year,
@@ -524,6 +538,9 @@ class VolkswagenEntity(CoordinatorEntity, RestoreEntity):
     @property
     def unique_id(self) -> str:
         """Return a unique ID."""
+        account_label = self._account_label
+        if account_label:
+            return f"{self.vin}-{account_label}-{self.component}-{self.attribute}"
         return f"{self.vin}-{self.component}-{self.attribute}"
 
     def notify_updated(self) -> None:
@@ -545,6 +562,9 @@ class VolkswagenCoordinator(DataUpdateCoordinator):
         self.entry = entry
         self.platforms: list[str] = []
         self.vehicle: Vehicle | None = None
+        self._active_mode = True
+        self._normal_interval = update_interval
+        self._passive_interval = timedelta(minutes=PASSIVE_UPDATE_INTERVAL)
         self.connection = Connection(
             session=async_get_clientsession(hass),
             username=self.entry.data[CONF_USERNAME],
@@ -573,14 +593,43 @@ class VolkswagenCoordinator(DataUpdateCoordinator):
 
     async def _async_update_data(self) -> list[Instrument]:
         """Update data via library."""
-        vehicle = await self.update()
-
-        if vehicle is None:
+        # Check if we are still logged in; if not, trigger reauth
+        if not self.connection.logged_in:
             self.entry.async_start_reauth(self.hass)
             raise ConfigEntryAuthFailed(
                 "Failed to update Volkswagen Connect. Need to accept EULA? "
                 "Try logging in to the portal: https://www.myvolkswagen.net/"
             )
+
+        vehicle = await self.update()
+
+        if vehicle is None:
+            # No data returned — likely another user is active (DSGVO).
+            # Switch to passive polling instead of triggering reauth.
+            if self._active_mode:
+                _LOGGER.info(
+                    "Account %s has no access to VIN %s. "
+                    "Switching to passive mode (polling every %s min.)",
+                    self.entry.data.get(CONF_USERNAME),
+                    self.vin,
+                    PASSIVE_UPDATE_INTERVAL,
+                )
+                self._active_mode = False
+                self.update_interval = self._passive_interval
+            # Return last known data to keep entities available
+            return self.data or []
+
+        # Data received successfully — ensure active mode
+        if not self._active_mode:
+            _LOGGER.info(
+                "Account %s has access to VIN %s again. "
+                "Switching to active mode (polling every %s min.)",
+                self.entry.data.get(CONF_USERNAME),
+                self.vin,
+                int(self._normal_interval.total_seconds() / 60),
+            )
+            self._active_mode = True
+            self.update_interval = self._normal_interval
 
         self.vehicle = vehicle
 

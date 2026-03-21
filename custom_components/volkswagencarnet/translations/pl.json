@@ -11,6 +11,7 @@
           "mutable": "Usuń zaznaczenie, aby samochód był „tylko do odczytu”. Jeśli je zostawisz będziesz mógł wejść w interakcję z samochodem",
           "region": "Kod kraju, w którym samochód został sprzedany (ISO 3166-1 alpha-2)",
           "spin": "S-PIN",
+          "account_label": "Account label (e.g. 'andreas' — used to distinguish entities when multiple accounts share a vehicle)",
           "name": "Nazwij swój samochód (domyślnie numer VIN)",
           "debug": "Włącz pełne dzienniki debugowania z interfejsu API (wymaga włączenia rejestrowania debugowania w konfiguracji)",
           "convert": "Wybierz, jeśli chcesz dokonać konwersji jednostek odległości",

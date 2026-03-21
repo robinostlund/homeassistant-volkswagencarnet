@@ -11,6 +11,7 @@
           "mutable": "Deaktivieren, um das Auto auf 'Nur-Lesen' zu setzen. Aktiviert lassen, um mit dem Auto zu interagieren.",
           "region": "Ländercode, in dem das Auto verkauft wurde (ISO 3166-1 alpha-2)",
           "spin": "S-PIN",
+          "account_label": "Account-Label (z.B. 'andreas' — zur Unterscheidung bei mehreren Nutzern desselben Fahrzeugs)",
           "name": "Benenne dein Auto (standardmäßig die VIN-Nummer)",
           "debug": "Aktiviere die Debug-Logs der API (erfordert aktivierte Debug-Protokollierung in der Konfiguration)",
           "convert": "Wähle, ob du eine Umrechnung der Entfernungseinheiten vornehmen möchtest",
@@ -40,7 +41,7 @@
       }
     },
     "abort": {
-      "already_configured": "Ein Auto mit dieser VIN ist bereits konfiguriert.",
+      "already_configured": "Dieses Fahrzeug ist bereits mit diesem Account konfiguriert.",
       "reauth_successful": "Die erneute Authentifizierung war erfolgreich."
     },
     "error": {

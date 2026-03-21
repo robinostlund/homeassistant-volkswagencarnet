@@ -11,6 +11,7 @@
           "mutable": "Fjern afkrydsning for at gøre integrationen til 'read only'. Behold for at kunne interagere med bilen",
           "region": "Landekode for hvor bilen blev solgt (ISO 3166-1 alpha-2)",
           "spin": "S-PIN",
+          "account_label": "Account label (e.g. 'andreas' — used to distinguish entities when multiple accounts share a vehicle)",
           "name": "Navngiv din bil (standard er bilens stelnummer)",
           "debug": "Tillad fuld fejlfindingslog fra API (kræver at fejlfindingslogføring er slået til)",
           "convert": "Vælg hvis du ønsker at konvertere enheder",

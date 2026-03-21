@@ -11,6 +11,7 @@
           "mutable": "Vink uit om de auto 'alleen-lezen' te maken. Houd aangevinkt om interactie met de auto mogelijk te maken.",
           "region": "Landcode waar de auto is verkocht (ISO 3166-1 alpha-2)",
           "spin": "S-PIN",
+          "account_label": "Account label (e.g. 'andreas' — used to distinguish entities when multiple accounts share a vehicle)",
           "name": "Geef je auto een naam (standaard het VIN-nummer)",
           "debug": "Schakel volledige debug-logs van de API in (vereist dat debug-logging is ingeschakeld in de config)",
           "convert": "Selecteer of je eenheden voor afstand wilt converteren",

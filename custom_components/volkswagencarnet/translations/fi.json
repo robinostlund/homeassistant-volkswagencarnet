@@ -11,6 +11,7 @@
           "mutable": "Salli komentojen lähettäminen ajoneuvolle",
           "region": "Maa jossa ajoneuvo myytiin (ISO 3166-1 alpha-2)",
           "spin": "S-PIN",
+          "account_label": "Account label (e.g. 'andreas' — used to distinguish entities when multiple accounts share a vehicle)",
           "name": "Nimeä ajoneuvo (oletuksena näytetään VIN)",
           "debug": "Ota täysi API:n debuglogitus käyttöön (logitustaso pitää myös olla asetettu debugille)",
           "convert": "Käytä etäisyysmuunnoksia",

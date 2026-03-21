@@ -11,6 +11,7 @@
           "mutable": "Desmarque para tornar o carro 'somente leitura'. Mantenha marcado para interagir com o carro",
           "region": "Código do país onde o carro foi vendido (ISO 3166-1 alpha-2)",
           "spin": "S-PIN",
+          "account_label": "Account label (e.g. 'andreas' — used to distinguish entities when multiple accounts share a vehicle)",
           "name": "Nome do carro (o padrão é o número VIN)",
           "debug": "Habilitar logs de depuração completos da API (requer log de depuração habilitado nas configurações)",
           "convert": "Selecione se você deseja fazer qualquer conversão de unidade de distância",
