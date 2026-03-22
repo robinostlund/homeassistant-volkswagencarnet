@@ -358,7 +358,15 @@ class VolkswagenEntity(CoordinatorEntity, RestoreEntity):
             super().async_write_ha_state()
             return
 
-        state_changed = str(self.state or STATE_UNKNOWN) != str(prev.state)
+        # Compare current state with previous state (as a string)
+        current_raw = self.state if self.state is not None else STATE_UNKNOWN
+        try:
+            current_num = float(current_raw)
+            previous_num = float(prev.state)
+            state_changed = abs(current_num - previous_num) >= 0.0001
+        except (TypeError, ValueError):
+            state_changed = str(current_raw) != str(prev.state)
+
         time_changed = str(prev.attributes.get("last_updated", None)) != str(
             backend_refresh_time
         )
