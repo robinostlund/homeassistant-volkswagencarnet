@@ -1,5 +1,5 @@
 black
 flake8
 freezegun
-homeassistant>=2022.03.2
+homeassistant>=2026.4.3
 pytest-homeassistant-custom-component>=0.7.1
