@@ -12,7 +12,7 @@
   "issue_tracker": "https://github.com/robinostlund/homeassistant-volkswagencarnet/issues",
   "loggers": ["volkswagencarnet"],
   "requirements": [
-    "volkswagencarnet@git+https://github.com/Pascal-ZeGerman/volkswagencarnet@main"
+    "volkswagencarnet@git+https://github.com/robinostlund/volkswagencarnet@main"
   ],
   "version": "v0.0.0"
 }

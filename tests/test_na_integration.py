@@ -1,7 +1,7 @@
 """Tests for Phase 2 NA Library Integration (NAL gaps 01-05).
 
 Coverage:
-  NAL-01: Forked library dependency in requirements.txt and manifest.json
+  NAL-01: Library dependency in requirements.txt and manifest.json
   NAL-02: Country selector in config flow DATA_SCHEMA
   NAL-03: country= parameter forwarded to Connection() in config flow and coordinator
   NAL-05: v3 -> v4 migration (CONF_REGION -> CONF_COUNTRY, repair issue, ConfirmCountryRepairFlow)
@@ -41,27 +41,27 @@ from custom_components.volkswagencarnet.const import (
 # Root of the repository (two levels up from this test file)
 REPO_ROOT = Path(__file__).parent.parent
 
-FORKED_GIT_URL = "git+https://github.com/Pascal-ZeGerman/volkswagencarnet"
+UPSTREAM_GIT_URL = "git+https://github.com/robinostlund/volkswagencarnet"
 
 
 # ===========================================================================
-# GAP 1: NAL-01 — Forked library dependency
+# GAP 1: NAL-01 — Library dependency
 # ===========================================================================
 
 
-def test_nal01_requirements_txt_has_forked_git_url():
-    """requirements.txt must reference the forked GitHub URL."""
+def test_nal01_requirements_txt_has_upstream_git_url():
+    """requirements.txt must reference the upstream volkswagencarnet GitHub URL."""
     req_file = REPO_ROOT / "requirements.txt"
     assert req_file.exists(), "requirements.txt not found in repo root"
     content = req_file.read_text()
-    assert FORKED_GIT_URL in content, (
-        f"requirements.txt does not contain forked git URL '{FORKED_GIT_URL}'.\n"
+    assert UPSTREAM_GIT_URL in content, (
+        f"requirements.txt does not contain upstream git URL '{UPSTREAM_GIT_URL}'.\n"
         f"Actual content:\n{content}"
     )
 
 
-def test_nal01_manifest_requirements_has_forked_git_url():
-    """manifest.json requirements array must reference the forked GitHub URL."""
+def test_nal01_manifest_requirements_has_upstream_git_url():
+    """manifest.json requirements array must reference the upstream volkswagencarnet GitHub URL."""
     manifest_file = (
         REPO_ROOT / "custom_components" / "volkswagencarnet" / "manifest.json"
     )
@@ -69,15 +69,15 @@ def test_nal01_manifest_requirements_has_forked_git_url():
     manifest = json.loads(manifest_file.read_text())
     requirements = manifest.get("requirements", [])
     assert isinstance(requirements, list), "manifest.json 'requirements' must be a list"
-    matching = [r for r in requirements if FORKED_GIT_URL in r]
+    matching = [r for r in requirements if UPSTREAM_GIT_URL in r]
     assert matching, (
-        f"manifest.json requirements do not contain forked git URL '{FORKED_GIT_URL}'.\n"
+        f"manifest.json requirements do not contain upstream git URL '{UPSTREAM_GIT_URL}'.\n"
         f"Actual requirements: {requirements}"
     )
 
 
 def test_nal01_requirements_and_manifest_in_sync():
-    """The forked git requirement spec in requirements.txt and manifest.json must match."""
+    """The git requirement spec in requirements.txt and manifest.json must match."""
     req_content = (REPO_ROOT / "requirements.txt").read_text()
     manifest = json.loads(
         (
@@ -86,13 +86,13 @@ def test_nal01_requirements_and_manifest_in_sync():
     )
 
     req_lines = [
-        line.strip() for line in req_content.splitlines() if FORKED_GIT_URL in line
+        line.strip() for line in req_content.splitlines() if UPSTREAM_GIT_URL in line
     ]
     assert req_lines, "No matching line in requirements.txt"
     req_spec = req_lines[0]
 
     manifest_reqs = manifest.get("requirements", [])
-    manifest_matching = [r for r in manifest_reqs if FORKED_GIT_URL in r]
+    manifest_matching = [r for r in manifest_reqs if UPSTREAM_GIT_URL in r]
     assert manifest_matching, "No matching entry in manifest.json requirements"
     manifest_spec = manifest_matching[0]
 
