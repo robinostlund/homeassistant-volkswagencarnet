@@ -84,14 +84,18 @@ class VolkswagenCarnetConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
 
             # Collapse "Other" free-text into CONF_COUNTRY
             if self._init_info.get(CONF_COUNTRY) == "OTHER":
-                custom_code = self._init_info.pop(CONF_COUNTRY_CUSTOM, "").strip().upper()
+                custom_code = (
+                    self._init_info.pop(CONF_COUNTRY_CUSTOM, "").strip().upper()
+                )
                 if len(custom_code) != 2:
                     self._errors[CONF_COUNTRY_CUSTOM] = "invalid_country_code"
                     return self.async_show_form(
                         step_id="user", data_schema=DATA_SCHEMA, errors=self._errors
                     )
                 self._init_info[CONF_COUNTRY] = custom_code
-            self._init_info.pop(CONF_COUNTRY_CUSTOM, None)  # Don't store in config entry
+            self._init_info.pop(
+                CONF_COUNTRY_CUSTOM, None
+            )  # Don't store in config entry
 
             _LOGGER.debug("Creating connection to Volkswagen Connect")
             self._connection = Connection(
@@ -237,7 +241,9 @@ class VolkswagenCarnetConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                 session=async_get_clientsession(self.hass),
                 username=user_input[CONF_USERNAME],
                 password=user_input[CONF_PASSWORD],
-                country=self._entry.data.get(CONF_COUNTRY, self._entry.data.get(CONF_REGION, DEFAULT_COUNTRY)),
+                country=self._entry.data.get(
+                    CONF_COUNTRY, self._entry.data.get(CONF_REGION, DEFAULT_COUNTRY)
+                ),
             )
 
             try:
@@ -318,7 +324,8 @@ class VolkswagenCarnetOptionsFlowHandler(config_entries.OptionsFlow):
                     vol.Optional(
                         CONF_COUNTRY,
                         default=self._config_entry.data.get(
-                            CONF_COUNTRY, self._config_entry.data.get(CONF_REGION, DEFAULT_COUNTRY)
+                            CONF_COUNTRY,
+                            self._config_entry.data.get(CONF_REGION, DEFAULT_COUNTRY),
                         ),
                     ): vol.In(COUNTRY_LIST),
                     vol.Optional(

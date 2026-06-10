@@ -80,10 +80,14 @@ def test_nal01_requirements_and_manifest_in_sync():
     """The forked git requirement spec in requirements.txt and manifest.json must match."""
     req_content = (REPO_ROOT / "requirements.txt").read_text()
     manifest = json.loads(
-        (REPO_ROOT / "custom_components" / "volkswagencarnet" / "manifest.json").read_text()
+        (
+            REPO_ROOT / "custom_components" / "volkswagencarnet" / "manifest.json"
+        ).read_text()
     )
 
-    req_lines = [line.strip() for line in req_content.splitlines() if FORKED_GIT_URL in line]
+    req_lines = [
+        line.strip() for line in req_content.splitlines() if FORKED_GIT_URL in line
+    ]
     assert req_lines, "No matching line in requirements.txt"
     req_spec = req_lines[0]
 
@@ -196,7 +200,9 @@ def test_nal02_data_schema_has_optional_country_custom_field():
 
 async def test_nal02_other_collapse_accepts_valid_2char_code(hass: HomeAssistant):
     """async_step_user: CONF_COUNTRY='OTHER' with a valid 2-char custom code is accepted."""
-    from custom_components.volkswagencarnet.config_flow import VolkswagenCarnetConfigFlow
+    from custom_components.volkswagencarnet.config_flow import (
+        VolkswagenCarnetConfigFlow,
+    )
 
     flow = VolkswagenCarnetConfigFlow()
     flow.hass = hass
@@ -213,8 +219,14 @@ async def test_nal02_other_collapse_accepts_valid_2char_code(hass: HomeAssistant
         "scan_interval": 5,
     }
 
-    with patch.object(flow, "async_show_form", return_value={"type": "form", "step_id": "user"}) as mock_form, \
-         patch.object(flow, "async_step_login", new=AsyncMock(return_value={"type": "form"})):
+    with (
+        patch.object(
+            flow, "async_show_form", return_value={"type": "form", "step_id": "user"}
+        ) as mock_form,
+        patch.object(
+            flow, "async_step_login", new=AsyncMock(return_value={"type": "form"})
+        ),
+    ):
         await flow.async_step_user(user_input)
 
     # The form must NOT have been called with invalid_country_code error
@@ -235,7 +247,9 @@ async def test_nal02_other_collapse_accepts_valid_2char_code(hass: HomeAssistant
 
 async def test_nal02_other_collapse_rejects_non_2char_code(hass: HomeAssistant):
     """async_step_user: CONF_COUNTRY='OTHER' with non-2-char code must show invalid_country_code error."""
-    from custom_components.volkswagencarnet.config_flow import VolkswagenCarnetConfigFlow
+    from custom_components.volkswagencarnet.config_flow import (
+        VolkswagenCarnetConfigFlow,
+    )
 
     for bad_code in ["", "A", "AUS", "AUSTRALIA"]:
         flow = VolkswagenCarnetConfigFlow()
@@ -253,7 +267,9 @@ async def test_nal02_other_collapse_rejects_non_2char_code(hass: HomeAssistant):
             "scan_interval": 5,
         }
 
-        with patch.object(flow, "async_show_form", return_value={"type": "form", "step_id": "user"}) as mock_form:
+        with patch.object(
+            flow, "async_show_form", return_value={"type": "form", "step_id": "user"}
+        ) as mock_form:
             await flow.async_step_user(user_input)
 
         assert mock_form.called, f"async_show_form not called for bad_code={bad_code!r}"
@@ -264,9 +280,13 @@ async def test_nal02_other_collapse_rejects_non_2char_code(hass: HomeAssistant):
         )
 
 
-async def test_nal02_other_collapse_strips_whitespace_and_uppercases(hass: HomeAssistant):
+async def test_nal02_other_collapse_strips_whitespace_and_uppercases(
+    hass: HomeAssistant,
+):
     """async_step_user: custom code whitespace is stripped and value is uppercased."""
-    from custom_components.volkswagencarnet.config_flow import VolkswagenCarnetConfigFlow
+    from custom_components.volkswagencarnet.config_flow import (
+        VolkswagenCarnetConfigFlow,
+    )
 
     flow = VolkswagenCarnetConfigFlow()
     flow.hass = hass
@@ -283,8 +303,12 @@ async def test_nal02_other_collapse_strips_whitespace_and_uppercases(hass: HomeA
         "scan_interval": 5,
     }
 
-    with patch.object(flow, "async_show_form") as mock_form, \
-         patch.object(flow, "async_step_login", new=AsyncMock(return_value={"type": "form"})):
+    with (
+        patch.object(flow, "async_show_form") as mock_form,
+        patch.object(
+            flow, "async_step_login", new=AsyncMock(return_value={"type": "form"})
+        ),
+    ):
         await flow.async_step_user(user_input)
 
     # No error should be shown
@@ -307,7 +331,9 @@ async def test_nal02_other_collapse_strips_whitespace_and_uppercases(hass: HomeA
 
 async def test_nal03_config_flow_passes_country_us_to_connection(hass: HomeAssistant):
     """Connection() in async_step_user must receive country='US' when US is selected."""
-    from custom_components.volkswagencarnet.config_flow import VolkswagenCarnetConfigFlow
+    from custom_components.volkswagencarnet.config_flow import (
+        VolkswagenCarnetConfigFlow,
+    )
 
     flow = VolkswagenCarnetConfigFlow()
     flow.hass = hass
@@ -332,8 +358,15 @@ async def test_nal03_config_flow_passes_country_us_to_connection(hass: HomeAssis
         "scan_interval": 5,
     }
 
-    with patch("custom_components.volkswagencarnet.config_flow.Connection", side_effect=fake_connection), \
-         patch.object(flow, "async_step_login", new=AsyncMock(return_value={"type": "form"})):
+    with (
+        patch(
+            "custom_components.volkswagencarnet.config_flow.Connection",
+            side_effect=fake_connection,
+        ),
+        patch.object(
+            flow, "async_step_login", new=AsyncMock(return_value={"type": "form"})
+        ),
+    ):
         await flow.async_step_user(user_input)
 
     assert "country" in captured_kwargs, (
@@ -346,7 +379,9 @@ async def test_nal03_config_flow_passes_country_us_to_connection(hass: HomeAssis
 
 async def test_nal03_config_flow_passes_country_ca_to_connection(hass: HomeAssistant):
     """Connection() in async_step_user must receive country='CA' when Canada is selected."""
-    from custom_components.volkswagencarnet.config_flow import VolkswagenCarnetConfigFlow
+    from custom_components.volkswagencarnet.config_flow import (
+        VolkswagenCarnetConfigFlow,
+    )
 
     flow = VolkswagenCarnetConfigFlow()
     flow.hass = hass
@@ -371,8 +406,15 @@ async def test_nal03_config_flow_passes_country_ca_to_connection(hass: HomeAssis
         "scan_interval": 5,
     }
 
-    with patch("custom_components.volkswagencarnet.config_flow.Connection", side_effect=fake_connection), \
-         patch.object(flow, "async_step_login", new=AsyncMock(return_value={"type": "form"})):
+    with (
+        patch(
+            "custom_components.volkswagencarnet.config_flow.Connection",
+            side_effect=fake_connection,
+        ),
+        patch.object(
+            flow, "async_step_login", new=AsyncMock(return_value={"type": "form"})
+        ),
+    ):
         await flow.async_step_user(user_input)
 
     assert captured_kwargs.get("country") == "CA", (
@@ -385,7 +427,6 @@ async def test_nal03_coordinator_passes_country_to_connection(hass: HomeAssistan
     from datetime import timedelta
 
     from custom_components.volkswagencarnet import VolkswagenCoordinator
-
 
     captured_kwargs: dict = {}
 
@@ -403,8 +444,12 @@ async def test_nal03_coordinator_passes_country_to_connection(hass: HomeAssistan
         },
     )
 
-    with patch("custom_components.volkswagencarnet.Connection", side_effect=fake_connection):
-        VolkswagenCoordinator(hass=hass, entry=entry, update_interval=timedelta(minutes=5))
+    with patch(
+        "custom_components.volkswagencarnet.Connection", side_effect=fake_connection
+    ):
+        VolkswagenCoordinator(
+            hass=hass, entry=entry, update_interval=timedelta(minutes=5)
+        )
 
     assert "country" in captured_kwargs, (
         "VolkswagenCoordinator did not pass 'country' to Connection()"
@@ -419,7 +464,6 @@ async def test_nal03_coordinator_falls_back_to_conf_region(hass: HomeAssistant):
     from datetime import timedelta
 
     from custom_components.volkswagencarnet import VolkswagenCoordinator
-
 
     captured_kwargs: dict = {}
 
@@ -438,8 +482,12 @@ async def test_nal03_coordinator_falls_back_to_conf_region(hass: HomeAssistant):
         },
     )
 
-    with patch("custom_components.volkswagencarnet.Connection", side_effect=fake_connection):
-        VolkswagenCoordinator(hass=hass, entry=entry, update_interval=timedelta(minutes=5))
+    with patch(
+        "custom_components.volkswagencarnet.Connection", side_effect=fake_connection
+    ):
+        VolkswagenCoordinator(
+            hass=hass, entry=entry, update_interval=timedelta(minutes=5)
+        )
 
     assert captured_kwargs.get("country") == "NO", (
         f"Expected fallback country='NO' from CONF_REGION, got {captured_kwargs.get('country')!r}"
@@ -451,7 +499,6 @@ async def test_nal03_coordinator_falls_back_to_default_country(hass: HomeAssista
     from datetime import timedelta
 
     from custom_components.volkswagencarnet import VolkswagenCoordinator
-
 
     captured_kwargs: dict = {}
 
@@ -469,8 +516,12 @@ async def test_nal03_coordinator_falls_back_to_default_country(hass: HomeAssista
         },
     )
 
-    with patch("custom_components.volkswagencarnet.Connection", side_effect=fake_connection):
-        VolkswagenCoordinator(hass=hass, entry=entry, update_interval=timedelta(minutes=5))
+    with patch(
+        "custom_components.volkswagencarnet.Connection", side_effect=fake_connection
+    ):
+        VolkswagenCoordinator(
+            hass=hass, entry=entry, update_interval=timedelta(minutes=5)
+        )
 
     assert captured_kwargs.get("country") == DEFAULT_COUNTRY, (
         f"Expected default country='{DEFAULT_COUNTRY}', got {captured_kwargs.get('country')!r}"
@@ -479,8 +530,9 @@ async def test_nal03_coordinator_falls_back_to_default_country(hass: HomeAssista
 
 async def test_nal03_reauth_passes_country_from_entry_data(hass: HomeAssistant):
     """async_step_reauth_confirm must forward CONF_COUNTRY from entry.data to Connection()."""
-    from custom_components.volkswagencarnet.config_flow import VolkswagenCarnetConfigFlow
-
+    from custom_components.volkswagencarnet.config_flow import (
+        VolkswagenCarnetConfigFlow,
+    )
 
     entry = MockConfigEntry(
         domain=DOMAIN,
@@ -506,7 +558,10 @@ async def test_nal03_reauth_passes_country_from_entry_data(hass: HomeAssistant):
         conn.validate_login = AsyncMock(return_value=False)
         return conn
 
-    with patch("custom_components.volkswagencarnet.config_flow.Connection", side_effect=fake_connection):
+    with patch(
+        "custom_components.volkswagencarnet.config_flow.Connection",
+        side_effect=fake_connection,
+    ):
         await flow.async_step_reauth_confirm(
             user_input={
                 "username": "new_user@example.com",
@@ -520,10 +575,13 @@ async def test_nal03_reauth_passes_country_from_entry_data(hass: HomeAssistant):
     )
 
 
-async def test_nal03_reauth_falls_back_to_conf_region_if_no_conf_country(hass: HomeAssistant):
+async def test_nal03_reauth_falls_back_to_conf_region_if_no_conf_country(
+    hass: HomeAssistant,
+):
     """async_step_reauth_confirm must fall back to CONF_REGION if CONF_COUNTRY is absent."""
-    from custom_components.volkswagencarnet.config_flow import VolkswagenCarnetConfigFlow
-
+    from custom_components.volkswagencarnet.config_flow import (
+        VolkswagenCarnetConfigFlow,
+    )
 
     # Old-style entry with only CONF_REGION
     entry = MockConfigEntry(
@@ -550,7 +608,10 @@ async def test_nal03_reauth_falls_back_to_conf_region_if_no_conf_country(hass: H
         conn.validate_login = AsyncMock(return_value=False)
         return conn
 
-    with patch("custom_components.volkswagencarnet.config_flow.Connection", side_effect=fake_connection):
+    with patch(
+        "custom_components.volkswagencarnet.config_flow.Connection",
+        side_effect=fake_connection,
+    ):
         await flow.async_step_reauth_confirm(
             user_input={"username": "u@example.com", "password": "pw"}
         )
@@ -586,8 +647,10 @@ async def _run_migration(hass: HomeAssistant, entry):
         else:
             _orig_setattr(self, key, value)
 
-    with patch("homeassistant.config_entries.ConfigEntries._async_schedule_save"), \
-         patch.object(ConfigEntry, "__setattr__", _permissive_setattr):
+    with (
+        patch("homeassistant.config_entries.ConfigEntries._async_schedule_save"),
+        patch.object(ConfigEntry, "__setattr__", _permissive_setattr),
+    ):
         entry.add_to_hass(hass)
         return await async_migrate_entry(hass, entry)
 
@@ -620,7 +683,6 @@ async def test_nal05_migration_no_version_assignment_error(hass: HomeAssistant):
 async def test_nal05_migration_returns_true(hass: HomeAssistant):
     """async_migrate_entry must return True for a v3 config entry."""
 
-
     entry = MockConfigEntry(
         domain=DOMAIN,
         version=3,
@@ -637,7 +699,6 @@ async def test_nal05_migration_returns_true(hass: HomeAssistant):
 
 async def test_nal05_version_bumped_to_4(hass: HomeAssistant):
     """Config entry version must be 4 after v3 migration."""
-
 
     entry = MockConfigEntry(
         domain=DOMAIN,
@@ -657,7 +718,6 @@ async def test_nal05_version_bumped_to_4(hass: HomeAssistant):
 
 async def test_nal05_conf_region_renamed_to_conf_country_in_data(hass: HomeAssistant):
     """CONF_REGION in entry.data must become CONF_COUNTRY='NL' after migration."""
-
 
     entry = MockConfigEntry(
         domain=DOMAIN,
@@ -685,7 +745,6 @@ async def test_nal05_conf_region_renamed_to_conf_country_in_data(hass: HomeAssis
 async def test_nal05_missing_region_defaults_to_default_country(hass: HomeAssistant):
     """If CONF_REGION absent from data, CONF_COUNTRY must default to DEFAULT_COUNTRY."""
 
-
     entry = MockConfigEntry(
         domain=DOMAIN,
         version=3,
@@ -706,7 +765,6 @@ async def test_nal05_missing_region_defaults_to_default_country(hass: HomeAssist
 
 async def test_nal05_conf_region_renamed_in_options(hass: HomeAssistant):
     """CONF_REGION in entry.options must be renamed to CONF_COUNTRY after migration."""
-
 
     entry = MockConfigEntry(
         domain=DOMAIN,
@@ -737,7 +795,6 @@ async def test_nal05_conf_region_renamed_in_options(hass: HomeAssistant):
 
 async def test_nal05_options_other_keys_preserved(hass: HomeAssistant):
     """Keys in options other than CONF_REGION must survive migration unchanged."""
-
 
     entry = MockConfigEntry(
         domain=DOMAIN,
@@ -776,10 +833,14 @@ async def test_nal05_repair_issue_created(hass: HomeAssistant):
         },
     )
 
-    with patch("homeassistant.helpers.issue_registry.async_create_issue") as mock_create_issue:
+    with patch(
+        "homeassistant.helpers.issue_registry.async_create_issue"
+    ) as mock_create_issue:
         await _run_migration(hass, entry)
 
-    assert mock_create_issue.called, "ir.async_create_issue was not called during migration"
+    assert mock_create_issue.called, (
+        "ir.async_create_issue was not called during migration"
+    )
     args = mock_create_issue.call_args.args
     assert args[0] is hass, "async_create_issue: first arg must be hass"
     assert args[1] == DOMAIN, f"async_create_issue: domain must be '{DOMAIN}'"
@@ -805,7 +866,9 @@ async def test_nal05_repair_issue_data_has_entry_id_and_country(hass: HomeAssist
         },
     )
 
-    with patch("homeassistant.helpers.issue_registry.async_create_issue") as mock_create_issue:
+    with patch(
+        "homeassistant.helpers.issue_registry.async_create_issue"
+    ) as mock_create_issue:
         await _run_migration(hass, entry)
 
     issue_data = mock_create_issue.call_args.kwargs.get("data", {})
@@ -832,7 +895,9 @@ async def test_nal05_repair_issue_is_fixable_with_warning_severity(hass: HomeAss
         },
     )
 
-    with patch("homeassistant.helpers.issue_registry.async_create_issue") as mock_create_issue:
+    with patch(
+        "homeassistant.helpers.issue_registry.async_create_issue"
+    ) as mock_create_issue:
         await _run_migration(hass, entry)
 
     kwargs = mock_create_issue.call_args.kwargs
@@ -906,7 +971,9 @@ def test_nal05_repair_flow_uses_safe_defaults_for_empty_data():
     )
 
 
-async def test_nal05_repair_flow_confirm_shows_form_with_prepopulated_country(hass: HomeAssistant):
+async def test_nal05_repair_flow_confirm_shows_form_with_prepopulated_country(
+    hass: HomeAssistant,
+):
     """async_step_confirm(user_input=None) must show a form with CONF_COUNTRY pre-populated."""
     from custom_components.volkswagencarnet.repairs import ConfirmCountryRepairFlow
 
@@ -942,7 +1009,6 @@ async def test_nal05_repair_flow_confirm_shows_form_with_prepopulated_country(ha
 async def test_nal05_repair_flow_confirm_updates_entry_on_submit(hass: HomeAssistant):
     """Submitting the repair form must update the config entry with the chosen country."""
     from custom_components.volkswagencarnet.repairs import ConfirmCountryRepairFlow
-
 
     entry = MockConfigEntry(
         domain=DOMAIN,
@@ -986,11 +1052,15 @@ async def test_nal05_repair_flow_init_redirects_to_confirm(hass: HomeAssistant):
     )
 
 
-async def test_nal05_repair_flow_confirm_handles_missing_entry_gracefully(hass: HomeAssistant):
+async def test_nal05_repair_flow_confirm_handles_missing_entry_gracefully(
+    hass: HomeAssistant,
+):
     """If the config entry no longer exists, the repair flow must still complete without raising."""
     from custom_components.volkswagencarnet.repairs import ConfirmCountryRepairFlow
 
-    flow = ConfirmCountryRepairFlow({"entry_id": "nonexistent_entry_id", "country": "BE"})
+    flow = ConfirmCountryRepairFlow(
+        {"entry_id": "nonexistent_entry_id", "country": "BE"}
+    )
     flow.hass = hass
 
     # Must not raise; should return create_entry

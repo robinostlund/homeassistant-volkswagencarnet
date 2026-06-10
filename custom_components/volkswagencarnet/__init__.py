@@ -156,7 +156,9 @@ async def async_migrate_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         options[CONF_CONVERT] = options.get(CONF_CONVERT, default_convert_conf)
         data.pop(CONF_RESOURCES, None)
 
-        hass.config_entries.async_update_entry(entry, data=data, options=options, version=2)
+        hass.config_entries.async_update_entry(
+            entry, data=data, options=options, version=2
+        )
 
     # 2 -> 3: Fix empty "convert" option
     if version == 2:
@@ -165,7 +167,9 @@ async def async_migrate_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         options.pop(CONF_CONVERT, None)
         data = dict(entry.data)
 
-        hass.config_entries.async_update_entry(entry, data=data, options=options, version=3)
+        hass.config_entries.async_update_entry(
+            entry, data=data, options=options, version=3
+        )
 
     # 3 -> 4: Replace CONF_REGION free-text with CONF_COUNTRY dropdown
     if version == 3:
@@ -183,7 +187,9 @@ async def async_migrate_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
             region_from_options = options.pop(CONF_REGION)
             options[CONF_COUNTRY] = region_from_options
 
-        hass.config_entries.async_update_entry(entry, data=data, options=options, version=4)
+        hass.config_entries.async_update_entry(
+            entry, data=data, options=options, version=4
+        )
 
         # Create repair so user must confirm their country before reconnecting
         from homeassistant.helpers import issue_registry as ir  # noqa: PLC0415
@@ -589,7 +595,9 @@ class VolkswagenCoordinator(DataUpdateCoordinator):
             session=async_get_clientsession(hass),
             username=self.entry.data[CONF_USERNAME],
             password=self.entry.data[CONF_PASSWORD],
-            country=self.entry.data.get(CONF_COUNTRY, self.entry.data.get(CONF_REGION, DEFAULT_COUNTRY)),
+            country=self.entry.data.get(
+                CONF_COUNTRY, self.entry.data.get(CONF_REGION, DEFAULT_COUNTRY)
+            ),
             spin=self.entry.data.get(CONF_SPIN),
         )
 
@@ -648,10 +656,14 @@ class VolkswagenCoordinator(DataUpdateCoordinator):
                 await self.connection.logout()
                 _LOGGER.debug("Successfully logged out")
         except VWError as err:
-            _LOGGER.error("Could not log out from Volkswagen Connect (library error): %s", err)
+            _LOGGER.error(
+                "Could not log out from Volkswagen Connect (library error): %s", err
+            )
             return False
         except Exception as err:  # pylint: disable=broad-exception-caught
-            _LOGGER.error("Could not log out from Volkswagen Connect (unexpected error): %s", err)
+            _LOGGER.error(
+                "Could not log out from Volkswagen Connect (unexpected error): %s", err
+            )
             return False
 
         return True
@@ -709,5 +721,7 @@ class VolkswagenCoordinator(DataUpdateCoordinator):
             _LOGGER.error("VW API error during update for VIN %s: %s", self.vin, err)
             return None
         except Exception as err:  # pylint: disable=broad-exception-caught
-            _LOGGER.error("Unexpected error during update for VIN %s: %s", self.vin, err)
+            _LOGGER.error(
+                "Unexpected error during update for VIN %s: %s", self.vin, err
+            )
             return None

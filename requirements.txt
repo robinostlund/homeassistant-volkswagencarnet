@@ -1,1 +1,1 @@
-volkswagencarnet @ git+https://github.com/Pascal-ZeGerman/volkswagencarnet@main
+volkswagencarnet@git+https://github.com/Pascal-ZeGerman/volkswagencarnet@main

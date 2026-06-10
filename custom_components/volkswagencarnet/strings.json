@@ -83,7 +83,7 @@
         "step": {
           "confirm": {
             "title": "Confirm your country",
-            "description": "A configuration update requires confirming the country for your VW vehicle. Your current setting is '{country}'. Please confirm or select the correct country.",
+            "description": "A configuration update requires confirming the country for your VW vehicle. Your current setting is {country}. Please confirm or select the correct country.",
             "data": {
               "country": "Country"
             }

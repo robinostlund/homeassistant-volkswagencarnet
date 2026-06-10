@@ -52,9 +52,9 @@ class ConfirmCountryRepairFlow(RepairsFlow):
             step_id="confirm",
             data_schema=vol.Schema(
                 {
-                    vol.Required(
-                        CONF_COUNTRY, default=self._existing_country
-                    ): vol.In(COUNTRY_LIST),
+                    vol.Required(CONF_COUNTRY, default=self._existing_country): vol.In(
+                        COUNTRY_LIST
+                    ),
                 }
             ),
             description_placeholders={"country": self._existing_country},
