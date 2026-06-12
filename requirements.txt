@@ -1,1 +1,1 @@
-volkswagencarnet@git+https://github.com/robinostlund/volkswagencarnet@main
+volkswagencarnet==5.4.11

@@ -10,8 +10,8 @@ from homeassistant.components.climate import (
 )
 from homeassistant.const import ATTR_TEMPERATURE, UnitOfTemperature
 
-from . import VolkswagenData, VolkswagenEntity
-from .const import DATA, DATA_KEY, DOMAIN, UPDATE_CALLBACK
+from . import VolkswagenData, VolkswagenEntity, async_setup_platform_entities
+from .const import DATA, DATA_KEY, DOMAIN
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -27,22 +27,9 @@ async def async_setup_entry(hass, entry, async_add_devices):
     """Perform climate device setup."""
     data = hass.data[DOMAIN][entry.entry_id][DATA]
     coordinator = data.coordinator
-    if coordinator.data is not None:
-        async_add_devices(
-            VolkswagenClimate(
-                data=data,
-                vin=coordinator.vin,
-                component=instrument.component,
-                attribute=instrument.attr,
-                callback=hass.data[DOMAIN][entry.entry_id][UPDATE_CALLBACK],
-            )
-            for instrument in (
-                instrument
-                for instrument in data.instruments
-                if instrument.component == "climate"
-            )
-        )
-
+    async_setup_platform_entities(
+        hass, entry, coordinator, data, "climate", VolkswagenClimate, async_add_devices
+    )
     return True
 
 
