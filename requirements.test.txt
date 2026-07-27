@@ -2,4 +2,4 @@ black
 flake8
 freezegun
 homeassistant>=2026.5.4
-pytest-homeassistant-custom-component>=0.13.334
+pytest-homeassistant-custom-component>=0.13.348
