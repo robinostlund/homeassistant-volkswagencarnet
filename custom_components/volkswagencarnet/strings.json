@@ -44,7 +44,7 @@
       "reauth_successful": "[%key:common::config_flow::abort::reauth_successful%]"
     },
     "error": {
-      "cannot_connect": "Try logging in using the web app at https://www.myvolkswagen.net/ or verify your account status.",
+      "cannot_connect": "Could not login to Volkswagen Connect, please check your credentials and verify that the service is working.",
       "cannot_update": "Could not query update from Volkswagen Connect",
       "unknown": "[%key:common::config_flow::error::unknown%]"
     },
