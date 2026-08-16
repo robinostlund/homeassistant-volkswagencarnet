@@ -27,6 +27,7 @@ from volkswagencarnet.vw_vehicle import Vehicle
 from .const import (
     CONF_AVAILABLE_RESOURCES,
     CONF_CONVERT,
+    CONF_FAKE_USER_AGENT,
     CONF_MUTABLE,
     CONF_NO_CONVERSION,
     CONF_REGION,
@@ -37,7 +38,12 @@ from .const import (
     DEFAULT_UPDATE_INTERVAL,
     DOMAIN,
 )
-from .util import get_coordinator, get_vehicle
+from .util import (
+    get_auth_cookies_file,
+    get_auth_debug_dump_dir,
+    get_coordinator,
+    get_vehicle,
+)
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -53,6 +59,7 @@ DATA_SCHEMA = vol.Schema(
         vol.Optional(
             CONF_SCAN_INTERVAL, default=DEFAULT_UPDATE_INTERVAL
         ): cv.positive_int,
+        vol.Optional(CONF_FAKE_USER_AGENT, default=False): cv.boolean,
     }
 )
 
@@ -83,6 +90,13 @@ class VolkswagenCarnetConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                 username=self._init_info[CONF_USERNAME],
                 password=self._init_info[CONF_PASSWORD],
                 country=self._init_info[CONF_REGION],
+                auth_cookies_file=get_auth_cookies_file(
+                    self.hass, self._init_info[CONF_USERNAME]
+                ),
+                auth_debug_dump_dir=get_auth_debug_dump_dir(
+                    self.hass, self._init_info[CONF_USERNAME]
+                ),
+                use_fake_user_agent=self._init_info.get(CONF_FAKE_USER_AGENT, False),
             )
 
             return await self.async_step_login()
@@ -104,6 +118,10 @@ class VolkswagenCarnetConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
             return
 
         if not self._connection.logged_in:
+            _LOGGER.error(
+                "Volkswagen login failed during config flow: %s",
+                self._connection.last_login_error or "unknown reason",
+            )
             self._errors["base"] = "cannot_connect"
             return
 
@@ -224,6 +242,13 @@ class VolkswagenCarnetConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                 country=self._entry.options.get(
                     CONF_REGION, self._entry.data[CONF_REGION]
                 ),
+                auth_cookies_file=get_auth_cookies_file(
+                    self.hass, user_input[CONF_USERNAME]
+                ),
+                auth_debug_dump_dir=get_auth_debug_dump_dir(
+                    self.hass, user_input[CONF_USERNAME]
+                ),
+                use_fake_user_agent=self._entry.data.get(CONF_FAKE_USER_AGENT, False),
             )
 
             try:
@@ -231,9 +256,10 @@ class VolkswagenCarnetConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
 
                 if not await self._connection.validate_login():
                     _LOGGER.warning(
-                        "Unable to login to Volkswagen Connect. "
+                        "Unable to login to Volkswagen Connect (%s). "
                         "May need to accept a new EULA. "
-                        "Try logging in to the portal: https://www.myvolkswagen.net/"
+                        "Try logging in to the portal: https://www.myvolkswagen.net/",
+                        self._connection.last_login_error or "unknown reason",
                     )
                     errors["base"] = "cannot_connect"
                 else:
