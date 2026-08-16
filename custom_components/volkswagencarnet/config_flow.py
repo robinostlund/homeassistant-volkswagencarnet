@@ -352,6 +352,10 @@ class VolkswagenCarnetOptionsFlowHandler(config_entries.OptionsFlow):
                             ),
                         ),
                     ): cv.positive_int,
+                    vol.Optional(
+                        CONF_FAKE_USER_AGENT,
+                        default=self._config_entry.data.get(CONF_FAKE_USER_AGENT, False),
+                    ): cv.boolean,
                 }
             ),
         )
