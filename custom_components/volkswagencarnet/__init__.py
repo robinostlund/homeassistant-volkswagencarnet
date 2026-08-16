@@ -16,6 +16,7 @@ from homeassistant.const import (
     STATE_UNKNOWN,
 )
 from homeassistant.core import CALLBACK_TYPE, Event, HomeAssistant, State, callback
+from homeassistant.helpers import config_validation as cv
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
 from homeassistant.helpers.dispatcher import async_dispatcher_connect
 from homeassistant.helpers.icon import icon_for_battery_level
@@ -67,6 +68,8 @@ from .services import (
 )
 from .util import get_convert_conf
 
+CONFIG_SCHEMA = cv.config_entry_only_config_schema(DOMAIN)
+
 _LOGGER = logging.getLogger(__name__)
 
 
@@ -115,14 +118,12 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         """Return true if the resource is new."""
         return attr not in entry.options.get(CONF_AVAILABLE_RESOURCES, [attr])
 
-    components: set[str] = set()
     for instrument in (instr for instr in instruments if instr.component in COMPONENTS):
         # Add resource if enabled or new
         if is_enabled(instrument.slug_attr) or (
             is_new(instrument.slug_attr) and not entry.pref_disable_new_entities
         ):
             data.instruments.add(instrument)
-            components.add(COMPONENTS[instrument.component])
 
     hass.data[DOMAIN][entry.entry_id] = {
         UPDATE_CALLBACK: update_callback,
@@ -130,10 +131,58 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         UNDO_UPDATE_LISTENER: entry.add_update_listener(_async_update_listener),
     }
 
+    # Always set up all platforms so their coordinator listeners are registered
+    # even when the car is offline and some platforms have no current instruments.
+    components = list(COMPONENTS.values())
     coordinator.platforms.extend(components)
     await hass.config_entries.async_forward_entry_setups(entry, components)
 
     return True
+
+
+@callback
+def async_setup_platform_entities(
+    hass: HomeAssistant,
+    entry: ConfigEntry,
+    coordinator: "VolkswagenCoordinator",
+    data: "VolkswagenData",
+    component: str,
+    entity_class,
+    async_add_entities,
+) -> None:
+    def is_enabled(slug_attr: str) -> bool:
+        return slug_attr in entry.options.get(CONF_RESOURCES, [slug_attr])
+
+    seen_keys: set[tuple[str, str]] = set()
+
+    def _add_new_entities() -> None:
+        if coordinator.data is None:
+            return
+        new_entities = []
+        for instrument in coordinator.data:
+            if instrument.component != component:
+                continue
+            key = (instrument.component, instrument.attr)
+            if key in seen_keys:
+                continue
+            if not is_enabled(instrument.slug_attr):
+                continue
+            seen_keys.add(key)
+            data.instruments.add(instrument)
+            kwargs = dict(
+                data=data,
+                vin=coordinator.vin,
+                component=instrument.component,
+                attribute=instrument.attr,
+            )
+            if component != "lock" and component != "device_tracker":
+                kwargs["callback"] = hass.data[DOMAIN][entry.entry_id][UPDATE_CALLBACK]
+            new_entities.append(entity_class(**kwargs))
+        if new_entities:
+            async_add_entities(new_entities)
+
+    _add_new_entities()
+    entry.async_on_unload(coordinator.async_add_listener(_add_new_entities))
 
 
 async def async_migrate_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:

@@ -33,7 +33,7 @@
       },
       "reauth_confirm": {
         "data": {
-          "description": "Autentiser deg på nytt med Volkswagen Connect-kontoen din. Pass på at du godtar einkvar ny EULA i Volkswagen Connect-portalen (https://www.myvolkswagen.net/) før du går vidare.",
+          "description": "Autentiser deg på nytt med Volkswagen Connect-kontoen din. Pass på at du godtar einkvar ny EULA i Volkswagen Connect-portalen før du går vidare.",
           "username": "E-post",
           "password": "Passord"
         }

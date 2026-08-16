@@ -11,8 +11,8 @@ from homeassistant.helpers.event import async_call_later
 from homeassistant.const import CONF_SCAN_INTERVAL
 from homeassistant.util.dt import utcnow
 
-from . import VolkswagenEntity
-from .const import DATA, DATA_KEY, DOMAIN, UPDATE_CALLBACK
+from . import VolkswagenEntity, async_setup_platform_entities
+from .const import DATA, DATA_KEY, DOMAIN
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -30,22 +30,9 @@ async def async_setup_entry(hass: HomeAssistant, entry, async_add_devices):
     """Set up the Volkswagen number."""
     data = hass.data[DOMAIN][entry.entry_id][DATA]
     coordinator = data.coordinator
-    if coordinator.data is not None:
-        async_add_devices(
-            VolkswagenNumber(
-                data=data,
-                vin=coordinator.vin,
-                component=instrument.component,
-                attribute=instrument.attr,
-                callback=hass.data[DOMAIN][entry.entry_id][UPDATE_CALLBACK],
-            )
-            for instrument in (
-                instrument
-                for instrument in data.instruments
-                if instrument.component == "number"
-            )
-        )
-
+    async_setup_platform_entities(
+        hass, entry, coordinator, data, "number", VolkswagenNumber, async_add_devices
+    )
     return True
 
 

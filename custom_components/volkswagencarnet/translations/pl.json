@@ -33,7 +33,7 @@
       },
       "reauth_confirm": {
         "data": {
-          "description": "Ponownie uwierzytelnij się do swojego konta Volkswagen Connect. Przed kontynuowaniem należy zaakceptować każdą nową umowę EULA w portalu Volkswagen Connect (https://www.myvolkswagen.net/).",
+          "description": "Ponownie uwierzytelnij się do swojego konta Volkswagen Connect. Przed kontynuowaniem należy zaakceptować każdą nową umowę EULA w portalu Volkswagen Connect.",
           "username": "Email",
           "password": "Hasło"
         }

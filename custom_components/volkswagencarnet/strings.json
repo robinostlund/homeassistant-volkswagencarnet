@@ -33,7 +33,7 @@
       },
       "reauth_confirm": {
         "data": {
-          "description": "Re-authenticate with your Volkswagen Connect account. Make sure to accept any new EULA in the Volkswagen Connect portal (https://www.myvolkswagen.net/) before proceeding.",
+          "description": "Re-authenticate with your Volkswagen Connect account. Make sure to accept any new EULA in the Volkswagen Connect portal before proceeding.",
           "email": "[%key:common::config_flow::data::email%]",
           "password": "[%key:common::config_flow::data::password%]"
         }
@@ -44,7 +44,7 @@
       "reauth_successful": "[%key:common::config_flow::abort::reauth_successful%]"
     },
     "error": {
-      "cannot_connect": "Could not login to Volkswagen Connect, please check your credentials and verify that the service is working. This can be caused by an update to terms and conditions, try logging in using the app or https://www.myvolkswagen.net/.",
+      "cannot_connect": "Could not login to Volkswagen Connect, please check your credentials and verify that the service is working.",
       "cannot_update": "Could not query update from Volkswagen Connect",
       "unknown": "[%key:common::config_flow::error::unknown%]"
     },

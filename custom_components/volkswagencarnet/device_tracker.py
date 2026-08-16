@@ -8,7 +8,7 @@ from homeassistant.core import HomeAssistant
 from homeassistant.helpers.dispatcher import async_dispatcher_connect
 from homeassistant.util import slugify
 
-from . import VolkswagenEntity
+from . import VolkswagenEntity, async_setup_platform_entities
 from .const import DATA, DATA_KEY, DOMAIN, SIGNAL_STATE_UPDATED
 
 _LOGGER = logging.getLogger(__name__)
@@ -18,21 +18,15 @@ async def async_setup_entry(hass: HomeAssistant, entry, async_add_devices):
     """Set up the Volkswagen device tracker."""
     data = hass.data[DOMAIN][entry.entry_id][DATA]
     coordinator = data.coordinator
-    if coordinator.data is not None:
-        async_add_devices(
-            VolkswagenDeviceTracker(
-                data=data,
-                vin=coordinator.vin,
-                component=instrument.component,
-                attribute=instrument.attr,
-            )
-            for instrument in (
-                instrument
-                for instrument in data.instruments
-                if instrument.component == "device_tracker"
-            )
-        )
-
+    async_setup_platform_entities(
+        hass,
+        entry,
+        coordinator,
+        data,
+        "device_tracker",
+        VolkswagenDeviceTracker,
+        async_add_devices,
+    )
     return True
 
 

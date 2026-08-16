@@ -33,7 +33,7 @@
       },
       "reauth_confirm": {
         "data": {
-          "description": "Melde dich erneut mit deinem Volkswagen Connect-Konto an. Stelle sicher, dass du alle neuen EULA im Volkswagen Connect-Portal (https://www.myvolkswagen.net/) akzeptiert hast, bevor du fortfährst.",
+          "description": "Melde dich erneut mit deinem Volkswagen Connect-Konto an. Stelle sicher, dass du alle neuen EULA im Volkswagen Connect-Portal akzeptiert hast, bevor du fortfährst.",
           "email": "E-Mail",
           "password": "Passwort"
         }

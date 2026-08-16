@@ -7,7 +7,7 @@ from homeassistant.const import (
     CONF_RESOURCES,
 )
 from homeassistant.core import HomeAssistant
-from homeassistant.data_entry_flow import FlowResult
+from homeassistant.data_entry_flow import FlowResult, FlowResultType
 from pytest_homeassistant_custom_component.common import MockConfigEntry
 from volkswagencarnet.vw_connection import Connection
 from volkswagencarnet.vw_dashboard import (
@@ -24,11 +24,9 @@ from volkswagencarnet.vw_vehicle import Vehicle
 from custom_components.volkswagencarnet import config_flow, VolkswagenCoordinator
 from custom_components.volkswagencarnet.config_flow import VolkswagenCarnetConfigFlow
 from custom_components.volkswagencarnet.const import (
-    CONF_DEBUG,
     CONF_REGION,
     DOMAIN,
     CONF_CONVERT,
-    CONF_REPORT_REQUEST,
     CONF_AVAILABLE_RESOURCES,
     CONF_NO_CONVERSION,
 )
@@ -36,15 +34,12 @@ from custom_components.volkswagencarnet.const import (
 DUMMY_CONFIG = {
     CONF_USERNAME: "unit tester",
     CONF_PASSWORD: "password123",
-    CONF_DEBUG: True,
     CONF_REGION: "XX",
     CONF_CONVERT: CONF_NO_CONVERSION,
 }
 DUMMY_OPTIONS = {
     CONF_CONVERT: CONF_NO_CONVERSION,
-    CONF_DEBUG: True,
     CONF_REGION: "XY",
-    CONF_REPORT_REQUEST: False,
 }
 
 
@@ -120,7 +115,7 @@ async def test_options_flow(
     result = await hass.config_entries.options.async_init(entry.entry_id)
 
     # Verify that the first options step is a user form
-    assert result["type"] == data_entry_flow.RESULT_TYPE_FORM
+    assert result["type"] == FlowResultType.FORM
     assert result["step_id"] == "user"
 
     # Enter the same dummy data just to get the next step
@@ -130,7 +125,7 @@ async def test_options_flow(
     )
 
     # Verify that the options step is a instrument selection form
-    assert result["type"] == data_entry_flow.RESULT_TYPE_FORM
+    assert result["type"] == FlowResultType.FORM
     assert result["step_id"] == "select_instruments"
     assert result["last_step"] is True
 
@@ -141,7 +136,7 @@ async def test_options_flow(
     )
 
     # Verify that the flow finishes
-    assert result["type"] == data_entry_flow.RESULT_TYPE_CREATE_ENTRY
+    assert result["type"] == FlowResultType.CREATE_ENTRY
     assert result["title"] == ""
 
     # Verify that the options were updated

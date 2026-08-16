@@ -5,7 +5,7 @@ import logging
 from homeassistant.components.lock import LockEntity
 from homeassistant.core import HomeAssistant
 
-from . import VolkswagenEntity
+from . import VolkswagenEntity, async_setup_platform_entities
 from .const import DATA, DATA_KEY, DOMAIN
 
 _LOGGER = logging.getLogger(__name__)
@@ -25,21 +25,9 @@ async def async_setup_entry(hass: HomeAssistant, entry, async_add_devices):
     """Perform entity setup."""
     data = hass.data[DOMAIN][entry.entry_id][DATA]
     coordinator = data.coordinator
-    if coordinator.data is not None:
-        async_add_devices(
-            VolkswagenLock(
-                data=data,
-                vin=coordinator.vin,
-                component=instrument.component,
-                attribute=instrument.attr,
-            )
-            for instrument in (
-                instrument
-                for instrument in data.instruments
-                if instrument.component == "lock"
-            )
-        )
-
+    async_setup_platform_entities(
+        hass, entry, coordinator, data, "lock", VolkswagenLock, async_add_devices
+    )
     return True
 
 

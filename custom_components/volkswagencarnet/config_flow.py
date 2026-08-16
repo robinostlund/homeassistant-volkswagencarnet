@@ -339,9 +339,22 @@ class VolkswagenCarnetOptionsFlowHandler(config_entries.OptionsFlow):
 
         vehicle: Vehicle = get_vehicle(coordinator=coordinator)
         instruments = vehicle.dashboard().instruments
-        instruments_dict = {
+        current_instruments = {
             instrument.attr: instrument.name for instrument in instruments
         }
+        previously_available = data.get("options", {}).get(CONF_AVAILABLE_RESOURCES, {})
+
+        if vehicle.is_connection_state_is_online_supported:
+            car_is_online = vehicle.connection_state_is_online
+        elif vehicle.is_connection_state_is_active_supported:
+            car_is_online = vehicle.connection_state_is_active
+        else:
+            car_is_online = False
+
+        if car_is_online:
+            instruments_dict = current_instruments
+        else:
+            instruments_dict = {**previously_available, **current_instruments}
 
         if user_input is not None:
             old_resources = set(data.get("options", {}).get(CONF_RESOURCES, []))
