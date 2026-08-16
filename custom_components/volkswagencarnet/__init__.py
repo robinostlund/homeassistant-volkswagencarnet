@@ -15,7 +15,7 @@ from homeassistant.const import (
     EVENT_HOMEASSISTANT_STOP,
     STATE_UNKNOWN,
 )
-from homeassistant.core import Event, HomeAssistant, State, callback
+from homeassistant.core import CALLBACK_TYPE, Event, HomeAssistant, State, callback
 from homeassistant.helpers import config_validation as cv
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
 from homeassistant.helpers.dispatcher import async_dispatcher_connect
@@ -24,7 +24,7 @@ from homeassistant.helpers.restore_state import RestoreEntity
 from homeassistant.exceptions import ConfigEntryAuthFailed
 from homeassistant.helpers.update_coordinator import (
     CoordinatorEntity,
-    DataUpdateCoordinator,
+    TimestampDataUpdateCoordinator,
 )
 
 # pylint: disable=no-name-in-module,hass-relative-import
@@ -217,7 +217,9 @@ async def async_migrate_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     return True
 
 
-def update_callback(hass: HomeAssistant, coordinator: DataUpdateCoordinator) -> None:
+def update_callback(
+    hass: HomeAssistant, coordinator: TimestampDataUpdateCoordinator
+) -> None:
     """Request data update."""
     _LOGGER.debug("Update request callback")
     hass.async_create_task(coordinator.async_request_refresh())
@@ -281,6 +283,17 @@ async def async_unload_coordinator(hass: HomeAssistant, entry: ConfigEntry) -> b
 
 async def _async_update_listener(hass: HomeAssistant, entry: ConfigEntry) -> None:
     """Handle options update."""
+    data = hass.data[DOMAIN][entry.entry_id][DATA]
+    coordinator: VolkswagenCoordinator | None = data.coordinator
+
+    # Check if the update was triggered by a scan_interval change from the Number entity
+    if (coordinator is not None) and (coordinator.skip_config_reload):
+        # Avoid reloading the entire config entry
+        coordinator.skip_config_reload = False
+        _LOGGER.debug("Skipping config reload for VIN %s", coordinator.vin)
+        return
+
+    # Otherwise reload the entire config entry
     await hass.config_entries.async_reload(entry.entry_id)
 
 
@@ -583,7 +596,7 @@ class VolkswagenEntity(CoordinatorEntity, RestoreEntity):
             _LOGGER.warning("Cannot notify update: coordinator not set")
 
 
-class VolkswagenCoordinator(DataUpdateCoordinator):
+class VolkswagenCoordinator(TimestampDataUpdateCoordinator):
     """Class to manage fetching data from the API."""
 
     def __init__(
@@ -594,6 +607,8 @@ class VolkswagenCoordinator(DataUpdateCoordinator):
         self.entry = entry
         self.platforms: list[str] = []
         self.vehicle: Vehicle | None = None
+        self.skip_config_reload: bool = False
+        self.skip_config_reload_token: CALLBACK_TYPE = None
         self.connection = Connection(
             session=async_get_clientsession(hass),
             username=self.entry.data[CONF_USERNAME],
