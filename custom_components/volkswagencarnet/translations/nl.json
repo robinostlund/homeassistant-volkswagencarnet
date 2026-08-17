@@ -14,7 +14,8 @@
           "name": "Geef je auto een naam (standaard het VIN-nummer)",
           "debug": "Schakel volledige debug-logs van de API in (vereist dat debug-logging is ingeschakeld in de config)",
           "convert": "Selecteer of je eenheden voor afstand wilt converteren",
-          "scan_interval": "Update-interval sensoren (minuten)"
+          "scan_interval": "Update-interval sensoren (minuten)",
+          "fake_user_agent": "Nep-browseridentiteit (inschakelen indien inloggen is geblokkeerd)"
         }
       },
       "select_vehicle": {

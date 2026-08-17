@@ -14,7 +14,8 @@
           "name": "Nazwij swój samochód (domyślnie numer VIN)",
           "debug": "Włącz pełne dzienniki debugowania z interfejsu API (wymaga włączenia rejestrowania debugowania w konfiguracji)",
           "convert": "Wybierz, jeśli chcesz dokonać konwersji jednostek odległości",
-          "scan_interval": "Częstotliwość aktualizacji czujników (minuty)"
+          "scan_interval": "Częstotliwość aktualizacji czujników (minuty)",
+          "fake_user_agent": "Sfałszuj identyfikator przeglądarki (włącz jeśli logowanie jest zablokowane)"
         }
       },
       "select_vehicle": {

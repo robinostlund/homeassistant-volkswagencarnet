@@ -14,7 +14,8 @@
           "name": "Benenne dein Auto (standardmäßig die VIN-Nummer)",
           "debug": "Aktiviere die Debug-Logs der API (erfordert aktivierte Debug-Protokollierung in der Konfiguration)",
           "convert": "Wähle, ob du eine Umrechnung der Entfernungseinheiten vornehmen möchtest",
-          "scan_interval": "Aktualisierungsintervall der Sensoren (Minuten)"
+          "scan_interval": "Aktualisierungsintervall der Sensoren (Minuten)",
+          "fake_user_agent": "Browser-Identität fälschen (aktivieren, wenn die Anmeldung blockiert ist)"
         }
       },
       "select_vehicle": {

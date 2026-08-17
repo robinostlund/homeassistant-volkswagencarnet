@@ -14,7 +14,8 @@
           "name": "Nimeä ajoneuvo (oletuksena näytetään VIN)",
           "debug": "Ota täysi API:n debuglogitus käyttöön (logitustaso pitää myös olla asetettu debugille)",
           "convert": "Käytä etäisyysmuunnoksia",
-          "scan_interval": "Anturidatan päivitysväli (minuuteissa)"
+          "scan_interval": "Anturidatan päivitysväli (minuuteissa)",
+          "fake_user_agent": "Peitä selaimen identiteetti (ota käyttöön jos kirjautuminen on estetty)"
         }
       },
       "select_vehicle": {

@@ -14,7 +14,8 @@
           "name": "Gje bilen ditt eit navn (elles blir navnet det same som VIN nummeret)",
           "debug": "Skru på debug logger frå API (krev at debug logging er skrudd på i konfigurasjonen",
           "convert": "Velg denne om du vil ha omrekning av distanse",
-          "scan_interval": "Oppdateringsintervall for sensorar (minutt)"
+          "scan_interval": "Oppdateringsintervall for sensorar (minutt)",
+          "fake_user_agent": "Forfalsk nettlesar-identitet (aktiver dersom innlogging er blokkert)"
         }
       },
       "select_vehicle": {
