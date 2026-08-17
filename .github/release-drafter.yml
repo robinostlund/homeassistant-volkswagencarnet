@@ -15,7 +15,7 @@ categories:
       - 'bug'
 
   - title: '🧰 Maintenance'
-    label:
+    labels:
       - 'dependencies'
 
 version-resolver:
