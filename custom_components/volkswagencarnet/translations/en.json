@@ -14,7 +14,8 @@
           "name": "Name your car (defaults to VIN number)",
           "debug": "Enable full debug logs from API (requires debug logging enabled in config)",
           "convert": "Select if you want to make any distance unit conversions",
-          "scan_interval": "Sensors update interval (minutes)"
+          "scan_interval": "Sensors update interval (minutes)",
+          "fake_user_agent": "Spoof browser identity (enable if login is blocked)"
         }
       },
       "select_vehicle": {
@@ -63,7 +64,8 @@
           "region": "Region (The country where the car was sold)",
           "mutable": "Enable car control (uncheck for read-only mode)",
           "convert": "Select if you want to make any distance unit conversions",
-          "scan_interval": "Sensors update interval (minutes)"
+          "scan_interval": "Sensors update interval (minutes)",
+          "fake_user_agent": "Spoof browser identity (enable if login is blocked)"
         }
       },
       "select_instruments": {

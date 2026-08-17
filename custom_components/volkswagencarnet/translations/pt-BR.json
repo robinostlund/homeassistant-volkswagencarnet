@@ -14,7 +14,8 @@
           "name": "Nome do carro (o padrão é o número VIN)",
           "debug": "Habilitar logs de depuração completos da API (requer log de depuração habilitado nas configurações)",
           "convert": "Selecione se você deseja fazer qualquer conversão de unidade de distância",
-          "scan_interval": "Intervalo de atualização dos sensores (minutos)"
+          "scan_interval": "Intervalo de atualização dos sensores (minutos)",
+          "fake_user_agent": "Falsificar identidade do navegador (habilitar se o login estiver bloqueado)"
         }
       },
       "select_vehicle": {

@@ -14,7 +14,8 @@
           "name": "Gi bilen et kallenavn (Standard er VIN number)",
           "debug": "Aktiver full debug-logg fra API (krever feilsøkingslogging aktivert i config)",
           "convert": "Velg om du vil gjøre noen avstandsenhetskonverteringer",
-          "scan_interval": "Sensorenes oppdateringsintervall (minutter)"
+          "scan_interval": "Sensorenes oppdateringsintervall (minutter)",
+          "fake_user_agent": "Forfalsk nettleser-identitet (aktiver hvis pålogging er blokkert)"
         }
       },
       "select_vehicle": {

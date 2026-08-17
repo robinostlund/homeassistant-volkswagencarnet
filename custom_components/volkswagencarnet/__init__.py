@@ -47,6 +47,7 @@ from .const import (
     COMPONENTS,
     CONF_AVAILABLE_RESOURCES,
     CONF_CONVERT,
+    CONF_FAKE_USER_AGENT,
     CONF_IMPERIAL_UNITS,
     CONF_MUTABLE,
     CONF_NO_CONVERSION,
@@ -66,7 +67,7 @@ from .services import (
     SchedulerService,
     SERVICE_UPDATE_SCHEDULE_SCHEMA,
 )
-from .util import get_convert_conf
+from .util import get_auth_cookies_file, get_auth_debug_dump_dir, get_convert_conf
 
 CONFIG_SCHEMA = cv.config_entry_only_config_schema(DOMAIN)
 
@@ -614,6 +615,13 @@ class VolkswagenCoordinator(TimestampDataUpdateCoordinator):
             username=self.entry.data[CONF_USERNAME],
             password=self.entry.data[CONF_PASSWORD],
             country=self.entry.options.get(CONF_REGION, self.entry.data[CONF_REGION]),
+            auth_cookies_file=get_auth_cookies_file(
+                hass, self.entry.data.get(CONF_USERNAME)
+            ),
+            auth_debug_dump_dir=get_auth_debug_dump_dir(
+                hass, self.entry.data.get(CONF_USERNAME)
+            ),
+            use_fake_user_agent=self.entry.data.get(CONF_FAKE_USER_AGENT, False),
         )
 
         super().__init__(hass, _LOGGER, name=DOMAIN, update_interval=update_interval)
@@ -690,9 +698,10 @@ class VolkswagenCoordinator(TimestampDataUpdateCoordinator):
 
         if not self.connection.logged_in:
             _LOGGER.warning(
-                "Could not login to Volkswagen Connect. "
+                "Could not login to Volkswagen Connect (%s). "
                 "Please check your credentials and verify that the service is working. "
-                "You may need to accept the EULA at https://www.myvolkswagen.net/"
+                "You may need to accept the EULA at https://www.myvolkswagen.net/",
+                self.connection.last_login_error or "unknown reason",
             )
             return False
 
