@@ -397,6 +397,14 @@ class VolkswagenEntity(CoordinatorEntity, RestoreEntity):
 
         self.instrument.callback = update_callbacks
 
+        # Set extra attributes for last trip sensors to persist start_km
+        try:
+            if self.instrument.attr.startswith("last_trip_total_"):
+                self._prev_km: int = 0
+                self._attr_extra_state_attributes = {}
+        except ValueError:
+            pass
+
     @callback
     def async_write_ha_state(self) -> None:
         """Write state to HA, but only if needed."""
@@ -410,6 +418,37 @@ class VolkswagenEntity(CoordinatorEntity, RestoreEntity):
             )
             super().async_write_ha_state()
             return
+        # Check starting km for last trip sensors
+        if (
+            self.instrument.attr.startswith("last_trip_total_")
+            and self.instrument.vehicle.is_last_trip_start_km_supported
+            and (current_start_km := self.instrument.vehicle.last_trip_start_km)
+            is not None
+        ):
+            # Load previous value from restore state if available
+            if (
+                self._prev_km == 0
+                and self.restored_state
+                and "start_km" in self.restored_state.attributes
+            ):
+                self._prev_km = int(self.restored_state.attributes["start_km"])
+
+            # Check if a new trip has started
+            if current_start_km > self._prev_km:
+                _LOGGER.debug(
+                    "%s: Detected new last trip with start km %s (previous was: %s)",
+                    self.name,
+                    current_start_km,
+                    self._prev_km,
+                )
+
+                # Update the last_reset attribute to sum the energy of the new trip
+                self._attr_last_reset = self.instrument.last_refresh
+
+            # Save current start km
+            self._prev_km = current_start_km
+            self._attr_extra_state_attributes["start_km"] = current_start_km
+
         # Get the previous state from the state machine if found
         prev: State | None = self.hass.states.get(self.entity_id)
 
@@ -421,7 +460,15 @@ class VolkswagenEntity(CoordinatorEntity, RestoreEntity):
             super().async_write_ha_state()
             return
 
-        state_changed = str(self.state or STATE_UNKNOWN) != str(prev.state)
+        # Compare current state with previous state (as a string)
+        current_raw = self.state if self.state is not None else STATE_UNKNOWN
+        try:
+            current_num = float(current_raw)
+            previous_num = float(prev.state)
+            state_changed = abs(current_num - previous_num) >= 0.0001
+        except (TypeError, ValueError):
+            state_changed = str(current_raw) != str(prev.state)
+
         time_changed = str(prev.attributes.get("last_updated", None)) != str(
             backend_refresh_time
         )
@@ -437,6 +484,7 @@ class VolkswagenEntity(CoordinatorEntity, RestoreEntity):
             "last_updated",
             "assumed_state",
             "attribution",
+            "last_reset",
         }
         current_attrs = self.extra_state_attributes or {}
         prev_attrs = {k: v for k, v in prev.attributes.items() if k not in system_attrs}
@@ -554,6 +602,13 @@ class VolkswagenEntity(CoordinatorEntity, RestoreEntity):
 
         if self.vehicle.is_model_image_supported:
             attributes["image_url"] = self.vehicle.model_image
+
+        # Include extra attributes to be persisted
+        if (
+            hasattr(self, "_attr_extra_state_attributes")
+            and self._attr_extra_state_attributes
+        ):
+            attributes.update(self._attr_extra_state_attributes)
 
         return attributes
 
