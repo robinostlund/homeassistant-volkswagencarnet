@@ -7,10 +7,12 @@ from datetime import timedelta
 from homeassistant.components.number import NumberDeviceClass, NumberEntity
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity import EntityCategory
+from homeassistant.helpers.event import async_call_later
 from homeassistant.const import CONF_SCAN_INTERVAL
+from homeassistant.util.dt import utcnow
 
-from . import VolkswagenEntity
-from .const import DATA, DATA_KEY, DOMAIN, UPDATE_CALLBACK
+from . import VolkswagenEntity, async_setup_platform_entities
+from .const import DATA, DATA_KEY, DOMAIN
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -28,22 +30,9 @@ async def async_setup_entry(hass: HomeAssistant, entry, async_add_devices):
     """Set up the Volkswagen number."""
     data = hass.data[DOMAIN][entry.entry_id][DATA]
     coordinator = data.coordinator
-    if coordinator.data is not None:
-        async_add_devices(
-            VolkswagenNumber(
-                data=data,
-                vin=coordinator.vin,
-                component=instrument.component,
-                attribute=instrument.attr,
-                callback=hass.data[DOMAIN][entry.entry_id][UPDATE_CALLBACK],
-            )
-            for instrument in (
-                instrument
-                for instrument in data.instruments
-                if instrument.component == "number"
-            )
-        )
-
+    async_setup_platform_entities(
+        hass, entry, coordinator, data, "number", VolkswagenNumber, async_add_devices
+    )
     return True
 
 
@@ -150,11 +139,20 @@ class VolkswagenNumber(VolkswagenEntity, NumberEntity):
 
         if self.coordinator:
             # Update coordinator interval
+            old_interval = self.coordinator.update_interval
             new_interval = timedelta(minutes=minutes)
             self.coordinator.update_interval = new_interval
 
             # Update instrument state
             self.instrument._current_interval = minutes
+            _LOGGER.debug(
+                "Scan interval changed to %s minutes for VIN %s",
+                minutes,
+                self.vin,
+            )
+
+            # Flag coordinator to not reload the config entry
+            self.coordinator.skip_config_reload = True
 
             # Persist to config entry options
             self.hass.config_entries.async_update_entry(
@@ -165,11 +163,42 @@ class VolkswagenNumber(VolkswagenEntity, NumberEntity):
                 },
             )
 
-            _LOGGER.debug(
-                "Scan interval changed to %s minutes for VIN %s",
-                minutes,
-                self.vin,
-            )
-
             # Update the state
             self.async_write_ha_state()
+
+            # Remove any previous out-of-bounds refresh schedules
+            if self.coordinator.skip_config_reload_token:
+                self.coordinator.skip_config_reload_token()
+                self.coordinator.skip_config_reload_token = None
+
+            # Check if refresh is not disabled
+            if new_interval > timedelta(minutes=0):
+                # Reschedule next update if the new interval is shorter than old interval
+                if new_interval < old_interval:
+                    # Only request an immediate refresh if more time than new_interval
+                    # has passed since the last successful update
+                    if (
+                        utcnow() - self.coordinator.last_update_success_time
+                        >= new_interval
+                    ):
+                        await self.coordinator.async_request_refresh()
+                    else:
+                        # Calculate delay until next update based on last successful
+                        # update time and the new interval
+                        delay = (
+                            new_interval
+                            - (utcnow() - self.coordinator.last_update_success_time)
+                        ).total_seconds()
+
+                        async def _delayed_refresh(now) -> None:
+                            await self.coordinator.async_request_refresh()
+
+                        # Schedule a single refresh after the calculated delay
+                        # (the following ones will be handled by the coordinator)
+                        self.coordinator.skip_config_reload_token = async_call_later(
+                            self.hass, delay, _delayed_refresh
+                        )
+                elif old_interval == timedelta(minutes=0):
+                    # If refresh was disabled and it is now enabled
+                    # refresh immediately
+                    await self.coordinator.async_request_refresh()

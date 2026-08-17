@@ -1,4 +1,6 @@
 import logging
+import hashlib
+from pathlib import Path
 from typing import TYPE_CHECKING
 
 from homeassistant.config_entries import ConfigEntry
@@ -16,6 +18,20 @@ if TYPE_CHECKING:
     from . import VolkswagenCoordinator
 
 _LOGGER = logging.getLogger(__name__)
+
+
+def get_auth_cookies_file(hass: HomeAssistant, username: str | None) -> str:
+    """Return per-account cookie cache path inside HA storage."""
+    normalized = (username or "").strip().lower()
+    digest = hashlib.sha256(normalized.encode("utf-8")).hexdigest()[:16]
+    return str(Path(hass.config.path(".storage")) / f"{DOMAIN}_auth_{digest}.json")
+
+
+def get_auth_debug_dump_dir(hass: HomeAssistant, username: str | None) -> str:
+    """Return per-account folder for auth HTML debug dumps."""
+    normalized = (username or "").strip().lower()
+    digest = hashlib.sha256(normalized.encode("utf-8")).hexdigest()[:16]
+    return str(Path(hass.config.path(".storage")) / f"{DOMAIN}_auth_debug_{digest}")
 
 
 def get_convert_conf(entry: ConfigEntry) -> str | None:

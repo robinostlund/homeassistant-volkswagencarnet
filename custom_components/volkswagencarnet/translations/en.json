@@ -14,7 +14,8 @@
           "name": "Name your car (defaults to VIN number)",
           "debug": "Enable full debug logs from API (requires debug logging enabled in config)",
           "convert": "Select if you want to make any distance unit conversions",
-          "scan_interval": "Sensors update interval (minutes)"
+          "scan_interval": "Sensors update interval (minutes)",
+          "fake_user_agent": "Spoof browser identity (enable if login is blocked)"
         }
       },
       "select_vehicle": {
@@ -33,7 +34,7 @@
       },
       "reauth_confirm": {
         "data": {
-          "description": "Re-authenticate with your Volkswagen Connect account. Make sure to accept any new EULA in the Volkswagen Connect portal (https://www.myvolkswagen.net/) before proceeding.",
+          "description": "Re-authenticate with your Volkswagen Connect account. Make sure to accept any new EULA in the Volkswagen Connect portal before proceeding.",
           "email": "Email",
           "password": "Password"
         }
@@ -44,7 +45,7 @@
       "reauth_successful": "Re-authentication was successful"
     },
     "error": {
-      "cannot_connect": "Could not login to Volkswagen Connect, please check your credentials and verify that the service is working. This can be caused by an update to terms and conditions, try logging in using the app or https://www.myvolkswagen.net/.",
+      "cannot_connect": "Could not login to Volkswagen Connect, please check your credentials and verify that the service is working. This can be caused by an update to terms and conditions.",
       "cannot_update": "Could not query update from Volkswagen Connect",
       "unknown": "An unknown error occurred"
     },
@@ -63,7 +64,8 @@
           "region": "Region (The country where the car was sold)",
           "mutable": "Enable car control (uncheck for read-only mode)",
           "convert": "Select if you want to make any distance unit conversions",
-          "scan_interval": "Sensors update interval (minutes)"
+          "scan_interval": "Sensors update interval (minutes)",
+          "fake_user_agent": "Spoof browser identity (enable if login is blocked)"
         }
       },
       "select_instruments": {

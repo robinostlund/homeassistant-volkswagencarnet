@@ -14,7 +14,8 @@
           "name": "Nazwij swój samochód (domyślnie numer VIN)",
           "debug": "Włącz pełne dzienniki debugowania z interfejsu API (wymaga włączenia rejestrowania debugowania w konfiguracji)",
           "convert": "Wybierz, jeśli chcesz dokonać konwersji jednostek odległości",
-          "scan_interval": "Częstotliwość aktualizacji czujników (minuty)"
+          "scan_interval": "Częstotliwość aktualizacji czujników (minuty)",
+          "fake_user_agent": "Sfałszuj identyfikator przeglądarki (włącz jeśli logowanie jest zablokowane)"
         }
       },
       "select_vehicle": {
@@ -33,7 +34,7 @@
       },
       "reauth_confirm": {
         "data": {
-          "description": "Ponownie uwierzytelnij się do swojego konta Volkswagen Connect. Przed kontynuowaniem należy zaakceptować każdą nową umowę EULA w portalu Volkswagen Connect (https://www.myvolkswagen.net/).",
+          "description": "Ponownie uwierzytelnij się do swojego konta Volkswagen Connect. Przed kontynuowaniem należy zaakceptować każdą nową umowę EULA w portalu Volkswagen Connect.",
           "username": "Email",
           "password": "Hasło"
         }

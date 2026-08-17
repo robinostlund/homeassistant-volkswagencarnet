@@ -10,8 +10,8 @@ from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity import EntityCategory
 
-from . import VolkswagenEntity
-from .const import DATA, DATA_KEY, DOMAIN, UPDATE_CALLBACK
+from . import VolkswagenEntity, async_setup_platform_entities
+from .const import DATA, DATA_KEY, DOMAIN
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -32,22 +32,15 @@ async def async_setup_entry(hass: HomeAssistant, entry, async_add_devices):
     """Set up the Volkswagen binary sensor."""
     data = hass.data[DOMAIN][entry.entry_id][DATA]
     coordinator = data.coordinator
-    if coordinator.data is not None:
-        async_add_devices(
-            VolkswagenBinarySensor(
-                data=data,
-                vin=coordinator.vin,
-                component=instrument.component,
-                attribute=instrument.attr,
-                callback=hass.data[DOMAIN][entry.entry_id][UPDATE_CALLBACK],
-            )
-            for instrument in (
-                instrument
-                for instrument in data.instruments
-                if instrument.component == "binary_sensor"
-            )
-        )
-
+    async_setup_platform_entities(
+        hass,
+        entry,
+        coordinator,
+        data,
+        "binary_sensor",
+        VolkswagenBinarySensor,
+        async_add_devices,
+    )
     return True
 
 

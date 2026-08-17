@@ -14,7 +14,8 @@
           "name": "Navngiv din bil (standard er bilens stelnummer)",
           "debug": "Tillad fuld fejlfindingslog fra API (kræver at fejlfindingslogføring er slået til)",
           "convert": "Vælg hvis du ønsker at konvertere enheder",
-          "scan_interval": "Sensor opdateringsinterval (minutter)"
+          "scan_interval": "Sensor opdateringsinterval (minutter)",
+          "fake_user_agent": "Forfalsk browser-identitet (aktivér hvis login er blokeret)"
         }
       },
       "select_vehicle": {
@@ -33,7 +34,7 @@
       },
       "reauth_confirm": {
         "data": {
-          "description": "Log ind igen med din Volkswagen Connect konto. Vær sikker på at acceptere nye EULA i Volkswagen Connect portalen (https://www.myvolkswagen.net/) før du fortsætter.",
+          "description": "Log ind igen med din Volkswagen Connect konto. Vær sikker på at acceptere nye EULA i Volkswagen Connect portalen før du fortsætter.",
           "email": "Email",
           "password": "Adgangskode"
         }

@@ -14,7 +14,8 @@
           "name": "Geef je auto een naam (standaard het VIN-nummer)",
           "debug": "Schakel volledige debug-logs van de API in (vereist dat debug-logging is ingeschakeld in de config)",
           "convert": "Selecteer of je eenheden voor afstand wilt converteren",
-          "scan_interval": "Update-interval sensoren (minuten)"
+          "scan_interval": "Update-interval sensoren (minuten)",
+          "fake_user_agent": "Nep-browseridentiteit (inschakelen indien inloggen is geblokkeerd)"
         }
       },
       "select_vehicle": {
@@ -33,7 +34,7 @@
       },
       "reauth_confirm": {
         "data": {
-          "description": "Log opnieuw in met je Volkswagen Connect-account. Zorg ervoor dat je eventuele nieuwe gebruikersvoorwaarden (EULA) accepteert in het Volkswagen Connect-portaal (https://www.myvolkswagen.net/) voordat je verdergaat.",
+          "description": "Log opnieuw in met je Volkswagen Connect-account. Zorg ervoor dat je eventuele nieuwe gebruikersvoorwaarden (EULA) accepteert in het Volkswagen Connect-portaal voordat je verdergaat.",
           "email": "E-mailadres",
           "password": "Wachtwoord"
         }
@@ -44,7 +45,7 @@
       "reauth_successful": "Herauthenticatie was succesvol"
     },
     "error": {
-      "cannot_connect": "Kon niet inloggen bij Volkswagen Connect. Controleer je inloggegevens en of de service beschikbaar is. Dit kan ook worden veroorzaakt door gewijzigde algemene voorwaarden; probeer in te loggen via de app of op https://www.myvolkswagen.net/.",
+      "cannot_connect": "Kon niet inloggen bij Volkswagen Connect. Controleer je inloggegevens en of de service beschikbaar is. Dit kan ook worden veroorzaakt door gewijzigde algemene voorwaarden; probeer in te loggen via de app of op de Volkswagen Connect-portaal.",
       "cannot_update": "Kon geen update opvragen bij Volkswagen Connect",
       "unknown": "Er is een onbekende fout opgetreden"
     },

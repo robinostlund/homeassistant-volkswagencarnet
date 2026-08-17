@@ -14,9 +14,10 @@
 
 _If you enjoy this integration and would like to support its development, buying us a coffee is always appreciated_  ☕
 
-| Original Author (robinostlund) | [![Buy me a coffee](https://www.buymeacoffee.com/assets/img/custom_images/yellow_img.png)](https://www.buymeacoffee.com/robinostlund) |
+| @robinostlund | [![Buy me a coffee](https://www.buymeacoffee.com/assets/img/custom_images/yellow_img.png)](https://www.buymeacoffee.com/robinostlund) |
 |------|----------------|
-| Project Maintainer (stickpin) | [![Buy me a Ko-Fi](https://raw.githubusercontent.com/robinostlund/homeassistant-volkswagencarnet/master/resources/stickpin_kofi.jpeg)](https://ko-fi.com/stickpin) |
+| @stickpin | [![Buy me a Ko-Fi](https://raw.githubusercontent.com/robinostlund/homeassistant-volkswagencarnet/master/resources/stickpin_kofi.jpeg)](https://ko-fi.com/stickpin) |
+
 
 ## Description
 

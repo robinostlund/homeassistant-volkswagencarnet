@@ -14,7 +14,8 @@
           "name": "Gi bilen et kallenavn (Standard er VIN number)",
           "debug": "Aktiver full debug-logg fra API (krever feilsøkingslogging aktivert i config)",
           "convert": "Velg om du vil gjøre noen avstandsenhetskonverteringer",
-          "scan_interval": "Sensorenes oppdateringsintervall (minutter)"
+          "scan_interval": "Sensorenes oppdateringsintervall (minutter)",
+          "fake_user_agent": "Forfalsk nettleser-identitet (aktiver hvis pålogging er blokkert)"
         }
       },
       "select_vehicle": {
@@ -33,7 +34,7 @@
       },
       "reauth_confirm": {
         "data": {
-          "description": "Autentiser på nytt med Volkswagen Connect-kontoen din. Sørg for å godta enhver ny EULA i Volkswagen Connect-portalen (https://www.myvolkswagen.net/) før du fortsetter.",
+          "description": "Autentiser på nytt med Volkswagen Connect-kontoen din. Sørg for å godta enhver ny EULA i Volkswagen Connect-portalen før du fortsetter.",
           "username": "E-post",
           "password": "Passord"
         }

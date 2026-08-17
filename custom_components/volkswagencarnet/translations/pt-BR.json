@@ -14,7 +14,8 @@
           "name": "Nome do carro (o padrão é o número VIN)",
           "debug": "Habilitar logs de depuração completos da API (requer log de depuração habilitado nas configurações)",
           "convert": "Selecione se você deseja fazer qualquer conversão de unidade de distância",
-          "scan_interval": "Intervalo de atualização dos sensores (minutos)"
+          "scan_interval": "Intervalo de atualização dos sensores (minutos)",
+          "fake_user_agent": "Falsificar identidade do navegador (habilitar se o login estiver bloqueado)"
         }
       },
       "select_vehicle": {
@@ -33,7 +34,7 @@
       },
       "reauth_confirm": {
         "data": {
-          "description": "Re-autentique com sua conta Volkswagen Connect. Certifique-se de aceitar qualquer novo EULA no portal Volkswagen Connect (https://www.myvolkswagen.net/) antes de continuar.",
+          "description": "Re-autentique com sua conta Volkswagen Connect. Certifique-se de aceitar qualquer novo EULA no portal Volkswagen Connect antes de continuar.",
           "username": "Email",
           "password": "Senha"
         }
