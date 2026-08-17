@@ -24,7 +24,7 @@ from homeassistant.helpers.restore_state import RestoreEntity
 from homeassistant.exceptions import ConfigEntryAuthFailed
 from homeassistant.helpers.update_coordinator import (
     CoordinatorEntity,
-    DataUpdateCoordinator,
+    TimestampDataUpdateCoordinator,
 )
 
 # pylint: disable=no-name-in-module,hass-relative-import
@@ -47,6 +47,7 @@ from .const import (
     COMPONENTS,
     CONF_AVAILABLE_RESOURCES,
     CONF_CONVERT,
+    CONF_FAKE_USER_AGENT,
     CONF_IMPERIAL_UNITS,
     CONF_MUTABLE,
     CONF_NO_CONVERSION,
@@ -66,7 +67,9 @@ from .services import (
     SchedulerService,
     SERVICE_UPDATE_SCHEDULE_SCHEMA,
 )
-from .util import get_convert_conf
+from .util import get_auth_cookies_file, get_auth_debug_dump_dir, get_convert_conf
+
+CONFIG_SCHEMA = cv.config_entry_only_config_schema(DOMAIN)
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -116,14 +119,12 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         """Return true if the resource is new."""
         return attr not in entry.options.get(CONF_AVAILABLE_RESOURCES, [attr])
 
-    components: set[str] = set()
     for instrument in (instr for instr in instruments if instr.component in COMPONENTS):
         # Add resource if enabled or new
         if is_enabled(instrument.slug_attr) or (
             is_new(instrument.slug_attr) and not entry.pref_disable_new_entities
         ):
             data.instruments.add(instrument)
-            components.add(COMPONENTS[instrument.component])
 
     hass.data[DOMAIN][entry.entry_id] = {
         UPDATE_CALLBACK: update_callback,
@@ -131,10 +132,58 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         UNDO_UPDATE_LISTENER: entry.add_update_listener(_async_update_listener),
     }
 
+    # Always set up all platforms so their coordinator listeners are registered
+    # even when the car is offline and some platforms have no current instruments.
+    components = list(COMPONENTS.values())
     coordinator.platforms.extend(components)
     await hass.config_entries.async_forward_entry_setups(entry, components)
 
     return True
+
+
+@callback
+def async_setup_platform_entities(
+    hass: HomeAssistant,
+    entry: ConfigEntry,
+    coordinator: "VolkswagenCoordinator",
+    data: "VolkswagenData",
+    component: str,
+    entity_class,
+    async_add_entities,
+) -> None:
+    def is_enabled(slug_attr: str) -> bool:
+        return slug_attr in entry.options.get(CONF_RESOURCES, [slug_attr])
+
+    seen_keys: set[tuple[str, str]] = set()
+
+    def _add_new_entities() -> None:
+        if coordinator.data is None:
+            return
+        new_entities = []
+        for instrument in coordinator.data:
+            if instrument.component != component:
+                continue
+            key = (instrument.component, instrument.attr)
+            if key in seen_keys:
+                continue
+            if not is_enabled(instrument.slug_attr):
+                continue
+            seen_keys.add(key)
+            data.instruments.add(instrument)
+            kwargs = dict(
+                data=data,
+                vin=coordinator.vin,
+                component=instrument.component,
+                attribute=instrument.attr,
+            )
+            if component != "lock" and component != "device_tracker":
+                kwargs["callback"] = hass.data[DOMAIN][entry.entry_id][UPDATE_CALLBACK]
+            new_entities.append(entity_class(**kwargs))
+        if new_entities:
+            async_add_entities(new_entities)
+
+    _add_new_entities()
+    entry.async_on_unload(coordinator.async_add_listener(_add_new_entities))
 
 
 async def async_migrate_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
@@ -169,7 +218,9 @@ async def async_migrate_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     return True
 
 
-def update_callback(hass: HomeAssistant, coordinator: DataUpdateCoordinator) -> None:
+def update_callback(
+    hass: HomeAssistant, coordinator: TimestampDataUpdateCoordinator
+) -> None:
     """Request data update."""
     _LOGGER.debug("Update request callback")
     hass.async_create_task(coordinator.async_request_refresh())
@@ -233,6 +284,17 @@ async def async_unload_coordinator(hass: HomeAssistant, entry: ConfigEntry) -> b
 
 async def _async_update_listener(hass: HomeAssistant, entry: ConfigEntry) -> None:
     """Handle options update."""
+    data = hass.data[DOMAIN][entry.entry_id][DATA]
+    coordinator: VolkswagenCoordinator | None = data.coordinator
+
+    # Check if the update was triggered by a scan_interval change from the Number entity
+    if (coordinator is not None) and (coordinator.skip_config_reload):
+        # Avoid reloading the entire config entry
+        coordinator.skip_config_reload = False
+        _LOGGER.debug("Skipping config reload for VIN %s", coordinator.vin)
+        return
+
+    # Otherwise reload the entire config entry
     await hass.config_entries.async_reload(entry.entry_id)
 
 
@@ -590,7 +652,7 @@ class VolkswagenEntity(CoordinatorEntity, RestoreEntity):
             _LOGGER.warning("Cannot notify update: coordinator not set")
 
 
-class VolkswagenCoordinator(DataUpdateCoordinator):
+class VolkswagenCoordinator(TimestampDataUpdateCoordinator):
     """Class to manage fetching data from the API."""
 
     def __init__(
@@ -601,11 +663,20 @@ class VolkswagenCoordinator(DataUpdateCoordinator):
         self.entry = entry
         self.platforms: list[str] = []
         self.vehicle: Vehicle | None = None
+        self.skip_config_reload: bool = False
+        self.skip_config_reload_token: CALLBACK_TYPE = None
         self.connection = Connection(
             session=async_get_clientsession(hass),
             username=self.entry.data[CONF_USERNAME],
             password=self.entry.data[CONF_PASSWORD],
             country=self.entry.options.get(CONF_REGION, self.entry.data[CONF_REGION]),
+            auth_cookies_file=get_auth_cookies_file(
+                hass, self.entry.data.get(CONF_USERNAME)
+            ),
+            auth_debug_dump_dir=get_auth_debug_dump_dir(
+                hass, self.entry.data.get(CONF_USERNAME)
+            ),
+            use_fake_user_agent=self.entry.data.get(CONF_FAKE_USER_AGENT, False),
         )
 
         super().__init__(hass, _LOGGER, name=DOMAIN, update_interval=update_interval)
@@ -682,9 +753,10 @@ class VolkswagenCoordinator(DataUpdateCoordinator):
 
         if not self.connection.logged_in:
             _LOGGER.warning(
-                "Could not login to Volkswagen Connect. "
+                "Could not login to Volkswagen Connect (%s). "
                 "Please check your credentials and verify that the service is working. "
-                "You may need to accept the EULA at https://www.myvolkswagen.net/"
+                "You may need to accept the EULA at https://www.myvolkswagen.net/",
+                self.connection.last_login_error or "unknown reason",
             )
             return False
 
