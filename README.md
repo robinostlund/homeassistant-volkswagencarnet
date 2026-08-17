@@ -8,7 +8,7 @@
 
 
 
-# Volkswagen Connect - An Home Assistant custom component to interact with the VW Connect service. (EU ONLY)
+# Volkswagen Connect - An Home Assistant custom component to interact with the VW Connect service. (EU & US ONLY)
 
 ## Support the Project
 
@@ -27,7 +27,7 @@ This component supports **Volkswagen Connect vehicles** such as the Passat, Golf
 
 Most of the features available in the official "Volkswagen Connect" app are accessible through this integration.
 
-> **Note:** So far, this component has only been reported to work successfully with cars sold in the **EU**. Contributions to support vehicles outside the EU, such as in the US, are welcome. Currently, we do not have access to non-EU VW Connect accounts to verify functionality.
+This integration supports both **European** (We Connect / Volkswagen Connect) and **North American** (VW Car-Net) accounts. See the [North America Setup](#setup-for-north-american-users) section below for details.
 
 ## Installation
 
@@ -56,6 +56,33 @@ Note that only the packaged releases (zip file) have the dependencies configured
 
 </details>
 
+## Setup for North American Users
+
+This integration supports both North American (US/CA) and European VW Connect accounts.
+
+During setup, you select your country from a dropdown (United States, Canada, Germany, etc.). The integration automatically routes to the correct VW backend based on the selected country — no additional configuration is needed.
+
+**US and Canadian users:** Select your country (United States or Canada) and use your **VW Car-Net** credentials — the same email and password you use in the VW Car-Net mobile app.
+
+**European users:** Select your country and use your **We Connect / Volkswagen Connect** credentials.
+
+**Country not in the list?** Select "Other (enter country code below)" and enter your 2-letter ISO 3166-1 alpha-2 country code (e.g., `NL`, `SE`, `NO`).
+
+**Requirements:**
+- An active VW Connect / Car-Net subscription for the vehicle is required
+- S-PIN is required for lock/unlock operations (optional for other features)
+
+### Upgrading from a Previous Version
+
+If you are upgrading from a version that used a free-text region code, you will see a **repair notification** in Home Assistant after the upgrade.
+
+1. Go to **Settings > System > Repairs**
+2. Click **Fix** on the "Confirm your country for Volkswagen Connect" notification
+3. Confirm or select the correct country from the dropdown
+4. The integration reloads automatically after confirmation
+
+---
+
 ## Configuration
 * Restart Home Assistant
 * Add and configure the component via the UI: Configuration > Integrations > search for "Volkswagen Connect" and follow the wizard to configure (use your Volkswagen Connect credentials)
@@ -63,8 +90,8 @@ Note that only the packaged releases (zip file) have the dependencies configured
 
 ### Configuration flow settings
 * Name your car - Enter a custom name, defaults to VIN (Optional)
-* Username/Password - Volkswagen Connect (Required)
-* Region - The country where the car was sold (Required)
+* Username/Password - Volkswagen Connect / VW Car-Net (Required)
+* Country - The country where your car was sold (Required). US and Canadian users select their country to connect via the North American VW Car-Net backend.
 * Mutable - If enabled you can interact with the car, if disabled only data from the car will be presented (Optional)
 * S-PIN - Required for some specific options such as lock/unlock (Optional)
 * Distance unit conversion - Select if you wish to use "Scandinavian mile (mil)" or Imperial Miles (mi) instead of km (Optional, default is km)

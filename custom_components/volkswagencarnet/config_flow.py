@@ -27,12 +27,16 @@ from volkswagencarnet.vw_vehicle import Vehicle
 from .const import (
     CONF_AVAILABLE_RESOURCES,
     CONF_CONVERT,
+    CONF_COUNTRY,
+    CONF_COUNTRY_CUSTOM,
     CONF_MUTABLE,
     CONF_NO_CONVERSION,
     CONF_REGION,
     CONF_SPIN,
     CONF_VEHICLE,
     CONVERT_DICT,
+    COUNTRY_LIST,
+    DEFAULT_COUNTRY,
     DEFAULT_REGION,
     DEFAULT_UPDATE_INTERVAL,
     DOMAIN,
@@ -47,7 +51,8 @@ DATA_SCHEMA = vol.Schema(
         vol.Required(CONF_USERNAME, default=""): str,
         vol.Required(CONF_PASSWORD, default=""): str,
         vol.Optional(CONF_SPIN, default=""): str,
-        vol.Optional(CONF_REGION, default=DEFAULT_REGION): str,
+        vol.Required(CONF_COUNTRY): vol.In(COUNTRY_LIST),
+        vol.Optional(CONF_COUNTRY_CUSTOM, default=""): str,
         vol.Optional(CONF_MUTABLE, default=True): cv.boolean,
         vol.Optional(CONF_CONVERT, default=CONF_NO_CONVERSION): vol.In(CONVERT_DICT),
         vol.Optional(
@@ -60,7 +65,7 @@ DATA_SCHEMA = vol.Schema(
 class VolkswagenCarnetConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
     """Config Flow for Volkswagen Connect."""
 
-    VERSION = 3
+    VERSION = 4
 
     def __init__(self) -> None:
         """Initialize config flow."""
@@ -77,12 +82,27 @@ class VolkswagenCarnetConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
             self._init_info = user_input
             self.task_login = None
 
+            # Collapse "Other" free-text into CONF_COUNTRY
+            if self._init_info.get(CONF_COUNTRY) == "OTHER":
+                custom_code = (
+                    self._init_info.pop(CONF_COUNTRY_CUSTOM, "").strip().upper()
+                )
+                if len(custom_code) != 2:
+                    self._errors[CONF_COUNTRY_CUSTOM] = "invalid_country_code"
+                    return self.async_show_form(
+                        step_id="user", data_schema=DATA_SCHEMA, errors=self._errors
+                    )
+                self._init_info[CONF_COUNTRY] = custom_code
+            self._init_info.pop(
+                CONF_COUNTRY_CUSTOM, None
+            )  # Don't store in config entry
+
             _LOGGER.debug("Creating connection to Volkswagen Connect")
             self._connection = Connection(
                 session=async_get_clientsession(self.hass),
                 username=self._init_info[CONF_USERNAME],
                 password=self._init_info[CONF_PASSWORD],
-                country=self._init_info[CONF_REGION],
+                country=self._init_info[CONF_COUNTRY],
             )
 
             return await self.async_step_login()
@@ -221,8 +241,8 @@ class VolkswagenCarnetConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                 session=async_get_clientsession(self.hass),
                 username=user_input[CONF_USERNAME],
                 password=user_input[CONF_PASSWORD],
-                country=self._entry.options.get(
-                    CONF_REGION, self._entry.data[CONF_REGION]
+                country=self._entry.data.get(
+                    CONF_COUNTRY, self._entry.data.get(CONF_REGION, DEFAULT_COUNTRY)
                 ),
             )
 
@@ -302,11 +322,12 @@ class VolkswagenCarnetOptionsFlowHandler(config_entries.OptionsFlow):
                         default=self._config_entry.data.get(CONF_SPIN, ""),
                     ): str,
                     vol.Optional(
-                        CONF_REGION,
-                        default=self._config_entry.options.get(
-                            CONF_REGION, self._config_entry.data[CONF_REGION]
+                        CONF_COUNTRY,
+                        default=self._config_entry.data.get(
+                            CONF_COUNTRY,
+                            self._config_entry.data.get(CONF_REGION, DEFAULT_COUNTRY),
                         ),
-                    ): str,
+                    ): vol.In(COUNTRY_LIST),
                     vol.Optional(
                         CONF_MUTABLE,
                         default=self._config_entry.data.get(CONF_MUTABLE, True),

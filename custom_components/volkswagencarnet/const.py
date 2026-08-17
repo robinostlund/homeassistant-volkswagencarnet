@@ -7,6 +7,29 @@ DATA_KEY = DOMAIN
 
 DEFAULT_REGION = "DE"
 
+CONF_COUNTRY = "country"
+CONF_COUNTRY_CUSTOM = "country_custom"
+DEFAULT_COUNTRY = "DE"  # Used only as migration fallback
+
+COUNTRY_LIST = {
+    "US": "United States",
+    "CA": "Canada",
+    "DE": "Germany",
+    "GB": "United Kingdom",
+    "NL": "Netherlands",
+    "SE": "Sweden",
+    "NO": "Norway",
+    "FR": "France",
+    "IT": "Italy",
+    "ES": "Spain",
+    "AT": "Austria",
+    "CH": "Switzerland",
+    "DK": "Denmark",
+    "FI": "Finland",
+    "BE": "Belgium",
+    "OTHER": "Other (enter country code below)",
+}
+
 CONF_REGION = "region"
 CONF_MUTABLE = "mutable"
 CONF_SPIN = "spin"

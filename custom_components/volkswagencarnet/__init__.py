@@ -29,6 +29,7 @@ from homeassistant.helpers.update_coordinator import (
 
 # pylint: disable=no-name-in-module,hass-relative-import
 from volkswagencarnet.vw_connection import Connection
+from volkswagencarnet.vw_exceptions import AuthenticationError, VWError
 from volkswagencarnet.vw_dashboard import (
     BinarySensor,
     DoorLock,
@@ -47,6 +48,7 @@ from .const import (
     COMPONENTS,
     CONF_AVAILABLE_RESOURCES,
     CONF_CONVERT,
+    CONF_COUNTRY,
     CONF_IMPERIAL_UNITS,
     CONF_MUTABLE,
     CONF_NO_CONVERSION,
@@ -55,6 +57,7 @@ from .const import (
     CONF_SPIN,
     CONF_VEHICLE,
     DATA,
+    DEFAULT_COUNTRY,
     DEFAULT_UPDATE_INTERVAL,
     DOMAIN,
     SIGNAL_STATE_UPDATED,
@@ -194,7 +197,7 @@ async def async_migrate_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     # 1 -> 2: Move resources from data -> options
     if version == 1:
         default_convert_conf = get_convert_conf(entry)
-        version = entry.version = 2
+        version = 2
         options = dict(entry.options)
         data = dict(entry.data)
 
@@ -202,16 +205,59 @@ async def async_migrate_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         options[CONF_CONVERT] = options.get(CONF_CONVERT, default_convert_conf)
         data.pop(CONF_RESOURCES, None)
 
-        hass.config_entries.async_update_entry(entry, data=data, options=options)
+        hass.config_entries.async_update_entry(
+            entry, data=data, options=options, version=2
+        )
 
     # 2 -> 3: Fix empty "convert" option
     if version == 2:
-        version = entry.version = 3
+        version = 3
         options = dict(entry.options)
         options.pop(CONF_CONVERT, None)
         data = dict(entry.data)
 
-        hass.config_entries.async_update_entry(entry, data=data, options=options)
+        hass.config_entries.async_update_entry(
+            entry, data=data, options=options, version=3
+        )
+
+    # 3 -> 4: Replace CONF_REGION free-text with CONF_COUNTRY dropdown
+    if version == 3:
+        version = 4
+        data = dict(entry.data)
+        options = dict(entry.options)
+
+        # Move CONF_REGION value to CONF_COUNTRY in data
+        existing_region = data.pop(CONF_REGION, DEFAULT_COUNTRY)
+        data[CONF_COUNTRY] = existing_region
+
+        # Also clean CONF_REGION from options and add CONF_COUNTRY if it was there
+        # (both data and options are separate dicts, both need updating)
+        if CONF_REGION in options:
+            region_from_options = options.pop(CONF_REGION)
+            options[CONF_COUNTRY] = region_from_options
+
+        hass.config_entries.async_update_entry(
+            entry, data=data, options=options, version=4
+        )
+
+        # Create repair so user must confirm their country before reconnecting
+        from homeassistant.helpers import issue_registry as ir  # noqa: PLC0415
+
+        ir.async_create_issue(
+            hass,
+            DOMAIN,
+            f"confirm_country_{entry.entry_id}",
+            is_fixable=True,
+            severity=ir.IssueSeverity.WARNING,
+            translation_key="confirm_country",
+            data={"entry_id": entry.entry_id, "country": existing_region},
+        )
+
+        _LOGGER.warning(
+            "Migrated config entry %s from v3 to v4. "
+            "Please confirm your country in Home Assistant Repairs.",
+            entry.entry_id,
+        )
 
     _LOGGER.info("Migration to config version %s successful", version)
     return True
@@ -613,7 +659,10 @@ class VolkswagenCoordinator(TimestampDataUpdateCoordinator):
             session=async_get_clientsession(hass),
             username=self.entry.data[CONF_USERNAME],
             password=self.entry.data[CONF_PASSWORD],
-            country=self.entry.options.get(CONF_REGION, self.entry.data[CONF_REGION]),
+            country=self.entry.data.get(
+                CONF_COUNTRY, self.entry.data.get(CONF_REGION, DEFAULT_COUNTRY)
+            ),
+            spin=self.entry.data.get(CONF_SPIN),
         )
 
         super().__init__(hass, _LOGGER, name=DOMAIN, update_interval=update_interval)
@@ -670,8 +719,15 @@ class VolkswagenCoordinator(TimestampDataUpdateCoordinator):
             if self.connection.logged_in:
                 await self.connection.logout()
                 _LOGGER.debug("Successfully logged out")
+        except VWError as err:
+            _LOGGER.error(
+                "Could not log out from Volkswagen Connect (library error): %s", err
+            )
+            return False
         except Exception as err:  # pylint: disable=broad-exception-caught
-            _LOGGER.error("Could not log out from Volkswagen Connect: %s", err)
+            _LOGGER.error(
+                "Could not log out from Volkswagen Connect (unexpected error): %s", err
+            )
             return False
 
         return True
@@ -684,8 +740,14 @@ class VolkswagenCoordinator(TimestampDataUpdateCoordinator):
 
         try:
             await self.connection.doLogin(3)
+        except AuthenticationError as err:
+            _LOGGER.error("Authentication failed: %s", err)
+            return False
+        except VWError as err:
+            _LOGGER.error("Login failed (library error): %s", err)
+            return False
         except Exception as err:  # pylint: disable=broad-exception-caught
-            _LOGGER.error("Login failed: %s", err)
+            _LOGGER.error("Login failed (unexpected error): %s", err)
             return False
 
         if not self.connection.logged_in:
@@ -719,6 +781,11 @@ class VolkswagenCoordinator(TimestampDataUpdateCoordinator):
 
             _LOGGER.debug("Updated data for VIN %s", self.vin)
             return self.vehicle
+        except VWError as err:
+            _LOGGER.error("VW API error during update for VIN %s: %s", self.vin, err)
+            return None
         except Exception as err:  # pylint: disable=broad-exception-caught
-            _LOGGER.error("Error during update for VIN %s: %s", self.vin, err)
+            _LOGGER.error(
+                "Unexpected error during update for VIN %s: %s", self.vin, err
+            )
             return None

@@ -9,10 +9,10 @@
           "username": "[%key:common::config_flow::data::email%]",
           "password": "[%key:common::config_flow::data::password%]",
           "mutable": "Uncheck to make the car 'read only'. Keep checked to interact with the car",
-          "region": "Region (The country where the car was sold)",
+          "country": "Country where your car was sold",
+          "country_custom": "Custom country code (ISO 3166-1 alpha-2, only if 'Other' selected above)",
           "spin": "S-PIN",
           "name": "Name your car (defaults to VIN number)",
-          "debug": "Enable full debug logs from API (requires debug logging enabled in config)",
           "convert": "Select if you wan to make any distance unit conversions",
           "scan_interval": "Sensors update interval (minutes)"
         }
@@ -46,6 +46,7 @@
     "error": {
       "cannot_connect": "Could not login to Volkswagen Connect, please check your credentials and verify that the service is working.",
       "cannot_update": "Could not query update from Volkswagen Connect",
+      "invalid_country_code": "Please enter a valid 2-letter country code (e.g. US, DE, NL)",
       "unknown": "[%key:common::config_flow::error::unknown%]"
     },
     "progress": {
@@ -60,7 +61,7 @@
         "description": "Configure Volkswagen Connect settings",
         "data": {
           "spin": "S-PIN (required for lock/unlock and heating)",
-          "region": "Region (The country where the car was sold)",
+          "country": "Country where your car was sold",
           "mutable": "Enable car control (uncheck for read-only mode)",
           "convert": "Select if you want to make any distance unit conversions",
           "scan_interval": "Sensors update interval (minutes)"
@@ -71,6 +72,22 @@
         "description": "Select resources to monitor",
         "data": {
           "resources": "Resources to monitor"
+        }
+      }
+    }
+  },
+  "issues": {
+    "confirm_country": {
+      "title": "Confirm your country for Volkswagen Connect",
+      "fix_flow": {
+        "step": {
+          "confirm": {
+            "title": "Confirm your country",
+            "description": "A configuration update requires confirming the country for your VW vehicle. Your current setting is {country}. Please confirm or select the correct country.",
+            "data": {
+              "country": "Country"
+            }
+          }
         }
       }
     }
