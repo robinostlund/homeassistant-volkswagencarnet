@@ -10,6 +10,8 @@
 
 # Volkswagen Connect - An Home Assistant custom component to interact with the VW Connect service. (EU ONLY)
 
+# !!! Integration Currently Unavailable/Broken again... - Please read https://github.com/robinostlund/homeassistant-volkswagencarnet/issues/989
+
 ## Support the Project
 
 _If you enjoy this integration and would like to support its development, buying us a coffee is always appreciated_  ☕
