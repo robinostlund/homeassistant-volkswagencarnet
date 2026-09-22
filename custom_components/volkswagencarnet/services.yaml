@@ -18,7 +18,7 @@ update_schedule:
         select:
           multiple: false
           options:
-            - Non-ID. Series
+            - Legacy
             - ID. Series
     timer_id:
       name: Timer id
