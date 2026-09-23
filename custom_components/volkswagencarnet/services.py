@@ -21,7 +21,7 @@ SERVICE_UPDATE_SCHEDULE_SCHEMA = vol.Schema(
     {
         vol.Required("device_id"): vol.All(cv.string, vol.Length(min=32, max=32)),
         vol.Required("timer_id"): vol.In([1, 2, 3]),
-        vol.Required("vehicle_series"): vol.In(["Legacy", "ID. Series"]),
+        vol.Required("vehicle_series"): vol.In(["Non-ID. Series", "ID. Series"]),
         vol.Required("timer_type"): vol.In(["Departure Timer", "AC Departure Timer"]),
         vol.Optional("charging_profile"): vol.All(
             cv.positive_int, vol.Range(min_included=1, max_included=10)
@@ -72,9 +72,9 @@ class SchedulerService:
                 )
 
             vehicle_series = service_call.data.get("vehicle_series", None)
-            if vehicle_series not in ["Legacy", "ID. Series"]:
+            if vehicle_series not in ["Non-ID. Series", "ID. Series"]:
                 raise HomeAssistantError(
-                    f"Invalid vehicle_series: {vehicle_series}. Must be 'Legacy' or 'ID. Series'"
+                    f"Invalid vehicle_series: {vehicle_series}. Must be 'Non-ID. Series' or 'ID. Series'"
                 )
 
             timer_type = service_call.data.get("timer_type", None)
@@ -119,7 +119,7 @@ class SchedulerService:
                 "preferred_charging_times_end_time", None
             )
 
-            if vehicle_series == "Legacy":
+            if vehicle_series == "Non-ID. Series":
                 # Check if timer is supported
                 if not vehicle.is_departure_timer_supported(timer_id):
                     raise HomeAssistantError(
