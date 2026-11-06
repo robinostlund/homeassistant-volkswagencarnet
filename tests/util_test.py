@@ -14,7 +14,7 @@ from custom_components.volkswagencarnet.const import (
     CONF_VEHICLE,
     CONF_REGION,
 )
-from pytest_homeassistant_custom_component.common import MockConfigEntry
+from pytest_homeassistant.common import MockConfigEntry
 
 
 async def test_get_coordinator(hass: HomeAssistant):
