@@ -8,7 +8,7 @@ from homeassistant.const import (
 )
 from homeassistant.core import HomeAssistant
 from homeassistant.data_entry_flow import FlowResult, FlowResultType
-from pytest_homeassistant_custom_component.common import MockConfigEntry
+from pytest_homeassistant.common import MockConfigEntry
 from volkswagencarnet.vw_connection import Connection
 from volkswagencarnet.vw_dashboard import (
     Dashboard,
