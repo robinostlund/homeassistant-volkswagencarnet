@@ -2,4 +2,4 @@ black
 flake8
 freezegun
 homeassistant>=2026.11.2
-pytest-homeassistant==2026.11.2
+pytest-homeassistant==2026.11.3
